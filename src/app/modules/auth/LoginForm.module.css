@@ -1,0 +1,249 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: var(--main-font);
+}
+
+:global(body) {
+  background-color: var(--page-color);
+}
+h2 {
+  margin: 0px;
+  font-size: 16px;
+}
+.btn {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+
+  background-color: var(--main-color);
+  width: auto;
+  min-width: 80px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  white-space: nowrap;
+}
+.btn p {
+  font-weight: var(--font-superBold);
+  font-size: 14px;
+}
+.card {
+  padding: 40px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 15px;
+}
+.header h2 {
+  color: #333333;
+  font-weight: var(--font-regular);
+  text-align: center;
+}
+.logoContainer {
+  width: 114px;
+  height: 45px;
+}
+
+.logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.headerBody {
+  font-weight: var(--font-bold);
+  font-size: 16px;
+  text-align: center;
+  padding: 15px 0px;
+  width: 100%;
+  border-bottom: solid 1px #f0f0f0;
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+.switchBtn {
+  cursor: pointer;
+  padding: 8px 15px;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+  position: absolute;
+  right: 15px;
+  bottom: 8px;
+}
+.extraSection {
+  position: absolute;
+  right: 15px;
+  top: 50px;
+}
+.btnLoginWithPass {
+  border-radius: 8px;
+  background-color: var(--white-color);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+  padding: 8px;
+  width: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.body {
+  position: relative;
+  width: 540px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  border-radius: 8px;
+  background-color: var(--white-color);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+}
+.codeQR {
+  width: 236px;
+  height: auto;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  margin: 40px 0px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.qrText {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 17.6px;
+  text-align: center;
+}
+.qrTextBlue {
+  color: var(--lightBlue-color);
+}
+.footerBody {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 12px;
+  margin: 12px;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  display: flex;
+  gap: 12px;
+}
+.midFooter {
+  padding: 5px;
+}
+.textBold {
+  font-size: 14px;
+}
+.footerBody p,
+.footerBody strong {
+  font-size: 14px;
+  margin: 5px;
+}
+.footerImg {
+  width: 72px;
+  height: 63px;
+}
+.footer {
+  display: flex;
+  justify-content: last baseline;
+  align-items: center;
+  gap: 10px;
+  margin-top: 75px;
+}
+.footer a {
+  font-size: 12px;
+  text-decoration: none;
+  color: var(--main-color);
+}
+.formInput {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 400px;
+  padding: 24px;
+  justify-content: center;
+  align-items: center;
+  min-height: 350px;
+}
+.inputGroup {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+
+  width: 100%;
+  height: 40px;
+
+  border-bottom: 1px solid #f0f0f0;
+  transition: border-bottom 0.2s;
+}
+
+.inputField {
+  flex: 1;
+  height: 100%;
+
+  border: none;
+  outline: none;
+  background: transparent;
+
+  font-size: 14px;
+}
+.btnLogin {
+  composes: btn;
+  width: 100%;
+}
+.btnBackQR {
+  margin-top: auto;
+  cursor: pointer;
+  color: var(--main-color);
+  font-size: 16px;
+  font-weight: var(--font-superBold);
+}
+.btnForgotPass {
+  cursor: pointer;
+}
+.btnBackPass {
+  color: black;
+  font-size: 14px;
+  align-self: flex-start;
+}
+.btnBackPass:hover {
+  text-decoration: underline;
+  color: var(--lightBlue-color);
+}
+@media (max-width: 600px) {
+  .body {
+    width: 90%;
+    margin: 0 5%;
+  }
+  .footerBody {
+    width: 90%;
+
+    text-align: center;
+    gap: 15px;
+  }
+  .footerImg {
+    width: 60px;
+    height: auto;
+  }
+
+  .header h2 {
+    font-size: 14px;
+  }
+}
