@@ -1,10 +1,10 @@
-import { createBrowserRouter } from "react-router-dom";
-// 1. Import trang Login (Nhớ kiểm tra đúng đường dẫn nhé)
+import { createBrowserRouter  } from "react-router-dom";
+import type { RouteObject } from "react-router-dom";
 import { LoginPage } from "../modules/auth/LoginPage";
 
-const adminRoute = [];
+const adminRoute: RouteObject[] = [];
 
-const userRoute = [];
+const userRoute: RouteObject[] = [];
 
 const guestRoute = [
   {

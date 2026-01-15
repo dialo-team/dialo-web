@@ -1,4 +1,4 @@
-import styles from "./LoginForm.module.css";
+import styles from "../../styles/module.auth/LoginForm.module.css"
 import qrImage from "../../../assets/QR.png";
 import { Menu } from "lucide-react";
 import footerImg from "../../../assets/banner_icon.svg";
@@ -34,7 +34,7 @@ export const LoginQR = ({ onSwitch }: { onSwitch: () => void }) => {
           <p>Diablo trên máy tính</p>
         </div>
       </div>
-      <div className={styles.footerBody}>
+      {/* <div className={styles.footerBody}>
         <div className={styles.leftFooter}>
           <img src={footerImg} alt="" className={styles.footerImg} />
         </div>
@@ -52,7 +52,7 @@ export const LoginQR = ({ onSwitch }: { onSwitch: () => void }) => {
             <p>Tải ngay</p>
           </button>
         </div>
-      </div>
+      </div> */}
     </>
   );
 };

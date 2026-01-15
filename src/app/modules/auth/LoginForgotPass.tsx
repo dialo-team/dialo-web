@@ -1,4 +1,4 @@
-import styles from "./LoginForm.module.css";
+import styles from "../../styles/module.auth/LoginForm.module.css"
 import {  SmartphoneIcon } from "lucide-react";
 
 export const LoginForgotPass = ({ onBack }: { onBack: () => void }) => {

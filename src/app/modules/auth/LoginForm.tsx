@@ -1,11 +1,11 @@
 import logoDiablo from "../../../assets/logo-diablo.svg";
-import styles from "./LoginForm.module.css";
+import styles from "../../styles/module.auth/LoginForm.module.css"
 import { useState } from "react";
 import { LoginQR } from "./LoginQR";
 import { LoginPass } from "./LoginPass";
 import { LoginForgotPass } from "./LoginForgotPass";
 export const LoginForm = () => {
-  const [currentView, setCurrentView] = useState("qr");
+  const [currentView, setCurrentView] = useState("pass");
 
   return (
     <div className={styles.card}>
@@ -34,10 +34,6 @@ export const LoginForm = () => {
         {currentView === "forgot" && (
           <LoginForgotPass onBack={() => setCurrentView("pass")} />
         )}
-      </div>
-      <div className={styles.footer}>
-        <a href="">Tiếng Việt</a>
-        <a href="">English</a>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import styles from "./LoginForm.module.css";
+import styles from "../../styles/module.auth/LoginForm.module.css"
 import { LockIcon, SmartphoneIcon } from "lucide-react";
 import footerImg from "../../../assets/banner_icon.svg";
 
@@ -40,7 +40,7 @@ export const LoginPass = ({
           Đăng nhập qua mã QR
         </button>
       </div>
-      <div className={styles.footerBody}>
+      {/* <div className={styles.footerBody}>
         <div className={styles.leftFooter}>
           <img src={footerImg} alt="" className={styles.footerImg} />
         </div>
@@ -58,7 +58,7 @@ export const LoginPass = ({
             <p>Tải ngay</p>
           </button>
         </div>
-      </div>
+      </div> */}
     </>
   );
 };
