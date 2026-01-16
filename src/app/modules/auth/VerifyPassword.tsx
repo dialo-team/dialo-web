@@ -1,14 +1,8 @@
 import { useState } from "react";
 import styles from "../../styles/module.auth/LoginForm.module.css";
-import { LockIcon, SmartphoneIcon, Eye, EyeOff } from "lucide-react";
+import { LockIcon, Eye, EyeOff } from "lucide-react";
 
-export const LoginPass = ({
-  onSwitchQR,
-  onSwitchForgot,
-}: {
-  onSwitchQR: () => void;
-  onSwitchForgot: () => void;
-}) => {
+export const VerifyPassword = ({ onSwitch }: { onSwitch: () => void }) => {
   const [showPassWord, setShowPassWord] = useState(false);
   const togglePasswordVisibility = () => {
     setShowPassWord(!showPassWord);
@@ -16,25 +10,35 @@ export const LoginPass = ({
 
   return (
     <>
-      <div className={styles.headerBody}>
-        <p>Đăng nhập qua mật khẩu</p>
+      <div className={styles.verifyForm}>
+        <p>Gửi tin nhắn để nhận mã xác thực</p>
+        <h1>0900610041</h1>
+        <div
+          className={styles.inputGroup}
+          style={{ borderBottomColor: "#008fe5", width: "80%" }}
+        >
+          <input
+            className={styles.verifyField}
+            type="text"
+            placeholder="Nhập mã xác thực"
+          />
+        </div>
+        <span>
+          Soạn tin nhắn với cú pháp "DIABLOPC" gửi đến 6020 (1000đ/tin) để nhận
+          mã xác thực (Chỉ áp dụng cho mạng Viettel, Mobifone, Vinaphone,
+          Vietnamobile, Gmobile)
+        </span>
       </div>
       <div className={styles.formInput}>
-        <div className={styles.inputGroup}>
-          <SmartphoneIcon size={20} color="#555" strokeWidth={2} />
-
-          <input
-            className={styles.inputField}
-            type="text"
-            placeholder="Số điện thoại"
-          />
-        </div>
-        <div className={styles.inputGroup}>
+        <div
+          className={styles.inputGroup}
+          style={{ borderBottomColor: "#008fe5" }}
+        >
           <LockIcon size={20} color="#555" strokeWidth={2} />
           <input
             className={styles.inputField}
             type={showPassWord ? "text" : "password"}
-            placeholder="Mật khẩu"
+            placeholder="Vui lòng nhập mật khẩu"
           />
           <button
             type="button"
@@ -48,12 +52,15 @@ export const LoginPass = ({
             )}
           </button>
         </div>
-        <div className={styles.inputGroup}>
+        <div
+          className={styles.inputGroup}
+          style={{ borderBottomColor: "#008fe5" }}
+        >
           <LockIcon size={20} color="#555" strokeWidth={2} />
           <input
             className={styles.inputField}
             type={showPassWord ? "text" : "password"}
-            placeholder="Mật khẩu"
+            placeholder="Nhập lại mật khẩu"
           />
           <button
             type="button"
@@ -67,12 +74,8 @@ export const LoginPass = ({
             )}
           </button>
         </div>
-        <button className={styles.btnLogin}>Đăng nhập với mật khẩu</button>
-        <button className={styles.btnForgotPass} onClick={onSwitchForgot}>
-          Quên mật khẩu
-        </button>{" "}
-        <button className={styles.btnBackQR} onClick={onSwitchQR}>
-          Đăng nhập qua mã QR
+        <button className={styles.btnLogin} onClick={onSwitch}>
+          Tiếp tục
         </button>
       </div>
       {/* <div className={styles.footerBody}>

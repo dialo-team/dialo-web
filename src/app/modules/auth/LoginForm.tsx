@@ -1,9 +1,10 @@
 import logoDiablo from "../../../assets/logo-diablo.svg";
-import styles from "../../styles/module.auth/LoginForm.module.css"
+import styles from "../../styles/module.auth/LoginForm.module.css";
 import { useState } from "react";
 import { LoginQR } from "./LoginQR";
 import { LoginPass } from "./LoginPass";
 import { LoginForgotPass } from "./LoginForgotPass";
+import { VerifyPassword } from "./VerifyPassword";
 export const LoginForm = () => {
   const [currentView, setCurrentView] = useState("pass");
 
@@ -32,7 +33,13 @@ export const LoginForm = () => {
         )}
 
         {currentView === "forgot" && (
-          <LoginForgotPass onBack={() => setCurrentView("pass")} />
+          <LoginForgotPass
+            onBack={() => setCurrentView("pass")}
+            onVerify={() => setCurrentView("verify")}
+          />
+        )}
+        {currentView === "verify" && (
+          <VerifyPassword onSwitch={() => setCurrentView("pass")} />
         )}
       </div>
     </div>

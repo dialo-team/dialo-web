@@ -1,7 +1,6 @@
-import styles from "../../styles/module.auth/LoginForm.module.css"
+import styles from "../../styles/module.auth/LoginForm.module.css";
 import qrImage from "../../../assets/QR.png";
 import { Menu } from "lucide-react";
-import footerImg from "../../../assets/banner_icon.svg";
 import { useState } from "react";
 
 export const LoginQR = ({ onSwitch }: { onSwitch: () => void }) => {

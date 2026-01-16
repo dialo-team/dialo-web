@@ -9,6 +9,8 @@
   background-color: var(--page-color);
 }
 
+/* form */
+
 h2 {
   margin: 0px;
   font-size: 16px;
@@ -62,6 +64,9 @@ h2 {
   height: 100%;
   object-fit: contain;
 }
+
+/* component */
+
 .headerBody {
   font-weight: var(--font-bold);
   font-size: 16px;
@@ -180,7 +185,6 @@ h2 {
   padding: 24px;
   justify-content: center;
   align-items: center;
-  min-height: 350px;
 }
 .inputGroup {
   display: flex;
@@ -192,6 +196,7 @@ h2 {
   height: 40px;
 
   border-bottom: 1px solid #f0f0f0;
+  border-radius: 3px;
   transition: border-bottom 0.2s;
 }
 
@@ -227,6 +232,50 @@ h2 {
 .btnBackPass:hover {
   text-decoration: underline;
   color: var(--lightBlue-color);
+}
+.eyeButton {
+  cursor: pointer;
+  outline: none;
+}
+.inputField::-ms-reveal,
+.inputField::-ms-clear {
+  display: none;
+}
+.verifyForm {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  width: 400px;
+  padding: 24px;
+  margin-top: 24px;
+  background-color: #e1eff9;
+  border-radius: 3px;
+  gap: 5px;
+
+  align-items: center;
+}
+.verifyForm h1 {
+  color: #0189e7;
+  font-size: 24px;
+  font-weight: var(--font-superBold);
+}
+.verifyForm p {
+  color: #666666;
+  font-size: 12px;
+}
+.verifyForm span {
+  color: #31708f;
+  font-size: 12px;
+}
+.verifyField {
+  background-color: white;
+  width: 100%;
+  padding: 6px 10px;
+  border: none;
+  outline: none;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
 }
 @media (max-width: 600px) {
   .body {

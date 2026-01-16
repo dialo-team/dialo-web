@@ -1,12 +1,19 @@
-import styles from "../../styles/module.auth/LoginForm.module.css"
-import {  SmartphoneIcon } from "lucide-react";
+import styles from "../../styles/module.auth/LoginForm.module.css";
+import { SmartphoneIcon } from "lucide-react";
 
-export const LoginForgotPass = ({ onBack }: { onBack: () => void }) => {
+export const LoginForgotPass = ({
+  onBack,
+  onVerify,
+}: {
+  onBack: () => void;
+  onVerify: () => void;
+}) => {
   return (
     <>
-      <div className={styles.headerBody} style={{ marginTop: 50 }}>
+      <div className={styles.headerBody}>
         <p>Nhập số điện thoại của bạn</p>
       </div>
+
       <div className={styles.formInput} style={{ minHeight: "auto" }}>
         <div className={styles.inputGroup}>
           <SmartphoneIcon size={20} color="#555" strokeWidth={2} />
@@ -18,7 +25,9 @@ export const LoginForgotPass = ({ onBack }: { onBack: () => void }) => {
           />
         </div>
 
-        <button className={styles.btnLogin}>Tiếp tục</button>
+        <button className={styles.btnLogin} onClick={onVerify}>
+          Tiếp tục
+        </button>
         <button className={styles.btnBackPass} onClick={onBack}>
           Quay lại
         </button>
