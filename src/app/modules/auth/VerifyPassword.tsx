@@ -3,10 +3,8 @@ import styles from "../../styles/module.auth/LoginForm.module.css";
 import { LockIcon, Eye, EyeOff } from "lucide-react";
 
 export const VerifyPassword = ({ onSwitch }: { onSwitch: () => void }) => {
-  const [showPassWord, setShowPassWord] = useState(false);
-  const togglePasswordVisibility = () => {
-    setShowPassWord(!showPassWord);
-  };
+  const [showPass1, setShowPass1] = useState(false);
+  const [showPass2, setShowPass2] = useState(false);
 
   return (
     <>
@@ -24,11 +22,10 @@ export const VerifyPassword = ({ onSwitch }: { onSwitch: () => void }) => {
           />
         </div>
         <span>
-          Soạn tin nhắn với cú pháp "DIABLOPC" gửi đến 6020 (1000đ/tin) để nhận
-          mã xác thực (Chỉ áp dụng cho mạng Viettel, Mobifone, Vinaphone,
-          Vietnamobile, Gmobile)
+          Soạn tin nhắn với cú pháp "DIABLOPC" gửi đến 6020 (1000đ/tin)...
         </span>
       </div>
+
       <div className={styles.formInput}>
         <div
           className={styles.inputGroup}
@@ -37,21 +34,22 @@ export const VerifyPassword = ({ onSwitch }: { onSwitch: () => void }) => {
           <LockIcon size={20} color="#555" strokeWidth={2} />
           <input
             className={styles.inputField}
-            type={showPassWord ? "text" : "password"}
+            type={showPass1 ? "text" : "password"}
             placeholder="Vui lòng nhập mật khẩu"
           />
           <button
             type="button"
-            className="eyeButton"
-            onClick={togglePasswordVisibility}
+            className={styles.eyeButton}
+            onClick={() => setShowPass1(!showPass1)}
           >
-            {showPassWord ? (
+            {showPass1 ? (
               <Eye size={20} color="#555" strokeWidth={2} />
             ) : (
               <EyeOff size={20} color="#555" strokeWidth={2} />
             )}
           </button>
         </div>
+
         <div
           className={styles.inputGroup}
           style={{ borderBottomColor: "#008fe5" }}
@@ -59,44 +57,26 @@ export const VerifyPassword = ({ onSwitch }: { onSwitch: () => void }) => {
           <LockIcon size={20} color="#555" strokeWidth={2} />
           <input
             className={styles.inputField}
-            type={showPassWord ? "text" : "password"}
+            type={showPass2 ? "text" : "password"}
             placeholder="Nhập lại mật khẩu"
           />
           <button
             type="button"
-            className="eyeButton"
-            onClick={togglePasswordVisibility}
+            className={styles.eyeButton}
+            onClick={() => setShowPass2(!showPass2)}
           >
-            {showPassWord ? (
+            {showPass2 ? (
               <Eye size={20} color="#555" strokeWidth={2} />
             ) : (
               <EyeOff size={20} color="#555" strokeWidth={2} />
             )}
           </button>
         </div>
+
         <button className={styles.btnLogin} onClick={onSwitch}>
           Tiếp tục
         </button>
       </div>
-      {/* <div className={styles.footerBody}>
-        <div className={styles.leftFooter}>
-          <img src={footerImg} alt="" className={styles.footerImg} />
-        </div>
-        <div className={styles.midFooter}>
-          <strong className={styles.textBold}>
-            Nâng cao hiệu quả công việc với Diablo PC
-          </strong>
-          <p>
-            Gửi file lớn lên đến 1 GB, chụp màn hình, gọi video và nhiều tiện
-            ích hơn nữa
-          </p>
-        </div>
-        <div className={styles.rightFooter}>
-          <button className={styles.btn}>
-            <p>Tải ngay</p>
-          </button>
-        </div>
-      </div> */}
     </>
   );
 };

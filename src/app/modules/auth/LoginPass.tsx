@@ -48,25 +48,6 @@ export const LoginPass = ({
             )}
           </button>
         </div>
-        <div className={styles.inputGroup}>
-          <LockIcon size={20} color="#555" strokeWidth={2} />
-          <input
-            className={styles.inputField}
-            type={showPassWord ? "text" : "password"}
-            placeholder="Mật khẩu"
-          />
-          <button
-            type="button"
-            className="eyeButton"
-            onClick={togglePasswordVisibility}
-          >
-            {showPassWord ? (
-              <Eye size={20} color="#555" strokeWidth={2} />
-            ) : (
-              <EyeOff size={20} color="#555" strokeWidth={2} />
-            )}
-          </button>
-        </div>
         <button className={styles.btnLogin}>Đăng nhập với mật khẩu</button>
         <button className={styles.btnForgotPass} onClick={onSwitchForgot}>
           Quên mật khẩu
