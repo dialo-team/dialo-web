@@ -1,0 +1,74 @@
+.popup {
+  position: absolute;
+  bottom: 80px;
+  left: 95px;
+  width: 300px;
+
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e5e7eb;
+
+  overflow: hidden;
+  z-index: 50;
+}
+
+/* Menu wrapper */
+.menu {
+  padding: 8px;
+}
+
+/* Divider */
+.divider {
+  height: 1px;
+  background-color: #e5e7eb;
+  margin: 8px 0;
+}
+
+/* Menu item */
+.menuItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 10px 12px;
+  border-radius: 14px;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  border: none;
+  background: transparent;
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+/* Icon */
+.icon {
+  opacity: 0.8;
+  display: flex;
+  align-items: center;
+}
+
+/* Normal item */
+.normal {
+  color: #374151;
+}
+
+.normal:hover {
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+
+/* Danger item */
+.danger {
+  color: #ef4444;
+}
+
+.danger:hover {
+  background-color: #fef2f2;
+}

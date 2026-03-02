@@ -1,6 +1,7 @@
 import { useState } from "react";
 import styles from "../../styles/module.auth/LoginForm.module.css";
 import { LockIcon, SmartphoneIcon, Eye, EyeOff } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export const LoginPass = ({
   onSwitchQR,
@@ -15,6 +16,12 @@ export const LoginPass = ({
   const togglePasswordVisibility = () => {
     setShowPassWord(!showPassWord);
   };
+
+  const navigate = useNavigate();
+  const handleLogin = () => {
+    navigate("/home");
+  };
+
 
   return (
     <>
@@ -53,7 +60,7 @@ export const LoginPass = ({
               )}
             </button>
           </div>
-          <button className={styles.btnLogin}>Đăng nhập với mật khẩu</button>
+          <button className={styles.btnLogin} onClick={handleLogin} >Đăng nhập với mật khẩu</button>
           <button className={styles.btnForgotPass} onClick={onSwitchForgot}>
             Quên mật khẩu
           </button>{" "}
