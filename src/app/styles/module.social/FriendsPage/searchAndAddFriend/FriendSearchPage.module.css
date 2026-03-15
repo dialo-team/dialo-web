@@ -1,0 +1,67 @@
+.container{
+  
+}
+
+h2 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+span {
+  color: #65676b;
+  font-size: 14px;
+}
+
+.userItem{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px;
+  border-bottom:1px solid #eee;
+  margin-top: 15px;
+}
+
+.userInfo{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.userInfo img{
+  width:40px;
+  height:40px;
+  border-radius:50%;
+}
+
+.name{
+  display:block;
+  font-weight:500;
+}
+
+.phone{
+  font-size:13px;
+  color:#666;
+}
+
+.actions{
+  display:flex;
+  gap:8px;
+}
+
+.messageBtn{
+  background:#e4e6eb;
+  border:none;
+  padding:6px 14px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.addBtn{
+  background:#2680f6;
+  color:white;
+  border:none;
+  padding:6px 14px;
+  border-radius:6px;
+  cursor:pointer;
+}

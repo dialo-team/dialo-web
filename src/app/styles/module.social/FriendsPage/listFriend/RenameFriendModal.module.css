@@ -1,0 +1,75 @@
+.overlay{
+  position: fixed;
+  inset:0;
+  background: rgba(0,0,0,0.3);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.modal{
+  background:white;
+  width:30%;
+  border-radius:10px;
+  padding:20px;
+  text-align:center;
+}
+
+.title{
+  text-align:left;         
+  font-size:16px;
+  font-weight:600;
+  padding-bottom:10px;
+  border-bottom:1px solid #c3c4c7; 
+  margin-bottom:25px;
+}
+
+.avatarBox{
+  display:flex;
+  justify-content:center;
+  margin:15px 0;
+}
+
+.avatarBox img{
+  width:70px;
+  height:70px;
+  border-radius:50%;
+  object-fit:cover;
+}
+
+.note{
+  font-size:14px;
+  margin-bottom:5px;
+}
+
+.input{
+  width:100%;
+  padding:8px;
+  border:1px solid #ddd;
+  border-radius:6px;
+  margin-top: 10px;
+}
+
+.actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:10px; 
+  margin-top:20px;
+}
+
+.cancel{
+  background:#e4e6eb;
+  border:none;
+  padding:8px 18px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.confirm{
+  background:#2680f6;
+  color:white;
+  border:none;
+  padding:8px 18px;
+  border-radius:6px;
+  cursor:pointer;
+}

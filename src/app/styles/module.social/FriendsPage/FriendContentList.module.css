@@ -105,3 +105,16 @@
   color: #e41e3f;
   font-weight: 500;
 }
+
+
+/* dùng để tắt modal thì bấm ở vùng ngoài modal */
+.menuOverlay{
+  position:fixed;
+  inset:0;
+  z-index:1;
+}
+
+.actionMenu{
+  position:absolute;
+  z-index:2;
+}

@@ -1,6 +1,8 @@
 import { Search, MoreHorizontal } from "lucide-react";
 import styles from "../../../../styles/module.social/FriendsPage/FriendContentList.module.css";
 import { useState } from "react";
+import { RenameFriendModal } from "./RenameFriendModal";
+import { DeleteFriendModal } from "./DeleteFriendModal";
 import { FriendInfoModal } from "./FriendInfoModal";
 
 export const FriendListPage = () => {
@@ -13,6 +15,8 @@ export const FriendListPage = () => {
   const [openMenu, setOpenMenu] = useState<number | null>(null);
   const [openInfo, setOpenInfo] = useState(false);
   const [selectedFriend, setSelectedFriend] = useState<any>(null);
+  const [openRename, setOpenRename] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
 
   return (
     <>
@@ -48,20 +52,37 @@ export const FriendListPage = () => {
 
                 {openMenu === f.id && (
                   <div className={styles.actionMenu}>
+                    
                     <div
-  className={styles.menuAction}
-  onClick={() => {
-    setSelectedFriend(f);
-    setOpenInfo(true);
-    setOpenMenu(null);
-  }}
->
-  Xem thông tin
-</div>
+                      className={styles.menuAction}
+                      onClick={() => {
+                        setSelectedFriend(f);
+                        setOpenInfo(true);
+                        setOpenMenu(null);
+                      }}
+                    >
+                      Xem thông tin
+                    </div>
 
-                    <div className={styles.menuAction}>Đổi tên gợi ý</div>
-                    <div className={styles.menuAction}>Chặn người này</div>
-                    <div className={`${styles.menuAction} ${styles.danger}`}>
+                    <div
+                      className={styles.menuAction}
+                      onClick={() => {
+                        setSelectedFriend(f);
+                        setOpenRename(true);
+                        setOpenMenu(null);
+                      }}
+                    >
+                      Đổi tên gợi ý
+                    </div>
+
+                    <div
+                      className={`${styles.menuAction} ${styles.danger}`}
+                      onClick={() => {
+                        setSelectedFriend(f);
+                        setOpenDelete(true);
+                        setOpenMenu(null);
+                      }}
+                    >
                       Xóa bạn
                     </div>
                   </div>
@@ -76,10 +97,28 @@ export const FriendListPage = () => {
 
       {/* bật modal account */}
       <FriendInfoModal
-  open={openInfo}
-  onClose={() => setOpenInfo(false)}
-  friend={selectedFriend}
-/>
+        open={openInfo}
+        onClose={() => setOpenInfo(false)}
+        friend={selectedFriend}
+      />
+
+      {/* đổi tên gợi ý */}
+      <RenameFriendModal
+        open={openRename}
+        onClose={() => setOpenRename(false)}
+        friend={selectedFriend}
+      />
+
+      {/* xóa bạn */}
+      <DeleteFriendModal
+        open={openDelete}
+        onClose={() => setOpenDelete(false)}
+        friend={selectedFriend}
+        onConfirm={() => {
+          console.log("Đã xóa bạn:", selectedFriend.name);
+          setOpenDelete(false);
+        }}
+      />
     </>
   );
 };

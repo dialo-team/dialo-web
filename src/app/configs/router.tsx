@@ -6,6 +6,7 @@ import { ChatPage } from "../modules/social/chatPage/chatPage";
 import { FriendsPage } from "../modules/social/friendPage/FriendsPage";
 import { FriendListPage } from "../modules/social/friendPage/listFriend/FriendListPage";
 import { GroupListPage } from "../modules/social/friendPage/groupList/GroupListPage";
+import { FriendSearchPage } from "../modules/social/friendPage/searchAndAddFriend/FriendSearchPage";
 
 const adminRoute: RouteObject[] = [];
 
@@ -50,6 +51,10 @@ const guestRoute = [
             path: "groupInvite",
             element: <div>Lời mời vào nhóm</div>,
           },
+          {
+            path: "search",
+            element: <FriendSearchPage />
+          }
         ],
       },
     ],
