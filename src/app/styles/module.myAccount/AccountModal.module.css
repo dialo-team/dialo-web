@@ -1,0 +1,113 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal {
+  width: 420px;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
+  color: #000;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid #eee;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+/* Cover */
+.cover {
+  height: 140px;
+  background: url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee")
+    center/cover no-repeat;
+}
+
+/* Avatar + Name */
+.profileSection {
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  margin-top: -40px; /* kéo lên đè cover */
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid #fff;
+  background: #fff;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.name {
+  margin-left: 10px;
+  font-weight: 600;
+  font-size: 18px;
+  margin-top: 32px;
+}
+
+/* Info */
+.infoSection {
+  padding: 20px;
+  margin-top: 10px;
+  box-shadow: 0 -6px 8px -6px rgba(7, 7, 7, 0.2);
+}
+
+.infoSection h4 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 14px;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.updateBtn {
+  width: 100%;
+  padding: 10px;
+  margin-top: 15px;
+  background: #f2f3f5;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.updateBtn:hover {
+  background: #e4e6eb;
+}

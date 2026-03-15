@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import type { RouteObject } from "react-router-dom";
 import { LoginPage } from "../modules/auth/LoginPage";
+import { HomePage } from "../modules/HomePage";
 
 const adminRoute: RouteObject[] = [];
 
@@ -15,6 +16,10 @@ const guestRoute = [
   {
     path: "/",
     element: <LoginPage />,
+  },
+  {
+    path: "/home",
+    element: <HomePage />,
   },
 ];
 
