@@ -2,13 +2,15 @@ import { useState } from "react";
 import { MessageCircle, Users, Settings } from "lucide-react";
 import { SettingsPopup } from "./SettingsPopup";
 import styles from "../../styles/components/Sidebar.module.css";
+import { useNavigate } from "react-router-dom";
 
 export const Sidebar = () => {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <div className={styles.sidebar}>
-      
+
       <div className={styles.sidebarTop}>
         <img
           src="https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180"
@@ -16,12 +18,14 @@ export const Sidebar = () => {
           alt="avatar"
         />
 
-        <button className={styles.sidebarBtn}>
-          <MessageCircle size={26} />
+        {/* nút chat */}
+        <button className={styles.sidebarBtn} onClick={() => navigate("/home/chat")}>
+          <MessageCircle size={24} />
         </button>
 
-        <button className={styles.sidebarBtn}>
-          <Users size={26} />
+        {/* bạn bè */}
+        <button className={styles.sidebarBtn} onClick={() => navigate("/home/friendHome")}>
+          <Users size={24} />
         </button>
       </div>
 
@@ -30,11 +34,13 @@ export const Sidebar = () => {
           onClick={() => setOpen(!open)}
           className={styles.sidebarBtn}
         >
-          <Settings size={26} />
+          <Settings size={24} />
         </button>
       </div>
 
       <SettingsPopup open={open} onClose={() => setOpen(false)} />
+
+     
     </div>
   );
 };

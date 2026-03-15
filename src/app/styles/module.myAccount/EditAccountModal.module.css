@@ -39,6 +39,33 @@
   border: 1px solid #ddd;
 }
 
+.dateWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.dateInput {
+  width: 100%;
+  padding: 8px 35px 8px 8px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.calendarIcon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.hiddenDate {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .saveBtn {
   margin-top: 15px;
   padding: 10px;
