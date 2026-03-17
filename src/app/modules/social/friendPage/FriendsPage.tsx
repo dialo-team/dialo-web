@@ -5,13 +5,11 @@ import styles from "../../../styles/module.social/FriendsPage/FriendsPage.module
 export const FriendsPage = () => {
   return (
     <div className={styles.container}>
-      
       <FriendSidebar />
 
       <div className={styles.right}>
         <Outlet />
       </div>
-
     </div>
   );
 };

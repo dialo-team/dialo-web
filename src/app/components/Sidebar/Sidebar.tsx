@@ -10,7 +10,6 @@ export const Sidebar = () => {
 
   return (
     <div className={styles.sidebar}>
-
       <div className={styles.sidebarTop}>
         <img
           src="https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180"
@@ -19,28 +18,29 @@ export const Sidebar = () => {
         />
 
         {/* nút chat */}
-        <button className={styles.sidebarBtn} onClick={() => navigate("/home/chat")}>
+        <button
+          className={styles.sidebarBtn}
+          onClick={() => navigate("/home/chat")}
+        >
           <MessageCircle size={24} />
         </button>
 
         {/* bạn bè */}
-        <button className={styles.sidebarBtn} onClick={() => navigate("/home/friendHome")}>
+        <button
+          className={styles.sidebarBtn}
+          onClick={() => navigate("/home/friendHome")}
+        >
           <Users size={24} />
         </button>
       </div>
 
       <div className={styles.sidebarBottom}>
-        <button
-          onClick={() => setOpen(!open)}
-          className={styles.sidebarBtn}
-        >
+        <button onClick={() => setOpen(!open)} className={styles.sidebarBtn}>
           <Settings size={24} />
         </button>
       </div>
 
       <SettingsPopup open={open} onClose={() => setOpen(false)} />
-
-     
     </div>
   );
 };

@@ -1,5 +1,4 @@
-.container{
-  
+.container {
 }
 
 h2 {
@@ -13,55 +12,55 @@ span {
   font-size: 14px;
 }
 
-.userItem{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:12px;
-  border-bottom:1px solid #eee;
+.userItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid #eee;
   margin-top: 15px;
 }
 
-.userInfo{
-  display:flex;
-  align-items:center;
-  gap:10px;
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.userInfo img{
-  width:40px;
-  height:40px;
-  border-radius:50%;
+.userInfo img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
 }
 
-.name{
-  display:block;
-  font-weight:500;
+.name {
+  display: block;
+  font-weight: 500;
 }
 
-.phone{
-  font-size:13px;
-  color:#666;
+.phone {
+  font-size: 13px;
+  color: #666;
 }
 
-.actions{
-  display:flex;
-  gap:8px;
+.actions {
+  display: flex;
+  gap: 8px;
 }
 
-.messageBtn{
-  background:#e4e6eb;
-  border:none;
-  padding:6px 14px;
-  border-radius:6px;
-  cursor:pointer;
+.messageBtn {
+  background: #e4e6eb;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
-.addBtn{
-  background:#2680f6;
-  color:white;
-  border:none;
-  padding:6px 14px;
-  border-radius:6px;
-  cursor:pointer;
+.addBtn {
+  background: #2680f6;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
 }

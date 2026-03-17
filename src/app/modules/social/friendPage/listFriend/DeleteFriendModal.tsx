@@ -7,15 +7,17 @@ interface Props {
   onConfirm: () => void;
 }
 
-export const DeleteFriendModal = ({ open, onClose, friend, onConfirm }: Props) => {
+export const DeleteFriendModal = ({
+  open,
+  onClose,
+  friend,
+  onConfirm,
+}: Props) => {
   if (!open || !friend) return null;
 
   return (
     <div className={styles.overlay} onClick={onClose}>
-      <div
-        className={styles.modal}
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <h3 className={styles.title}>Xóa bạn</h3>
 
         <p className={styles.text}>

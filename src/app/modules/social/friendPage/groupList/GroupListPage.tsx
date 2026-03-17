@@ -5,8 +5,18 @@ import { LeaveGroupModal } from "./LeaveGroupModal";
 
 export const GroupListPage = () => {
   const friends = [
-    { id: 1, name: "TKMT", avatar: "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180" },
-    { id: 2, name: "Di động", avatar: "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180" }
+    {
+      id: 1,
+      name: "TKMT",
+      avatar:
+        "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180",
+    },
+    {
+      id: 2,
+      name: "Di động",
+      avatar:
+        "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180",
+    },
   ];
 
   const [openMenu, setOpenMenu] = useState<number | null>(null);
@@ -20,7 +30,7 @@ export const GroupListPage = () => {
         <span>Nhóm (45)</span>
       </div>
 
-      <div className={styles.contentBox} >
+      <div className={styles.contentBox}>
         <div className={styles.searchBoxRight}>
           <Search size={16} />
           <input placeholder="Tìm bạn bè..." />
@@ -35,18 +45,14 @@ export const GroupListPage = () => {
               </div>
 
               <div className={styles.menuWrapper}>
-
                 <MoreHorizontal
                   size={18}
                   className={styles.moreIcon}
-                  onClick={() =>
-                    setOpenMenu(openMenu === f.id ? null : f.id)
-                  }
+                  onClick={() => setOpenMenu(openMenu === f.id ? null : f.id)}
                 />
 
                 {openMenu === f.id && (
                   <div className={styles.actionMenu}>
-
                     <div
                       className={styles.menuOverlay}
                       onClick={() => setOpenMenu(null)}
@@ -62,10 +68,8 @@ export const GroupListPage = () => {
                     >
                       Rời nhóm
                     </div>
-
                   </div>
                 )}
-
               </div>
             </div>
           ))}

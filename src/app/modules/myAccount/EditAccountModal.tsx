@@ -67,12 +67,7 @@ export const EditAccountModal = ({ open, onClose }: Props) => {
     validateField("dob", dob);
     validateField("phone", phone);
 
-    if (
-      name.trim() &&
-      dob &&
-      dob <= today &&
-      phone.length === 10
-    ) {
+    if (name.trim() && dob && dob <= today && phone.length === 10) {
       onClose();
     }
   };
@@ -140,7 +135,9 @@ export const EditAccountModal = ({ open, onClose }: Props) => {
                   readOnly
                   className={styles.dateInput}
                   onClick={() =>
-                    (document.getElementById("dobPicker") as HTMLInputElement)?.showPicker()
+                    (
+                      document.getElementById("dobPicker") as HTMLInputElement
+                    )?.showPicker()
                   }
                 />
 
@@ -148,7 +145,9 @@ export const EditAccountModal = ({ open, onClose }: Props) => {
                 <span
                   className={styles.calendarIcon}
                   onClick={() =>
-                    (document.getElementById("dobPicker") as HTMLInputElement)?.showPicker()
+                    (
+                      document.getElementById("dobPicker") as HTMLInputElement
+                    )?.showPicker()
                   }
                 >
                   <Calendar size={18} />
@@ -175,16 +174,9 @@ export const EditAccountModal = ({ open, onClose }: Props) => {
                   <span className={styles.error}> {errors.phone}</span>
                 )}
               </label>
-              <input
-                type="text"
-                value={phone}
-                onChange={handlePhoneChange}
-              />
+              <input type="text" value={phone} onChange={handlePhoneChange} />
 
-              <button
-                className={styles.saveBtn}
-                onClick={handleSave}
-              >
+              <button className={styles.saveBtn} onClick={handleSave}>
                 Lưu thay đổi
               </button>
             </div>

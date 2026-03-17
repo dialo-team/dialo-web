@@ -15,20 +15,17 @@ export const FriendSearchPage = () => {
       id: 1,
       name: "Nguyễn Văn A",
       phone: "0901234567",
-      avatar: "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa"
+      avatar: "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
     },
     {
       id: 2,
       name: "Trần Văn B",
       phone: "0908888888",
-      avatar: "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa"
-    }
+      avatar: "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
+    },
   ];
 
-  const result = users.filter((u) =>
-    u.phone.includes(phone || "")
-  );
-
+  const result = users.filter((u) => u.phone.includes(phone || ""));
 
   return (
     <>
@@ -38,7 +35,6 @@ export const FriendSearchPage = () => {
 
         {result.map((u) => (
           <div key={u.id} className={styles.userItem}>
-
             <div className={styles.userInfo}>
               <img src={u.avatar} />
               <div>
@@ -48,9 +44,7 @@ export const FriendSearchPage = () => {
             </div>
 
             <div className={styles.actions}>
-              <button className={styles.messageBtn}>
-                Nhắn tin
-              </button>
+              <button className={styles.messageBtn}>Nhắn tin</button>
 
               <button
                 className={styles.addBtn}
@@ -62,7 +56,6 @@ export const FriendSearchPage = () => {
                 Kết bạn
               </button>
             </div>
-
           </div>
         ))}
       </div>

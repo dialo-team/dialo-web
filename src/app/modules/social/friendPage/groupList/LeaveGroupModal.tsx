@@ -12,11 +12,7 @@ export const LeaveGroupModal = ({ open, onClose, group, onConfirm }: Props) => {
 
   return (
     <div className={styles.overlay} onClick={onClose}>
-      <div
-        className={styles.modal}
-        onClick={(e) => e.stopPropagation()}
-      >
-
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <h3 className={styles.title}>Rời nhóm</h3>
 
         <p className={styles.text}>
@@ -32,7 +28,6 @@ export const LeaveGroupModal = ({ open, onClose, group, onConfirm }: Props) => {
             Rời nhóm
           </button>
         </div>
-
       </div>
     </div>
   );

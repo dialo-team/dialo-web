@@ -20,12 +20,11 @@ export const RenameFriendModal = ({ open, onClose, friend }: Props) => {
 
   const handleConfirm = () => {
     onClose();
-  }
+  };
 
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-
         <h3 className={styles.title}>Đổi tên gợi ý</h3>
 
         <div className={styles.avatarBox}>
@@ -51,7 +50,6 @@ export const RenameFriendModal = ({ open, onClose, friend }: Props) => {
             Xác nhận
           </button>
         </div>
-
       </div>
     </div>
   );

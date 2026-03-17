@@ -1,0 +1,138 @@
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: white;
+  height: 64px;
+  padding-left: 20px;
+}
+.header h2 {
+  padding: 0;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500px;
+}
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  overflow-y: auto;
+  height: calc(100vh - 64px);
+}
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: black;
+  margin: 0;
+}
+.groupList {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  overflow: visible;
+  padding: 0;
+  margin: 0;
+}
+.groupCard {
+  list-style: none;
+  border-radius: 6px;
+  background-color: #ffffff;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: visible;
+}
+.groupCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.groupAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.groupInfo {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.groupName {
+  font-size: 16px;
+  font-weight: 500;
+  color: black;
+}
+.groupMeta {
+  font-size: 13px;
+  color: #65676b;
+}
+.groupActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.btn {
+  border-radius: 6px;
+  cursor: pointer;
+  height: 40px;
+  padding: 0px 16px;
+  background-color: rgb(235, 236, 240);
+}
+.btn:hover {
+  opacity: 0.7;
+}
+.primaryBtn:hover {
+  opacity: 0.7;
+}
+.primaryBtn {
+  composes: btn;
+  background-color: #e5f1ff;
+  color: #0045ad;
+}
+.primaryBtn:hover {
+  opacity: 0.7;
+}
+
+/* Empty state */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 10px;
+  height: 100%;
+}
+.emptyIcon {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: #dce0ed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.emptyTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1c1e21;
+  margin: 0;
+}
+.emptySubText {
+  font-size: 13px;
+  color: #65676b;
+  margin: 0;
+}
+.learnMore {
+  color: #1877f2;
+  cursor: pointer;
+}
+.learnMore:hover {
+  text-decoration: underline;
+}

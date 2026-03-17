@@ -15,12 +15,12 @@ export const FriendSidebar = () => {
 
   return (
     <div className={styles.left}>
-
       {/* search */}
       <div className={styles.searchBoxLeft}>
         <Search size={16} />
         <input
-          placeholder="Tìm kiếm..." value={keyword}
+          placeholder="Tìm kiếm..."
+          value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
           onKeyDown={handleSearch}
         />

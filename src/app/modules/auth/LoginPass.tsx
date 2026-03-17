@@ -22,7 +22,6 @@ export const LoginPass = ({
     navigate("/home");
   };
 
-
   return (
     <>
       <div className={styles.form}>
@@ -60,7 +59,9 @@ export const LoginPass = ({
               )}
             </button>
           </div>
-          <button className={styles.btnLogin} onClick={handleLogin} >Đăng nhập với mật khẩu</button>
+          <button className={styles.btnLogin} onClick={handleLogin}>
+            Đăng nhập với mật khẩu
+          </button>
           <button className={styles.btnForgotPass} onClick={onSwitchForgot}>
             Quên mật khẩu
           </button>{" "}

@@ -7,10 +7,30 @@ import { FriendInfoModal } from "./FriendInfoModal";
 
 export const FriendListPage = () => {
   const friends = [
-    { id: 1, name: "Nguyễn Văn A", avatar: "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180" },
-    { id: 2, name: "Trần Thị B", avatar: "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180" },
-    { id: 3, name: "Nguyễn Thị c", avatar: "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180" },
-    { id: 4, name: "Trần Thị D", avatar: "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180" }
+    {
+      id: 1,
+      name: "Nguyễn Văn A",
+      avatar:
+        "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180",
+    },
+    {
+      id: 2,
+      name: "Trần Thị B",
+      avatar:
+        "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180",
+    },
+    {
+      id: 3,
+      name: "Nguyễn Thị c",
+      avatar:
+        "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180",
+    },
+    {
+      id: 4,
+      name: "Trần Thị D",
+      avatar:
+        "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180",
+    },
   ];
   const [openMenu, setOpenMenu] = useState<number | null>(null);
   const [openInfo, setOpenInfo] = useState(false);
@@ -34,25 +54,20 @@ export const FriendListPage = () => {
         <div className={styles.friendList}>
           {friends.map((f) => (
             <div key={f.id} className={styles.friendItem}>
-
               <div className={styles.friendInfo}>
                 <img src={f.avatar} />
                 <span>{f.name}</span>
               </div>
 
               <div className={styles.menuWrapper}>
-
                 <MoreHorizontal
                   size={18}
                   className={styles.moreIcon}
-                  onClick={() =>
-                    setOpenMenu(openMenu === f.id ? null : f.id)
-                  }
+                  onClick={() => setOpenMenu(openMenu === f.id ? null : f.id)}
                 />
 
                 {openMenu === f.id && (
                   <div className={styles.actionMenu}>
-                    
                     <div
                       className={styles.menuAction}
                       onClick={() => {
@@ -87,9 +102,7 @@ export const FriendListPage = () => {
                     </div>
                   </div>
                 )}
-
               </div>
-
             </div>
           ))}
         </div>

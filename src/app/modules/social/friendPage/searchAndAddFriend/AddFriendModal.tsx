@@ -10,7 +10,7 @@ interface Props {
 
 export const AddFriendModal = ({ open, onClose, user, onSend }: Props) => {
   const [message, setMessage] = useState(
-    user ? "Xin chào, mình là Trúc. Kết bạn với mình nhé!" : ""
+    user ? "Xin chào, mình là Trúc. Kết bạn với mình nhé!" : "",
   );
 
   useEffect(() => {
@@ -23,10 +23,7 @@ export const AddFriendModal = ({ open, onClose, user, onSend }: Props) => {
 
   return (
     <div className={styles.overlay} onClick={onClose}>
-      <div
-        className={styles.modal}
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <h3 className={styles.title}>Gửi lời mời kết bạn</h3>
 
         <div className={styles.userBox}>
