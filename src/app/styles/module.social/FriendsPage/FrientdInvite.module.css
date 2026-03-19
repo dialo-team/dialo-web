@@ -1,4 +1,4 @@
-.header {
+/* .header {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -11,7 +11,17 @@
   margin: 0;
   font-size: 16px;
   font-weight: 500px;
+} */
+ .header {
+  margin-bottom: 10px;
 }
+
+.header h2 {
+  font-size: 25px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
 .mainInvite {
   display: flex;
   flex-direction: column;
@@ -140,7 +150,7 @@
   align-items: center;
   gap: 6px;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 550;
   color: black;
   margin: 0;
 }

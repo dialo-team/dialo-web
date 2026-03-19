@@ -1,7 +1,7 @@
 import { useSearchParams } from "react-router-dom";
 import styles from "../../../../styles/module.social/FriendsPage/searchAndAddFriend/FriendSearchPage.module.css";
 import { useState } from "react";
-import { AddFriendModal } from "./AddFriendModal";
+import { InviteFriendModal } from "./InviteFriendModal";
 
 export const FriendSearchPage = () => {
   const [params] = useSearchParams();
@@ -60,7 +60,7 @@ export const FriendSearchPage = () => {
         ))}
       </div>
 
-      <AddFriendModal
+      <InviteFriendModal
         open={openAdd}
         onClose={() => setOpenAdd(false)}
         user={selectedUser}

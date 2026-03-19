@@ -2,10 +2,15 @@ import { Search, User, UsersRound, UserPlus, UserPlus2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import styles from "../../../styles/module.social/FriendsPage/FriendSidebar.module.css";
 import { useState } from "react";
+import addGroupIcon from "../../../../assets/add_group.jpg";
+import AddFriendModal from "./searchAndAddFriend/AddFriendModal";
+import CreateGroupModal from "./searchAndAddFriend/CreateGroupModal";
 
 export const FriendSidebar = () => {
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
+  const [openAddFriend, setOpenAddFriend] = useState(false);
+  const [openCreateGroup, setOpenCreateGroup] = useState(false);
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && keyword.trim() !== "") {
@@ -15,15 +20,31 @@ export const FriendSidebar = () => {
 
   return (
     <div className={styles.left}>
-      {/* search */}
-      <div className={styles.searchBoxLeft}>
-        <Search size={16} />
-        <input
-          placeholder="Tìm kiếm..."
-          value={keyword}
-          onChange={(e) => setKeyword(e.target.value)}
-          onKeyDown={handleSearch}
-        />
+      <div className={styles.searchWrapper}>
+        {/* ô search */}
+        <div className={styles.searchBoxLeft}>
+          <Search size={16} />
+          <input
+            placeholder="Tìm kiếm..."
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            onKeyDown={handleSearch}
+          />
+        </div>
+
+        {/* icon bên ngoài */}
+        <div className={styles.actions}>
+          <UserPlus
+            size={20}
+            className={styles.actionIcon}
+            onClick={() => setOpenAddFriend(true)}
+          />
+          <img
+            src={addGroupIcon}
+            className={styles.actionIcon}
+            onClick={() => setOpenCreateGroup(true)}
+          />
+        </div>
       </div>
 
       {/* menu */}
@@ -56,10 +77,23 @@ export const FriendSidebar = () => {
           className={styles.menuItem}
           onClick={() => navigate("/home/friendHome/groupInvite")}
         >
-          <UserPlus2 size={18} />
+          <img
+            src={addGroupIcon}
+            alt="group-plus"
+            className={styles.icon}
+          />
           <span>Lời mời vào nhóm</span>
         </div>
       </div>
+
+      {/* modal */}
+      {openAddFriend && (
+        <AddFriendModal onClose={() => setOpenAddFriend(false)} />
+      )}
+
+      {openCreateGroup && (
+        <CreateGroupModal onClose={() => setOpenCreateGroup(false)} />
+      )}
     </div>
   );
 };

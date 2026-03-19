@@ -129,10 +129,14 @@ export const FriendInvite = () => {
   return (
     <>
       <div className={styles.header}>
+        <h2>Lời mời kết bạn</h2>
+      </div>
+
+      {/* <div className={styles.header}>
         <ArrowLeft size={16} />
         <UserPlus size={16} />
         <h2>Lời mời kết bạn</h2>
-      </div>
+      </div> */}
 
       <div className={styles.mainInvite}>
         {/* Lời mời đã nhận */}

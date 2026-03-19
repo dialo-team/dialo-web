@@ -35,16 +35,22 @@ export const GroupInvite = () => {
 
   return (
     <>
-      <div className={styles.header}>
+      {/* <div className={styles.header}>
         <ArrowLeft size={16} />
         <UserPlus size={16} />
         <h2>Lời mời vào nhóm</h2>
+      </div> */}
+
+      <div className={styles.header}>
+        <h2>Lời mời vào nhóm</h2>
+        <span>Lời mời đã nhận được (6)</span>
       </div>
+      
 
       <div className={styles.mainContent}>
-        <p className={styles.sectionHeader}>
+        {/* <p className={styles.sectionHeader}>
           Lời mời đã nhận được ({groupInvites.length})
-        </p>
+        </p> */}
 
         {groupInvites.length === 0 ? (
           <div className={styles.emptyState}>
