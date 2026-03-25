@@ -23,8 +23,7 @@ export const ChangePasswordModal = ({ open, onClose }: Props) => {
     confirm: "",
   });
 
-  const passwordRegex =
-    /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+  const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
 
   // Validate realtime từng field
   const validateField = (field: string, value: string) => {
@@ -40,8 +39,7 @@ export const ChangePasswordModal = ({ open, onClose }: Props) => {
       if (!value) {
         message = "Mật khẩu mới không được rỗng";
       } else if (!passwordRegex.test(value)) {
-        message =
-          "Tối thiểu 8 ký tự, 1 chữ hoa, 1 số, 1 ký tự đặc biệt";
+        message = "Tối thiểu 8 ký tự, 1 chữ hoa, 1 số, 1 ký tự đặc biệt";
       }
     }
 
@@ -89,7 +87,9 @@ export const ChangePasswordModal = ({ open, onClose }: Props) => {
           >
             <div className={styles.header}>
               <h3>Đổi mật khẩu</h3>
-              <button onClick={onClose} className={styles.closeBtn}>✕</button>
+              <button onClick={onClose} className={styles.closeBtn}>
+                ✕
+              </button>
             </div>
 
             <div className={styles.form}>
@@ -97,10 +97,7 @@ export const ChangePasswordModal = ({ open, onClose }: Props) => {
               <label>
                 Mật khẩu hiện tại
                 {errors.current && (
-                  <span className={styles.error}>
-                    {" "}
-                    {errors.current}
-                  </span>
+                  <span className={styles.error}> {errors.current}</span>
                 )}
               </label>
               <div className={styles.passwordWrapper}>
@@ -126,10 +123,7 @@ export const ChangePasswordModal = ({ open, onClose }: Props) => {
               <label>
                 Mật khẩu mới
                 {errors.newPass && (
-                  <span className={styles.error}>
-                    {" "}
-                    {errors.newPass}
-                  </span>
+                  <span className={styles.error}> {errors.newPass}</span>
                 )}
               </label>
               <div className={styles.passwordWrapper}>
@@ -155,10 +149,7 @@ export const ChangePasswordModal = ({ open, onClose }: Props) => {
               <label>
                 Nhập lại mật khẩu
                 {errors.confirm && (
-                  <span className={styles.error}>
-                    {" "}
-                    {errors.confirm}
-                  </span>
+                  <span className={styles.error}> {errors.confirm}</span>
                 )}
               </label>
               <div className={styles.passwordWrapper}>
@@ -180,10 +171,7 @@ export const ChangePasswordModal = ({ open, onClose }: Props) => {
                 </button>
               </div>
 
-              <button
-                className={styles.saveBtn}
-                onClick={handleSave}
-              >
+              <button className={styles.saveBtn} onClick={handleSave}>
                 Lưu thay đổi
               </button>
             </div>

@@ -1,0 +1,81 @@
+* {
+}
+.left {
+  width: 22%;
+  height: 100%;
+  border-right: 1px solid #e4e6eb;
+  padding: 18px;
+  background: white;
+  align-items: stretch;
+}
+/* wrapper chứa search + icon */
+.searchWrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+/* ô search */
+.searchBoxLeft {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #e4e6eb;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #f0f2f5;
+}
+
+.searchBoxLeft input {
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+}
+
+/* icon bên phải */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+  
+.actionIcon {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  object-fit: contain;
+}
+
+.actionIcon:hover {
+  opacity: 0.7;
+}
+
+/* MENU */
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.menuItem:hover {
+  background: #f0f2f5;
+}
+
+.icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain; 
+}
