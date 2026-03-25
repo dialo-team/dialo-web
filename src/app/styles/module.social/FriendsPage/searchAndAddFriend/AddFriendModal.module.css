@@ -1,0 +1,108 @@
+/* ===== OVERLAY ===== */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ===== MODAL ===== */
+.modal {
+  width: 400px;
+  background: white;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ===== TITLE ===== */
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  padding: 16px;
+  border-bottom: 1px solid #eee;
+}
+
+/* ===== INPUT ===== */
+.input {
+  margin: 16px;
+  padding: 10px 12px;
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+  outline: none;
+  font-size: 14px;
+}
+
+.input:focus {
+  border-color: #2680f6;
+}
+
+/* ===== ACTIONS ===== */
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 12px 16px;
+  border-top: 1px solid #eee;
+}
+
+/* ===== BUTTON ===== */
+.cancel {
+  background: #e4e6eb;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.add {
+  background: #2680f6;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.add:hover {
+  opacity: 0.9;
+}
+
+/* ===== RESULT LIST ===== */
+.resultList {
+  max-height: 200px;
+  overflow-y: auto;
+  margin: 10px 16px;
+}
+
+.resultItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+}
+
+.resultItem:hover {
+  background: #f5f5f5;
+  border-radius: 6px;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.addBtn {
+  margin-left: auto;
+  background: #2680f6;
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}

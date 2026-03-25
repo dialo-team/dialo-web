@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import styles from "../../styles/module.myAccount/EditAccountModal.module.css";
 import { useState } from "react";
+import { Calendar } from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -66,14 +67,15 @@ export const EditAccountModal = ({ open, onClose }: Props) => {
     validateField("dob", dob);
     validateField("phone", phone);
 
-    if (
-      name.trim() &&
-      dob &&
-      dob <= today &&
-      phone.length === 10
-    ) {
+    if (name.trim() && dob && dob <= today && phone.length === 10) {
       onClose();
     }
+  };
+
+  const formatDate = (date: string) => {
+    if (!date) return "";
+    const [year, month, day] = date.split("-");
+    return `${day}/${month}/${year}`;
   };
 
   return (
@@ -125,15 +127,45 @@ export const EditAccountModal = ({ open, onClose }: Props) => {
                   <span className={styles.error}> {errors.dob}</span>
                 )}
               </label>
-              <input
-                type="date"
-                value={dob}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setDob(value);
-                  validateField("dob", value);
-                }}
-              />
+              <div className={styles.dateWrapper}>
+                <input
+                  type="text"
+                  value={formatDate(dob)}
+                  placeholder="dd/mm/yyyy"
+                  readOnly
+                  className={styles.dateInput}
+                  onClick={() =>
+                    (
+                      document.getElementById("dobPicker") as HTMLInputElement
+                    )?.showPicker()
+                  }
+                />
+
+                {/* icon lịch */}
+                <span
+                  className={styles.calendarIcon}
+                  onClick={() =>
+                    (
+                      document.getElementById("dobPicker") as HTMLInputElement
+                    )?.showPicker()
+                  }
+                >
+                  <Calendar size={18} />
+                </span>
+
+                <input
+                  id="dobPicker"
+                  type="date"
+                  value={dob}
+                  max={today}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setDob(value);
+                    validateField("dob", value);
+                  }}
+                  className={styles.hiddenDate}
+                />
+              </div>
 
               {/* SĐT */}
               <label>
@@ -142,16 +174,9 @@ export const EditAccountModal = ({ open, onClose }: Props) => {
                   <span className={styles.error}> {errors.phone}</span>
                 )}
               </label>
-              <input
-                type="text"
-                value={phone}
-                onChange={handlePhoneChange}
-              />
+              <input type="text" value={phone} onChange={handlePhoneChange} />
 
-              <button
-                className={styles.saveBtn}
-                onClick={handleSave}
-              >
+              <button className={styles.saveBtn} onClick={handleSave}>
                 Lưu thay đổi
               </button>
             </div>

@@ -1,0 +1,120 @@
+/* HEADER */
+.header {
+  margin-bottom: 10px;
+}
+
+.header h2 {
+  font-size: 25px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.header span {
+  color: #65676b;
+  font-size: 14px;
+}
+
+.contentBox {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  margin: 0px 20px;
+}
+
+/* SEARCH */
+.searchBoxRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #e4e6eb;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  background: white;
+}
+
+.searchBoxRight input {
+  border: none;
+  outline: none;
+  width: 100%;
+}
+
+/* LIST */
+.friendList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.friendItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.friendItem:hover {
+  background: #f0f2f5;
+}
+
+.friendInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.friendItem img {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+}
+
+.moreIcon {
+  cursor: pointer;
+}
+
+/* POPUP MENU */
+.menuWrapper {
+  position: relative;
+}
+
+.actionMenu {
+  position: absolute;
+  right: 0;
+  top: 24px;
+  background: white;
+  border: 1px solid #e4e6eb;
+  border-radius: 8px;
+  width: 160px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  z-index: 10;
+}
+
+.menuAction {
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.menuAction:hover {
+  background: #f0f2f5;
+}
+
+.danger {
+  color: #e41e3f;
+  font-weight: 500;
+}
+
+/* dùng để tắt modal thì bấm ở vùng ngoài modal */
+.menuOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+}
+
+.actionMenu {
+  position: absolute;
+  z-index: 2;
+}
