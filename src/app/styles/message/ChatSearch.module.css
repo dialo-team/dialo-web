@@ -1,0 +1,124 @@
+/* Panel tổng */
+.panel {
+  width: 30%;
+  background: #f7f7f7;
+  border-left: 1px solid #ddd;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0; /* giống panel info */
+  overflow-y: hidden;
+}
+
+/* Tiêu đề */
+.header {
+  font-size: 16px;
+  font-weight: 600;
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+  text-align: center;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Close button */
+.closeBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* Search Box */
+.searchBox {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  gap: 8px;
+  background: #fff;
+  border-bottom: 8px solid #f0f2f5; /* giống section top */
+}
+
+.searchBox input {
+  flex: 1;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 6px 10px;
+  outline: none;
+}
+
+/* Filters */
+.filters {
+  background: #fff;
+  padding: 12px 15px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  border-bottom: 8px solid #f0f2f5;
+}
+
+.filters select {
+  margin-left: 6px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+/* Empty state */
+.empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #888;
+  text-align: center;
+  gap: 12px;
+  background: #fff;
+  padding: 12px 15px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+}
+
+/* Kết quả tìm kiếm */
+.results {
+  flex: 1;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 8px;
+  padding: 12px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Item trong kết quả */
+.item {
+  font-size: 14px;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 4px;
+}
+
+.item:hover {
+  background-color: #f0f2f5;
+  text-decoration: underline;
+}
+
+/* Xem thêm button */
+.showMore {
+  color: #000;
+  font-size: 13px;
+  cursor: pointer;
+  background-color: #eae9e9;
+  border: 1px solid #ccc;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-top: 4px;
+  width: 100%;
+}
+
+.showMore:hover {
+  background-color: #d5d5d5;
+}

@@ -1,0 +1,10 @@
+.container {
+  display: flex;
+  height: 100%;
+  background: #f5f7fb;
+}
+
+.right {
+  flex: 1;
+  background: #f5f7fb;
+}
