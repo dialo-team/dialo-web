@@ -1,6 +1,12 @@
+.overlay {
+  width: clamp(280px, 30%, 380px);
+  min-width: 0;
+  flex-shrink: 0;
+}
+
 /* Panel tổng */
 .panel {
-  width: 30%;
+  width: 100%;
   background: #f7f7f7;
   border-left: 1px solid #ddd;
   height: 100%;
@@ -15,9 +21,22 @@
   font-size: 16px;
   font-weight: 600;
   padding: 15px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   background: #fff;
   border-bottom: 1px solid #ddd;
-  text-align: center;
+}
+
+.closeBtn {
+  display: none;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 10px 12px;
 }
 
 /* Thông tin user */
@@ -103,4 +122,28 @@
   border: none;
   cursor: pointer;
   padding: 4px 8px;
+}
+
+@media (max-width: 768px) {
+  .overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    z-index: 30;
+    background: rgba(17, 24, 39, 0.35);
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .panel {
+    width: min(88vw, 360px);
+    border-left: none;
+    box-shadow: -4px 0 16px rgba(0, 0, 0, 0.18);
+  }
+
+  .closeBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
 }

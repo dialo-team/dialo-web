@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ChatInfo } from "./ChatInfo";
 import { ChatSearch } from "./ChatSearch";
 import {
+  ChevronLeft,
   Phone,
   Video,
   Search,
@@ -24,11 +25,12 @@ type Message = {
 };
 
 export const ChatWindow = () => {
-  const { selectedUser } = useOutletContext<{
+  const { selectedUser, onBackToSidebar } = useOutletContext<{
     selectedUser: Friend | null;
+    onBackToSidebar?: () => void;
   }>();
 
-  const [showInfo, setShowInfo] = useState(true);
+  const [showInfo, setShowInfo] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
 
   const messages: Message[] = [
@@ -59,6 +61,14 @@ export const ChatWindow = () => {
         {/* HEADER */}
         <div className={styles.header}>
           <div className={styles.user}>
+            <button
+              className={styles.backButton}
+              onClick={onBackToSidebar}
+              type="button"
+              aria-label="Quay lại danh sách chat"
+            >
+              <ChevronLeft size={20} />
+            </button>
             <img src={selectedUser.avatar} />
             <div>
               <div className={styles.name}>{selectedUser.name}</div>
@@ -130,7 +140,9 @@ export const ChatWindow = () => {
       </div>
 
       {/* RIGHT PANEL */}
-      {showInfo && <ChatInfo user={selectedUser} />}
+      {showInfo && (
+        <ChatInfo user={selectedUser} onClose={() => setShowInfo(false)} />
+      )}
       {showSearch && <ChatSearch onClose={() => setShowSearch(false)} />}
     </div>
   );

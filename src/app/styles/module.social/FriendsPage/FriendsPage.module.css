@@ -2,10 +2,29 @@
   display: flex;
   height: 100%;
   background: #f5f7fb;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .right {
   flex: 1;
   background: #f5f7fb;
-  margin: 15px;
+  margin: 0;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .container {
+    display: block;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .right {
+    margin: 0;
+    height: 100%;
+  }
 }

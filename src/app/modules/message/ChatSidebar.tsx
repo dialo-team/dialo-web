@@ -6,7 +6,6 @@ import AddFriendModal from "../social/friendPage/searchAndAddFriend/AddFriendMod
 import CreateGroupModal from "../social/friendPage/searchAndAddFriend/CreateGroupModal";
 import type { Friend } from "../../types/message/Friend";
 
-
 type Props = {
   onSelectUser: (user: Friend) => void;
 };
@@ -20,26 +19,28 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
     {
       id: 1,
       name: "Nguyễn Văn A",
-      avatar: "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180",
+      avatar:
+        "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180",
       lastMessage: "Ê hôm qua đi đâu vậy?",
     },
     {
       id: 2,
       name: "Trần Thị B",
-      avatar: "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180",
+      avatar:
+        "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180",
       lastMessage: "Mai học không?",
     },
     {
       id: 3,
       name: "Lê Văn C",
-      avatar: "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180",
+      avatar:
+        "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180",
       lastMessage: "Ok bro",
     },
   ]);
 
-  
   const filteredFriends = friends.filter((f) =>
-    f.name.toLowerCase().includes(keyword.toLowerCase())
+    f.name.toLowerCase().includes(keyword.toLowerCase()),
   );
 
   return (
@@ -78,11 +79,7 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
             className={styles.chatItem}
             onClick={() => onSelectUser(f)}
           >
-            <img
-              src={f.avatar}
-              className={styles.avatar}
-              alt={f.name}
-            />
+            <img src={f.avatar} className={styles.avatar} alt={f.name} />
 
             <div className={styles.info}>
               <div className={styles.name}>{f.name}</div>

@@ -1,6 +1,8 @@
 /* Panel tổng */
 .panel {
-  width: 30%;
+  width: clamp(280px, 30%, 380px);
+  min-width: 0;
+  flex-shrink: 0;
   background: #f7f7f7;
   border-left: 1px solid #ddd;
   height: 100%;
@@ -121,4 +123,14 @@
 
 .showMore:hover {
   background-color: #d5d5d5;
+}
+
+@media (max-width: 768px) {
+  .panel {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    z-index: 30;
+    border-left: none;
+  }
 }

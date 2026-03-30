@@ -1,12 +1,15 @@
-* {
-}
 .left {
-  width: 22%;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
   height: 100%;
   border-right: 1px solid #e4e6eb;
   padding: 18px;
   background: white;
   align-items: stretch;
+  box-sizing: border-box;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* ô search */
@@ -58,7 +61,18 @@
 .list {
   display: flex;
   flex-direction: column;
+  flex: 1;
   gap: 6px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .left {
+    border-right: none;
+    border-bottom: 1px solid #e4e6eb;
+    padding: 14px;
+  }
 }
 
 /* từng item chat */

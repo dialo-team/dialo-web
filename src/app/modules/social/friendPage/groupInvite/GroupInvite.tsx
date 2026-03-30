@@ -1,7 +1,13 @@
-import { ArrowLeft, ClipboardList, UserPlus, UserPlus2 } from "lucide-react";
+import { ChevronLeft, ClipboardList } from "lucide-react";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import styles from "../../../../styles/module.social/FriendsPage/GroupInvite.module.css";
 
 export const GroupInvite = () => {
+  const navigate = useNavigate();
+  const { isMobile, onBackToSidebar } = useOutletContext<{
+    isMobile?: boolean;
+    onBackToSidebar?: () => void;
+  }>();
   const groupInvites = [
     {
       id: 1,
@@ -33,6 +39,15 @@ export const GroupInvite = () => {
     },
   ];
 
+  const handleBack = () => {
+    if (isMobile && onBackToSidebar) {
+      onBackToSidebar();
+      return;
+    }
+
+    navigate(-1);
+  };
+
   return (
     <>
       {/* <div className={styles.header}>
@@ -42,12 +57,27 @@ export const GroupInvite = () => {
       </div> */}
 
       <div className={styles.header}>
-        <h2>Lời mời vào nhóm</h2>
-        <span>Lời mời đã nhận được (6)</span>
-      </div>
-      
+        <div className={styles.headerTop}>
+          <button
+            className={styles.backButton}
+            onClick={handleBack}
+            type="button"
+            aria-label="Quay lại"
+          >
+            <ChevronLeft size={24} />
+          </button>
 
-      <div className={styles.mainContent}>
+          <div className={styles.headerTitle}>
+            <ClipboardList size={24} />
+            <h2>Lời mời vào nhóm</h2>
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.section}>
+        <p className={styles.sectionTitle}>Lời mời đã nhận được ({groupInvites.length})</p>
+
+        <div className={styles.mainContent}>
         {/* <p className={styles.sectionHeader}>
           Lời mời đã nhận được ({groupInvites.length})
         </p> */}
@@ -67,13 +97,16 @@ export const GroupInvite = () => {
           </div>
         ) : (
           <ul className={styles.groupList}>
-            {groupInvites.map((item) => (
-              <li key={item.id} className={styles.groupCard}>
+            {groupInvites.map((item, index) => (
+              <li
+                key={`${item.id}-${index}`}
+                className={styles.groupCard}
+              >
                 <div className={styles.groupCardHeader}>
                   <img
                     className={styles.groupAvatar}
                     src={item.avatar}
-                    alt=""
+                    alt={item.name}
                   />
                   <div className={styles.groupInfo}>
                     <span className={styles.groupName}>{item.name}</span>
@@ -88,6 +121,7 @@ export const GroupInvite = () => {
             ))}
           </ul>
         )}
+        </div>
       </div>
     </>
   );

@@ -1,14 +1,40 @@
-* {
-}
 .left {
-  width: 22%;
+  display: flex;
+  flex-direction: column;
+  width: clamp(260px, 28vw, 360px);
   height: 100%;
   border-right: 1px solid #e4e6eb;
   padding: 18px;
   background: white;
   align-items: stretch;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.left::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.left:hover {
+  scrollbar-width: thin;
+  scrollbar-color: #c4cede transparent;
+}
+
+.left:hover::-webkit-scrollbar {
+  width: 8px;
+}
+
+.left:hover::-webkit-scrollbar-thumb {
+  background: #c4cede;
+  border-radius: 999px;
 }
 /* wrapper chứa search + icon */
+
 .searchWrapper {
   display: flex;
   align-items: center;
@@ -78,4 +104,35 @@
   width: 18px;
   height: 18px;
   object-fit: contain; 
+}
+
+@media (max-width: 768px) {
+  .left {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #e4e6eb;
+    padding: 12px;
+  }
+
+  .searchWrapper {
+    gap: 8px;
+  }
+
+  .menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .menuItem {
+    padding: 8px 10px;
+    font-size: 14px;
+    min-width: 0;
+  }
+
+  .menuItem span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
