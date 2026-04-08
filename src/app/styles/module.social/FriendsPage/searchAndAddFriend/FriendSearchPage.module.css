@@ -1,0 +1,96 @@
+.container {
+  min-width: 0;
+}
+
+.container h2 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.container > span {
+  color: #65676b;
+  font-size: 14px;
+}
+
+.userItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  margin-top: 15px;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.userInfo > div {
+  min-width: 0;
+}
+
+.userInfo img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.name {
+  display: block;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.phone {
+  font-size: 13px;
+  color: #666;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.messageBtn {
+  background: #e4e6eb;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.addBtn {
+  background: #2680f6;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .container h2 {
+    font-size: 22px;
+  }
+
+  .userItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .actions {
+    width: 100%;
+  }
+
+  .messageBtn,
+  .addBtn {
+    flex: 1;
+  }
+}

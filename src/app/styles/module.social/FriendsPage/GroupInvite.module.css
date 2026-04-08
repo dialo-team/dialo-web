@@ -1,0 +1,257 @@
+.header {
+  background: #ffffff;
+  border-radius: 0 24px 0 0;
+  padding: 20px 28px;
+  border-bottom: 1px solid #e6e9f0;
+  margin-bottom: 0;
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.headerTitle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  color: #0f2854;
+}
+
+.backButton {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #0f2854;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.backButton:hover {
+  background: #f2f5fb;
+}
+
+.header h2 {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  background: #f3f5fa;
+  padding: 28px;
+  border-radius: 0 0 24px 24px;
+  height: calc(100% - 85px);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sectionTitle {
+  margin: 0 0 18px;
+  color: #1a2d57;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 20px;
+  background: #f3f5fa;
+  border-radius: 0;
+  padding: 28px 32px;
+  overflow-y: auto;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.mainContent::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a2d57;
+  margin: 0 0 10px;
+}
+.groupList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+  overflow: visible;
+  padding: 0;
+  margin: 0;
+}
+.groupCard {
+  list-style: none;
+  border-radius: 12px;
+  background-color: #ffffff;
+  border: 1px solid #e2e7f0;
+  box-shadow: 0 6px 18px rgba(18, 39, 82, 0.06);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: visible;
+}
+.groupCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.groupAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.groupInfo {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+.groupName {
+  font-size: 18px;
+  font-weight: 600;
+  color: #16284d;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.groupMeta {
+  font-size: 13px;
+  color: #6b7a99;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.groupActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.btn {
+  border-radius: 6px;
+  cursor: pointer;
+  height: 40px;
+  padding: 0px 16px;
+  background-color: rgb(235, 236, 240);
+}
+.btn:hover {
+  opacity: 0.7;
+}
+.primaryBtn:hover {
+  opacity: 0.7;
+}
+.primaryBtn {
+  composes: btn;
+  background-color: #e5f1ff;
+  color: #0045ad;
+}
+.primaryBtn:hover {
+  opacity: 0.7;
+}
+
+/* Empty state */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 10px;
+  height: 100%;
+}
+.emptyIcon {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: #dce0ed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.emptyTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a2d57;
+  margin: 0;
+}
+.emptySubText {
+  font-size: 14px;
+  color: #6b7a99;
+  margin: 0;
+}
+.learnMore {
+  color: #1877f2;
+  cursor: pointer;
+}
+.learnMore:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 1024px) {
+  .mainContent {
+    padding: 20px;
+  }
+
+  .groupList {
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .backButton {
+    display: inline-flex;
+  }
+
+  .header {
+    padding: 16px 18px;
+    border-radius: 0 18px 0 0;
+  }
+
+  .section {
+    padding: 18px;
+    border-radius: 0 0 18px 18px;
+    height: calc(100% - 75px);
+  }
+
+  .sectionTitle {
+    margin-bottom: 18px;
+  }
+
+  .mainContent {
+    height: auto;
+    min-height: 0;
+    gap: 14px;
+    border-radius: 0;
+    padding: 12px;
+  }
+
+  .groupList {
+    grid-template-columns: 1fr;
+  }
+
+  .groupCard {
+    padding: 12px;
+  }
+
+}

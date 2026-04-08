@@ -1,0 +1,76 @@
+:root {
+  --main-color: #0068ff;
+}
+
+/* Sidebar container */
+.sidebar {
+  width: 80px;
+  background-color: var(--main-color);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  position: relative;
+  padding: 25px 0;
+}
+
+/* Top section */
+.sidebarTop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+/* Avatar */
+.avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  border: 2px solid white;
+  object-fit: cover;
+}
+
+/* Button */
+.sidebarBtn {
+  background: transparent;
+  border: none;
+  color: white;
+  margin-top: 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+/* Hover */
+.sidebarBtn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Click effect */
+.sidebarBtn:active {
+  transform: scale(0.92);
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 72px;
+    padding: 16px 0;
+  }
+
+  .sidebarTop {
+    gap: 18px;
+  }
+
+  .avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .sidebarBtn {
+    margin-top: 6px;
+  }
+}

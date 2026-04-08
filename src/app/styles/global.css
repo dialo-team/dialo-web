@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+/* Hide scrollbars globally while keeping scrolling functional */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+:root {
+  --font-regular: 400;
+  --font-semiBold: 500;
+  --font-bold: 600;
+  --font-superBold: 700;
+
+  --lightBlue-color: #2680f6;
+  --white-color: #ffffff;
+  --main-color: #0068ff;
+  --page-color: #e8f3ff;
+  --main-font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
