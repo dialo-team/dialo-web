@@ -1,112 +1,267 @@
+// import { useState } from "react";
+// import styles from "../../styles/module.auth/LoginForm.module.css";
+// import { LockIcon, SmartphoneIcon, User, Eye, EyeOff } from "lucide-react";
+// import { registerApi } from "../../../../api/auth/RegisterFormApi";
+
+// export const RegisterForm = ({
+//   onSwitchLogin,
+// }: {
+//   onSwitchLogin: () => void;
+// }) => {
+//   // State quản lý ẩn/hiện cho 2 ô mật khẩu riêng biệt
+//   const [showPass, setShowPass] = useState(false);
+//   const [showConfirmPass, setShowConfirmPass] = useState(false);
+
+//   return (
+//     <>
+//       <div className={styles.form}>
+//         <div className={styles.headerBody}>
+//           <p>Đăng ký tài khoản mới</p>
+//         </div>
+//         <div className={styles.formInput}>
+//           {/* --- 1. HỌ VÀ TÊN --- */}
+//           <div className={styles.inputGroup}>
+//             <User size={20} color="#555" strokeWidth={2} />
+//             <input
+//               className={styles.inputField}
+//               type="text"
+//               placeholder="Họ và tên"
+//             />
+//           </div>
+
+//           {/* --- 2. SỐ ĐIỆN THOẠI --- */}
+//           <div className={styles.inputGroup}>
+//             <SmartphoneIcon size={20} color="#555" strokeWidth={2} />
+//             <input
+//               className={styles.inputField}
+//               type="text"
+//               placeholder="Số điện thoại"
+//             />
+//           </div>
+
+//           {/* --- 3. MẬT KHẨU --- */}
+//           <div className={styles.inputGroup}>
+//             <LockIcon size={20} color="#555" strokeWidth={2} />
+//             <input
+//               className={styles.inputField}
+//               type={showPass ? "text" : "password"}
+//               placeholder="Mật khẩu"
+//             />
+//             <button
+//               type="button"
+//               className={styles.eyeButton}
+//               onClick={() => setShowPass(!showPass)}
+//             >
+//               {showPass ? (
+//                 <Eye size={20} color="#555" strokeWidth={2} />
+//               ) : (
+//                 <EyeOff size={20} color="#555" strokeWidth={2} />
+//               )}
+//             </button>
+//           </div>
+
+//           {/* --- 4. NHẬP LẠI MẬT KHẨU --- */}
+//           <div className={styles.inputGroup}>
+//             <LockIcon size={20} color="#555" strokeWidth={2} />
+//             <input
+//               className={styles.inputField}
+//               type={showConfirmPass ? "text" : "password"}
+//               placeholder="Nhập lại mật khẩu"
+//             />
+//             <button
+//               type="button"
+//               className={styles.eyeButton}
+//               onClick={() => setShowConfirmPass(!showConfirmPass)}
+//             >
+//               {showConfirmPass ? (
+//                 <Eye size={20} color="#555" strokeWidth={2} />
+//               ) : (
+//                 <EyeOff size={20} color="#555" strokeWidth={2} />
+//               )}
+//             </button>
+//           </div>
+
+//           {/* --- BUTTON ĐĂNG KÝ --- */}
+//           <button className={styles.btnLogin}>Đăng ký ngay</button>
+
+//           {/* --- LINK QUAY VỀ ĐĂNG NHẬP --- */}
+//           <div
+//             style={{
+//               display: "flex",
+//               gap: "5px",
+//               fontSize: "14px",
+//               marginTop: "10px",
+//             }}
+//           >
+//             <span style={{ color: "#666" }}>Đã có tài khoản?</span>
+//             <span
+//               className={styles.btnBackPass}
+//               style={{
+//                 cursor: "pointer",
+//                 color: "var(--main-color)",
+//                 fontWeight: "bold",
+//               }}
+//               onClick={onSwitchLogin}
+//             >
+//               Đăng nhập ngay
+//             </span>
+//           </div>
+//         </div>
+//       </div>
+//     </>
+//   );
+// };
+
+
 import { useState } from "react";
 import styles from "../../styles/module.auth/LoginForm.module.css";
-import { LockIcon, SmartphoneIcon, User, Eye, EyeOff } from "lucide-react";
+import {
+  LockIcon,
+  SmartphoneIcon,
+  User,
+  Eye,
+  EyeOff,
+} from "lucide-react";
+import { registerApi } from "../../../../api/auth/RegisterFormApi";
 
 export const RegisterForm = ({
   onSwitchLogin,
+  onSwitchVerify,
 }: {
   onSwitchLogin: () => void;
+  onSwitchVerify: (phone: string) => void;
 }) => {
-  // State quản lý ẩn/hiện cho 2 ô mật khẩu riêng biệt
   const [showPass, setShowPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
 
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [loading, setLoading] = useState(false);
+
+  const handleRegister = async () => {
+    if (!fullName || !phone || !password) {
+      alert("Vui lòng nhập đầy đủ thông tin");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      alert("Mật khẩu không khớp");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      await registerApi({
+        // fullName,
+        phone,
+        password,
+      });
+
+      alert("Đăng ký thành công! Nhập OTP");
+
+      // 👉 chuyển sang màn verify + truyền phone
+      onSwitchVerify(phone);
+    } catch (err: any) {
+      alert(err.message || "Đăng ký thất bại");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <>
-      <div className={styles.form}>
-        <div className={styles.headerBody}>
-          <p>Đăng ký tài khoản mới</p>
+    <div className={styles.form}>
+      <div className={styles.headerBody}>
+        <p>Đăng ký tài khoản mới</p>
+      </div>
+
+      <div className={styles.formInput}>
+        {/* HỌ TÊN */}
+        <div className={styles.inputGroup}>
+          <User size={20} color="#555" />
+          <input
+            className={styles.inputField}
+            type="text"
+            placeholder="Họ và tên"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+          />
         </div>
-        <div className={styles.formInput}>
-          {/* --- 1. HỌ VÀ TÊN --- */}
-          <div className={styles.inputGroup}>
-            <User size={20} color="#555" strokeWidth={2} />
-            <input
-              className={styles.inputField}
-              type="text"
-              placeholder="Họ và tên"
-            />
-          </div>
 
-          {/* --- 2. SỐ ĐIỆN THOẠI --- */}
-          <div className={styles.inputGroup}>
-            <SmartphoneIcon size={20} color="#555" strokeWidth={2} />
-            <input
-              className={styles.inputField}
-              type="text"
-              placeholder="Số điện thoại"
-            />
-          </div>
+        {/* PHONE */}
+        <div className={styles.inputGroup}>
+          <SmartphoneIcon size={20} color="#555" />
+          <input
+            className={styles.inputField}
+            type="text"
+            placeholder="Số điện thoại"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+          />
+        </div>
 
-          {/* --- 3. MẬT KHẨU --- */}
-          <div className={styles.inputGroup}>
-            <LockIcon size={20} color="#555" strokeWidth={2} />
-            <input
-              className={styles.inputField}
-              type={showPass ? "text" : "password"}
-              placeholder="Mật khẩu"
-            />
-            <button
-              type="button"
-              className={styles.eyeButton}
-              onClick={() => setShowPass(!showPass)}
-            >
-              {showPass ? (
-                <Eye size={20} color="#555" strokeWidth={2} />
-              ) : (
-                <EyeOff size={20} color="#555" strokeWidth={2} />
-              )}
-            </button>
-          </div>
-
-          {/* --- 4. NHẬP LẠI MẬT KHẨU --- */}
-          <div className={styles.inputGroup}>
-            <LockIcon size={20} color="#555" strokeWidth={2} />
-            <input
-              className={styles.inputField}
-              type={showConfirmPass ? "text" : "password"}
-              placeholder="Nhập lại mật khẩu"
-            />
-            <button
-              type="button"
-              className={styles.eyeButton}
-              onClick={() => setShowConfirmPass(!showConfirmPass)}
-            >
-              {showConfirmPass ? (
-                <Eye size={20} color="#555" strokeWidth={2} />
-              ) : (
-                <EyeOff size={20} color="#555" strokeWidth={2} />
-              )}
-            </button>
-          </div>
-
-          {/* --- BUTTON ĐĂNG KÝ --- */}
-          <button className={styles.btnLogin}>Đăng ký ngay</button>
-
-          {/* --- LINK QUAY VỀ ĐĂNG NHẬP --- */}
-          <div
-            style={{
-              display: "flex",
-              gap: "5px",
-              fontSize: "14px",
-              marginTop: "10px",
-            }}
+        {/* PASSWORD */}
+        <div className={styles.inputGroup}>
+          <LockIcon size={20} color="#555" />
+          <input
+            className={styles.inputField}
+            type={showPass ? "text" : "password"}
+            placeholder="Mật khẩu"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <button
+            type="button"
+            className={styles.eyeButton}
+            onClick={() => setShowPass(!showPass)}
           >
-            <span style={{ color: "#666" }}>Đã có tài khoản?</span>
-            <span
-              className={styles.btnBackPass}
-              style={{
-                cursor: "pointer",
-                color: "var(--main-color)",
-                fontWeight: "bold",
-              }}
-              onClick={onSwitchLogin}
-            >
-              Đăng nhập ngay
-            </span>
-          </div>
+            {showPass ? <Eye size={20} /> : <EyeOff size={20} />}
+          </button>
+        </div>
+
+        {/* CONFIRM PASSWORD */}
+        <div className={styles.inputGroup}>
+          <LockIcon size={20} color="#555" />
+          <input
+            className={styles.inputField}
+            type={showConfirmPass ? "text" : "password"}
+            placeholder="Nhập lại mật khẩu"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+          <button
+            type="button"
+            className={styles.eyeButton}
+            onClick={() => setShowConfirmPass(!showConfirmPass)}
+          >
+            {showConfirmPass ? <Eye size={20} /> : <EyeOff size={20} />}
+          </button>
+        </div>
+
+        {/* BUTTON */}
+        <button
+          className={styles.btnLogin}
+          onClick={handleRegister}
+          disabled={loading}
+        >
+          {loading ? "Đang đăng ký..." : "Đăng ký ngay"}
+        </button>
+
+        {/* BACK LOGIN */}
+        <div style={{ display: "flex", gap: 5, fontSize: 14, marginTop: 10 }}>
+          <span style={{ color: "#666" }}>Đã có tài khoản?</span>
+          <span
+            className={styles.btnBackPass}
+            style={{ cursor: "pointer", color: "var(--main-color)", fontWeight: "bold" }}
+            onClick={onSwitchLogin}
+          >
+            Đăng nhập ngay
+          </span>
         </div>
       </div>
-    </>
+    </div>
   );
 };

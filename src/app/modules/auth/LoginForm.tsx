@@ -12,9 +12,13 @@ import Decoration from "./Decoration";
 import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { RegisterForm } from "@/app/modules/auth/RegisterForm";
+import { VerifyRegisterForm } from "./VerifyRegisterForm";
+import { VerifyLogin } from "./VerifyLogin";
 export const LoginForm = () => {
   const [currentView, setCurrentView] = useState("pass");
   const [isMobile, setIsMobile] = useState(false);
+  const [phoneVerify, setPhoneVerify] = useState("");
+
 
   useEffect(() => {
     const media = window.matchMedia("(max-width: 768px)");
@@ -96,17 +100,40 @@ export const LoginForm = () => {
             <LoginQR onSwitchLogin={() => setCurrentView("pass")} />
           )}
 
-          {currentView === "pass" && (
+          {/* {currentView === "pass" && (
             <LoginPass
               onSwitchQR={() => setCurrentView("qr")}
               onSwitchForgot={() => setCurrentView("forgot")}
               onSwitchRegister={() => setCurrentView("register")}
             />
+          )} */}
+
+          {currentView === "pass" && (
+            <LoginPass
+              onSwitchQR={() => setCurrentView("qr")}
+              onSwitchForgot={() => setCurrentView("forgot")}
+              onSwitchRegister={() => setCurrentView("register")}
+              onSwitchVerify={(phone: string) => {
+                setPhoneVerify(phone);
+                setCurrentView("verifyLogin");
+              }}
+            />
           )}
 
-          {currentView === "register" && (
+          {/* {currentView === "register" && (
             <RegisterForm onSwitchLogin={() => setCurrentView("pass")} />
+          )} */}
+
+          {currentView === "register" && (
+            <RegisterForm
+              onSwitchLogin={() => setCurrentView("pass")}
+              onSwitchVerify={(phone: string) => {
+                setPhoneVerify(phone);
+                setCurrentView("verify");
+              }}
+            />
           )}
+
           {currentView === "forgot" && (
             <LoginForgotPass
               onBack={() => setCurrentView("pass")}
@@ -116,6 +143,18 @@ export const LoginForm = () => {
           {currentView === "verify" && (
             <VerifyPassword onSwitch={() => setCurrentView("pass")} />
           )}
+
+          {currentView === "verifyForm" && (
+            <VerifyRegisterForm
+              phone={phoneVerify}
+              onSwitch={() => setCurrentView("pass")}
+            />
+          )}
+
+          {currentView === "verifyLogin" && (
+            <VerifyLogin phone={phoneVerify} />
+          )}
+
         </div>
       </div>
     </div>
