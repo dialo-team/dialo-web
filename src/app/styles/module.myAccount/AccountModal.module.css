@@ -5,14 +5,18 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 16px;
   z-index: 999;
 }
 
 .modal {
-  width: 420px;
+  width: min(420px, 100%);
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
   background: #fff;
   border-radius: 10px;
   overflow: hidden;
+  overflow-y: auto;
   box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
   color: #000;
 }
@@ -110,4 +114,47 @@
 
 .updateBtn:hover {
   background: #e4e6eb;
+}
+
+@media (max-width: 768px) {
+  .overlay {
+    align-items: center;
+    padding: 16px;
+  }
+
+  .modal {
+    width: min(92vw, 460px);
+    max-height: 90vh;
+    border-radius: 16px;
+  }
+
+  .cover {
+    height: 120px;
+  }
+
+  .profileSection {
+    padding: 0 14px;
+  }
+
+  .avatar {
+    width: 72px;
+    height: 72px;
+  }
+
+  .name {
+    font-size: 16px;
+  }
+
+  .infoSection {
+    padding: 16px 14px;
+  }
+
+  .row {
+    gap: 12px;
+  }
+
+  .row span:last-child {
+    text-align: right;
+    word-break: break-word;
+  }
 }

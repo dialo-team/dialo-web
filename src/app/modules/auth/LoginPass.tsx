@@ -49,7 +49,7 @@ export const LoginPass = ({
             />
             <button
               type="button"
-              className="eyeButton"
+              className={styles.eyeButton}
               onClick={togglePasswordVisibility}
             >
               {showPassWord ? (

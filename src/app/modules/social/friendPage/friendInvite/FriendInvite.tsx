@@ -1,14 +1,20 @@
 import {
-  ArrowLeft,
+  ChevronLeft,
   ChevronDown,
   ChevronUp,
   MessageCircle,
   UserPlus,
 } from "lucide-react";
 import { useState } from "react";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import styles from "../../../../styles/module.social/FriendsPage/FrientdInvite.module.css";
 
 export const FriendInvite = () => {
+  const navigate = useNavigate();
+  const { isMobile, onBackToSidebar } = useOutletContext<{
+    isMobile?: boolean;
+    onBackToSidebar?: () => void;
+  }>();
   const [showAllSent, setShowAllSent] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
@@ -126,10 +132,33 @@ export const FriendInvite = () => {
 
   const visibleSent = showAllSent ? sentInvites : sentInvites.slice(0, 3);
 
+  const handleBack = () => {
+    if (isMobile && onBackToSidebar) {
+      onBackToSidebar();
+      return;
+    }
+
+    navigate(-1);
+  };
+
   return (
     <>
       <div className={styles.header}>
-        <h2>Lời mời kết bạn</h2>
+        <div className={styles.headerTop}>
+          <button
+            className={styles.backButton}
+            onClick={handleBack}
+            type="button"
+            aria-label="Quay lại"
+          >
+            <ChevronLeft size={24} />
+          </button>
+
+          <div className={styles.headerTitle}>
+            <UserPlus size={24} />
+            <h2>Lời mời kết bạn</h2>
+          </div>
+        </div>
       </div>
 
       {/* <div className={styles.header}>
@@ -138,30 +167,27 @@ export const FriendInvite = () => {
         <h2>Lời mời kết bạn</h2>
       </div> */}
 
-      <div className={styles.mainInvite}>
+      <div className={styles.section}>
+        <p className={styles.sectionTitle}>Lời mời đã nhận được ({invited.length})</p>
+
+        <div className={styles.mainInvite}>
         {/* Lời mời đã nhận */}
-        <p className={styles.sectionHeader}>
-          Lời mời đã nhận được ({invited.length})
-        </p>
         {invited.length === 0 ? (
           <p className={styles.emptyText}>Không có lời mời kết bạn</p>
         ) : (
           <ul className={styles.invitedList}>
-            {invited.map((item) => (
-              <li key={item.id} className={styles.invitedCard}>
+            {invited.map((item, index) => (
+              <li
+                key={`${item.id}-${index}`}
+                className={styles.invitedCard}
+              >
                 <div className={styles.invitedHeader}>
                   <img
                     className={styles.invitedAvatar}
                     src={item.avatar}
-                    alt=""
+                    alt={item.name}
                   />
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      flex: 1,
-                    }}
-                  >
+                  <div className={styles.infoColumn}>
                     <span className={styles.invitedName}>{item.name}</span>
                     <span className={styles.invitedDate}>{item.date}</span>
                   </div>
@@ -170,13 +196,7 @@ export const FriendInvite = () => {
                   </div>
                 </div>
                 <p className={styles.invitedMessage}>{item.message}</p>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: 10,
-                  }}
-                >
+                <div className={styles.cardActions}>
                   <button className={styles.btn}>Từ chối</button>
                   <button className={styles.primaryBtn}>Đồng ý</button>
                 </div>
@@ -194,13 +214,16 @@ export const FriendInvite = () => {
         ) : (
           <>
             <ul className={styles.inviteList}>
-              {visibleSent.map((item) => (
-                <li key={item.id} className={styles.inviteCard}>
+              {visibleSent.map((item, index) => (
+                <li
+                  key={`${item.id}-${index}`}
+                  className={styles.inviteCard}
+                >
                   <div className={styles.inviteCardHeader}>
                     <img
                       className={styles.invitedAvatar}
                       src={item.avatar}
-                      alt=""
+                      alt={item.name}
                     />
                     <div className={styles.inviteInfo}>
                       <span className={styles.invitedName}>{item.name}</span>
@@ -235,8 +258,7 @@ export const FriendInvite = () => {
 
         {/* Gợi ý kết bạn — toggle */}
         <p
-          className={styles.sectionHeader}
-          style={{ cursor: "pointer" }}
+          className={`${styles.sectionHeader} ${styles.sectionHeaderToggle}`}
           onClick={() => setShowSuggestions(!showSuggestions)}
         >
           Gợi ý kết bạn ({suggestions.length})
@@ -249,13 +271,16 @@ export const FriendInvite = () => {
 
         {showSuggestions && (
           <ul className={styles.suggestionList}>
-            {suggestions.map((item) => (
-              <li key={item.id} className={styles.suggestionCard}>
+            {suggestions.map((item, index) => (
+              <li
+                key={`${item.id}-${index}`}
+                className={styles.suggestionCard}
+              >
                 <div className={styles.suggestionCardHeader}>
                   <img
                     className={styles.invitedAvatar}
                     src={item.avatar}
-                    alt=""
+                    alt={item.name}
                   />
                   <div className={styles.inviteInfo}>
                     <span className={styles.invitedName}>{item.name}</span>
@@ -272,6 +297,7 @@ export const FriendInvite = () => {
             ))}
           </ul>
         )}
+        </div>
       </div>
     </>
   );

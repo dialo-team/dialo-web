@@ -54,3 +54,23 @@
 .sidebarBtn:active {
   transform: scale(0.92);
 }
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 72px;
+    padding: 16px 0;
+  }
+
+  .sidebarTop {
+    gap: 18px;
+  }
+
+  .avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .sidebarBtn {
+    margin-top: 6px;
+  }
+}

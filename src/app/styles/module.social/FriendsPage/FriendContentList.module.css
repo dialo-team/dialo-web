@@ -1,45 +1,108 @@
-/* HEADER */
-.header {
-  margin-bottom: 10px;
+﻿.header {
+  background: #ffffff;
+  border-radius: 0 24px 0 0;
+  padding: 20px 28px;
+  border-bottom: 1px solid #e6e9f0;
 }
 
-.header h2 {
-  font-size: 25px;
-  font-weight: 700;
-  margin-bottom: 4px;
+.headerTop {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
-.header span {
-  color: #65676b;
-  font-size: 14px;
+.headerTitle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  color: #0f2854;
+}
+
+.headerTitle h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.backButton {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #0f2854;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.backButton:hover {
+  background: #f2f5fb;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  background: #f3f5fa;
+  padding: 28px;
+  border-radius: 0 0 24px 24px;
+  height: calc(100% - 85px);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sectionTitle {
+  margin-bottom: 18px;
+  color: #1a2d57;
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .contentBox {
-  background: white;
-  border-radius: 10px;
-  padding: 20px;
-  margin: 0px 20px;
+  flex: 1;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 28px 32px;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-/* SEARCH */
+.contentBox::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
 .searchBoxRight {
   display: flex;
   align-items: center;
-  gap: 8px;
-  border: 1px solid #e4e6eb;
-  padding: 8px 12px;
-  border-radius: 8px;
-  margin-bottom: 15px;
-  background: white;
+  gap: 10px;
+  border: 1px solid #dfe5ef;
+  padding: 14px 18px;
+  border-radius: 14px;
+  margin-bottom: 24px;
+  background: #ffffff;
+  color: #6b7a99;
 }
 
 .searchBoxRight input {
   border: none;
   outline: none;
   width: 100%;
+  background: transparent;
+  color: #1a2d57;
+  font-size: 16px;
 }
 
-/* LIST */
+.searchBoxRight input::placeholder {
+  color: #7d8ba5;
+}
+
 .friendList {
   display: flex;
   flex-direction: column;
@@ -50,31 +113,44 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px;
-  border-radius: 8px;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: 14px;
 }
 
 .friendItem:hover {
-  background: #f0f2f5;
+  background: #f7f9fc;
 }
 
 .friendInfo {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
+  min-width: 0;
+}
+
+.friendInfo span {
+  color: #16284d;
+  font-size: 18px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .friendItem img {
-  width: 38px;
-  height: 38px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
 }
 
 .moreIcon {
   cursor: pointer;
+  color: #6f7d97;
 }
 
-/* POPUP MENU */
 .menuWrapper {
   position: relative;
 }
@@ -82,18 +158,18 @@
 .actionMenu {
   position: absolute;
   right: 0;
-  top: 24px;
-  background: white;
+  top: 28px;
+  background: #ffffff;
   border: 1px solid #e4e6eb;
-  border-radius: 8px;
-  width: 160px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  width: 170px;
+  box-shadow: 0 10px 30px rgba(15, 40, 84, 0.12);
   overflow: hidden;
   z-index: 10;
 }
 
 .menuAction {
-  padding: 10px 12px;
+  padding: 12px 14px;
   cursor: pointer;
   font-size: 14px;
 }
@@ -107,7 +183,6 @@
   font-weight: 500;
 }
 
-/* dùng để tắt modal thì bấm ở vùng ngoài modal */
 .menuOverlay {
   position: fixed;
   inset: 0;
@@ -117,4 +192,52 @@
 .actionMenu {
   position: absolute;
   z-index: 2;
+}
+
+@media (max-width: 768px) {
+  .backButton {
+    display: inline-flex;
+  }
+
+  .header {
+    padding: 16px 18px;
+    border-radius: 0 18px 0 0;
+  }
+
+  .section {
+    padding: 18px;
+    border-radius: 0 0 18px 18px;
+    height: calc(100% - 75px);
+  }
+
+  .contentBox {
+    padding: 18px;
+  }
+
+  .searchBoxRight {
+    padding: 12px 14px;
+    margin-bottom: 18px;
+  }
+
+  .friendItem {
+    padding: 12px 10px;
+  }
+
+  .friendInfo {
+    gap: 12px;
+  }
+
+  .friendInfo span {
+    font-size: 16px;
+  }
+
+  .friendItem img {
+    width: 48px;
+    height: 48px;
+  }
+
+  .actionMenu {
+    top: 30px;
+    width: 156px;
+  }
 }
