@@ -1,4 +1,4 @@
-import { Search, User, UsersRound, UserPlus, UserPlus2 } from "lucide-react";
+import { Search, User, UsersRound, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import styles from "../../../styles/module.social/FriendsPage/FriendSidebar.module.css";
 import { useState } from "react";
@@ -6,7 +6,11 @@ import addGroupIcon from "../../../../assets/add_group.jpg";
 import AddFriendModal from "./searchAndAddFriend/AddFriendModal";
 import CreateGroupModal from "./searchAndAddFriend/CreateGroupModal";
 
-export const FriendSidebar = () => {
+type FriendSidebarProps = {
+  onNavigate?: () => void;
+};
+
+export const FriendSidebar = ({ onNavigate }: FriendSidebarProps) => {
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
   const [openAddFriend, setOpenAddFriend] = useState(false);
@@ -15,6 +19,7 @@ export const FriendSidebar = () => {
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && keyword.trim() !== "") {
       navigate(`/home/friendHome/search?q=${keyword}`);
+      onNavigate?.();
     }
   };
 
@@ -51,7 +56,10 @@ export const FriendSidebar = () => {
       <div className={styles.menu}>
         <div
           className={styles.menuItem}
-          onClick={() => navigate("/home/friendHome")}
+          onClick={() => {
+            navigate("/home/friendHome");
+            onNavigate?.();
+          }}
         >
           <User size={18} />
           <span>Danh sách bạn bè</span>
@@ -59,7 +67,10 @@ export const FriendSidebar = () => {
 
         <div
           className={styles.menuItem}
-          onClick={() => navigate("/home/friendHome/groups")}
+          onClick={() => {
+            navigate("/home/friendHome/groups");
+            onNavigate?.();
+          }}
         >
           <UsersRound size={18} />
           <span>Danh sách nhóm</span>
@@ -67,7 +78,10 @@ export const FriendSidebar = () => {
 
         <div
           className={styles.menuItem}
-          onClick={() => navigate("/home/friendHome/friendInvite")}
+          onClick={() => {
+            navigate("/home/friendHome/friendInvite");
+            onNavigate?.();
+          }}
         >
           <UserPlus size={18} />
           <span>Lời mời kết bạn</span>
@@ -75,7 +89,10 @@ export const FriendSidebar = () => {
 
         <div
           className={styles.menuItem}
-          onClick={() => navigate("/home/friendHome/groupInvite")}
+          onClick={() => {
+            navigate("/home/friendHome/groupInvite");
+            onNavigate?.();
+          }}
         >
           <img
             src={addGroupIcon}

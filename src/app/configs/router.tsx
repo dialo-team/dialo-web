@@ -2,13 +2,15 @@ import { createBrowserRouter } from "react-router-dom";
 import type { RouteObject } from "react-router-dom";
 import { LoginPage } from "../modules/auth/LoginPage";
 import { HomePage } from "../modules/HomePage";
-import { ChatPage } from "../modules/social/chatPage/chatPage";
 import { FriendsPage } from "../modules/social/friendPage/FriendsPage";
 import { FriendListPage } from "../modules/social/friendPage/listFriend/FriendListPage";
 import { GroupListPage } from "../modules/social/friendPage/groupList/GroupListPage";
 import { FriendSearchPage } from "../modules/social/friendPage/searchAndAddFriend/FriendSearchPage";
 import { FriendInvite } from "@/app/modules/social/friendPage/friendInvite/FriendInvite";
 import { GroupInvite } from "@/app/modules/social/friendPage/groupInvite/GroupInvite";
+import { ChatPage } from "../modules/message/ChatPage";
+import { ChatWindow } from "../modules/message/ChatWindow";
+
 
 const adminRoute: RouteObject[] = [];
 
@@ -32,6 +34,12 @@ const guestRoute = [
       {
         path: "chat",
         element: <ChatPage />,
+        children: [
+          {
+            index: true,
+            element: <ChatWindow />, 
+          },
+        ],
       },
       {
         path: "friendHome",

@@ -1,48 +1,103 @@
-/* .header {
+.header {
+  background: #ffffff;
+  border-radius: 0 24px 0 0;
+  padding: 20px 28px;
+  border-bottom: 1px solid #e6e9f0;
+  margin-bottom: 0;
+}
+
+.headerTop {
   display: flex;
   align-items: center;
-  gap: 10px;
-  background-color: white;
-  height: 64px;
-  padding-left: 20px;
+  gap: 14px;
 }
-.header h2 {
-  padding: 0;
-  margin: 0;
-  font-size: 16px;
-  font-weight: 500px;
-} */
- .header {
-  margin-bottom: 10px;
+
+.headerTitle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  color: #0f2854;
+}
+
+.backButton {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #0f2854;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.backButton:hover {
+  background: #f2f5fb;
 }
 
 .header h2 {
-  font-size: 25px;
-  font-weight: 700;
-  margin-bottom: 4px;
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  background: #f3f5fa;
+  padding: 28px;
+  border-radius: 0 0 24px 24px;
+  height: calc(100% - 85px);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sectionTitle {
+  margin: 0 0 18px;
+  color: #1a2d57;
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .mainInvite {
   display: flex;
   flex-direction: column;
+  flex: 1;
   gap: 20px;
-  padding: 20px;
+  background: #f3f5fa;
+  border-radius: 0;
+  padding: 28px 32px;
   overflow-y: auto;
-  height: calc(100vh - 64px);
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.mainInvite::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .invitedList {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
   overflow: visible;
+  padding: 0;
+  margin: 0;
 }
 .invitedCard {
   list-style: none;
-  min-width: 310px;
-  max-height: 210px;
-  border-radius: 6px;
+  min-width: 0;
+  border-radius: 12px;
   background-color: #ffffff;
+  border: 1px solid #e2e7f0;
+  box-shadow: 0 6px 18px rgba(18, 39, 82, 0.06);
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -126,21 +181,25 @@
   border-radius: 50%;
 }
 .invitedName {
-  font-size: 16px;
-  font-weight: 500px;
-  color: black;
+  font-size: 18px;
+  font-weight: 600;
+  color: #16284d;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .invitedDate {
   font-size: 13px;
-  font-weight: 400px;
+  font-weight: 400;
+  color: #6b7a99;
 }
 .invitedMessage {
-  background-color: rgb(235, 236, 240);
-  border: 1px solid #cacbce;
-  color: black;
+  background-color: #f7f9fc;
+  border: 1px solid #dfe5ef;
+  color: #1a2d57;
   width: 100%;
   height: 60px;
-  padding: 5px;
+  padding: 10px 12px;
   overflow-y: auto;
   word-break: break-word;
   font-size: 14px;
@@ -149,10 +208,21 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 15px;
-  font-weight: 550;
-  color: black;
-  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: #1a2d57;
+  margin: 0 0 14px;
+}
+
+.sectionHeaderToggle {
+  cursor: pointer;
+}
+
+.infoColumn {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
 }
 
 /* Sent invite card */
@@ -161,9 +231,11 @@
 }
 .inviteCard {
   list-style: none;
-  min-width: 310px;
-  border-radius: 6px;
+  min-width: 0;
+  border-radius: 12px;
   background-color: #ffffff;
+  border: 1px solid #e2e7f0;
+  box-shadow: 0 6px 18px rgba(18, 39, 82, 0.06);
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -181,7 +253,7 @@
 }
 .inviteSubText {
   font-size: 13px;
-  color: #65676b;
+  color: #6b7a99;
 }
 
 /* Suggestion card */
@@ -190,8 +262,10 @@
 }
 .suggestionCard {
   list-style: none;
-  border-radius: 6px;
+  border-radius: 12px;
   background-color: #ffffff;
+  border: 1px solid #e2e7f0;
+  box-shadow: 0 6px 18px rgba(18, 39, 82, 0.06);
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -209,6 +283,12 @@
   gap: 10px;
 }
 
+.cardActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
 /* Xem thêm */
 .viewMore {
   composes: btn;
@@ -220,4 +300,58 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
+}
+
+@media (max-width: 1024px) {
+  .mainInvite {
+    padding: 20px;
+  }
+
+  .invitedList {
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .backButton {
+    display: inline-flex;
+  }
+
+  .header {
+    padding: 16px 18px;
+    border-radius: 0 18px 0 0;
+  }
+
+  .section {
+    padding: 18px;
+    border-radius: 0 0 18px 18px;
+    height: calc(100% - 75px);
+  }
+
+  .sectionTitle {
+    margin-bottom: 18px;
+  }
+
+  .mainInvite {
+    height: auto;
+    min-height: 0;
+    border-radius: 0;
+    padding: 12px;
+    gap: 14px;
+  }
+
+  .invitedList {
+    grid-template-columns: 1fr;
+  }
+
+  .invitedCard,
+  .inviteCard,
+  .suggestionCard {
+    padding: 12px;
+  }
+
+  .invitedMessage {
+    height: auto;
+    max-height: 84px;
+  }
 }

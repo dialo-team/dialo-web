@@ -3,7 +3,7 @@
 
 import logoDiablo from "../../../assets/logo-diablo.svg";
 import styles from "../../styles/module.auth/LoginForm.module.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LoginQR } from "./LoginQR";
 import { LoginPass } from "./LoginPass";
 import { LoginForgotPass } from "./LoginForgotPass";
@@ -14,13 +14,22 @@ import { Canvas } from "@react-three/fiber";
 import { RegisterForm } from "@/app/modules/auth/RegisterForm";
 export const LoginForm = () => {
   const [currentView, setCurrentView] = useState("pass");
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 768px)");
+    const updateMobile = () => setIsMobile(media.matches);
+    updateMobile();
+    media.addEventListener("change", updateMobile);
+    return () => media.removeEventListener("change", updateMobile);
+  }, []);
 
   return (
     <div className={styles.card}>
       <div className={styles.body}>
         <div className={styles.bodyLeft}>
           <div className={styles.canvasLayer}>
-            <Canvas camera={{ position: [0, 0, 10], fov: 40 }}>
+            <Canvas camera={{ position: [0, 0, 10], fov: 40 }} dpr={isMobile ? 1 : [1, 1.75]}>
               <ambientLight intensity={0.6} />
               <directionalLight
                 position={[-5, 5, 0]}
@@ -49,11 +58,13 @@ export const LoginForm = () => {
               <group position={[3.5, 3, 0]} scale={1.5}>
                 <Decoration />
               </group>
-              <group position={[-3.5, -3, 0]} scale={1.2}>
-                <Decoration />
-              </group>
+              {!isMobile && (
+                <group position={[-3.5, -3, 0]} scale={1.2}>
+                  <Decoration />
+                </group>
+              )}
 
-              <OrbitControls enableZoom={false} enablePan={false} />
+              <OrbitControls enableZoom={false} enablePan={false} enableRotate={false} />
             </Canvas>
           </div>
           <div className={styles.decorText}>
