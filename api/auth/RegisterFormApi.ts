@@ -8,7 +8,7 @@ export const registerApi = (data: {
   phone: string;
   password: string;
 }) => {
-  return axiosClient.post("/api/v1/auth/signup", data);
+  return axiosClient.post("/api/v1/auth/old/signup", data);
 };
 
 /**
@@ -18,5 +18,5 @@ export const verifyOtpApi = (data: {
   phone: string;
   otp: string;
 }) => {
-  return axiosClient.post("/api/v1/auth/signup/verify", data);
+  return axiosClient.post("/api/v1/auth/old/signup/verify", data);
 };
