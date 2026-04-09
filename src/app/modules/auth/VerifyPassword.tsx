@@ -1,5 +1,5 @@
 import { useState } from "react";
-import styles from "../../styles/module.auth/VerifyForm.module.css";
+import styles from "../../styles/module.auth/LoginForm.module.css";
 import { LockIcon, Eye, EyeOff } from "lucide-react";
 
 export const VerifyPassword = ({ onSwitch }: { onSwitch: () => void }) => {

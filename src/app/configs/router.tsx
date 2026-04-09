@@ -17,21 +17,11 @@ const adminRoute: RouteObject[] = [];
 
 const userRoute: RouteObject[] = [];
 
-const guestRoute = [
-  {
-    path: "/login", // Đường dẫn trên trình duyệt
-    element: <LoginPage />, // Component sẽ hiện ra
-  },
-
-  // Nếu muốn vào trang chủ (/) cũng hiện Login luôn thì thêm cái này:
-  {
-    path: "/",
-    element: <LoginPage />,
-  },
+const protectedRoute = [
   {
     path: "/home",
-    // element: <PrivateRoute><HomePage /></PrivateRoute>,
-    element: <HomePage />,
+    element: <PrivateRoute><HomePage /></PrivateRoute>,
+    // element: <HomePage />,
     children: [
       {
         path: "chat",
@@ -39,7 +29,7 @@ const guestRoute = [
         children: [
           {
             index: true,
-            element: <ChatWindow />, 
+            element: <ChatWindow />,
           },
         ],
       },
@@ -71,10 +61,25 @@ const guestRoute = [
       },
     ],
   },
+]
+
+const guestRoute = [
+  {
+    path: "/login", // Đường dẫn trên trình duyệt
+    element: <LoginPage />, // Component sẽ hiện ra
+  },
+
+  // Nếu muốn vào trang chủ (/) cũng hiện Login luôn thì thêm cái này:
+  {
+    path: "/",
+    element: <LoginPage />,
+  },
+
 ];
 
 export const routes = createBrowserRouter([
   ...guestRoute,
   ...userRoute,
   ...adminRoute,
+  ...protectedRoute
 ]);

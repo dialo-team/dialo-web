@@ -13,7 +13,6 @@ import { RegisterForm } from "@/app/modules/auth/RegisterForm";
 import { VerifyRegisterForm } from "./VerifyRegisterForm";
 import { VerifyLogin } from "./VerifyLogin";
 import { useNavigate } from "react-router-dom";
-import { Navigate } from "react-router-dom";
 import React from "react";
 
 
@@ -22,6 +21,7 @@ export const LoginForm = () => {
   const [currentView, setCurrentView] = useState("pass");
   const [isMobile, setIsMobile] = useState(false);
   const [phoneVerify, setPhoneVerify] = useState("");
+  const navigation = useNavigate()
 
 
 
@@ -158,7 +158,7 @@ export const LoginForm = () => {
           )}
 
           {currentView === "verifyLogin" && (
-            <VerifyLogin phone={phoneVerify} onSwitch={() =>  setCurrentView("pass")} />
+            <VerifyLogin phone={phoneVerify} onSwitch={() =>  navigation("/home")} />
           )}
 
         </div>

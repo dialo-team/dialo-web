@@ -82,6 +82,7 @@ import { useState, useRef } from "react";
 import styles from "../../styles/module.auth/VerifyForm.module.css";
 import { verifyLoginOtpApi } from "../../../../api/auth/LoginPassApi";
 import { ErrorModal } from "@/app/components/ErrorModal";
+import { useNavigate } from "react-router-dom";
 
 export const VerifyLogin = ({
   phone,
@@ -99,6 +100,7 @@ export const VerifyLogin = ({
 
 
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return; // Chỉ cho nhập số
@@ -134,9 +136,22 @@ export const VerifyLogin = ({
       if (res.data.data?.accessToken) {
         localStorage.setItem("accessToken", res.data.data.accessToken);
         localStorage.setItem("refreshToken", res.data.data.refreshToken);
-        onSwitch(); // hoặc navigate("/home") nếu muốn redirect ngay
+        // onSwitch(); // hoặcnếu muốn redirect ngay
+        navigate("/home") 
       } else {
         setError(res.data.message || "Xác thực thất bại!");
+      }
+    } catch (err: any) {
+
+      if (err.response) {
+        // Lỗi từ server
+        if (err.response.status === 500 ) {
+          setError("OTP không đúng");
+        } else {
+          setError("Đã xảy ra lỗi. Vui lòng thử lại sau.");
+        }
+      } else {
+        setError(err.message || "Đã xảy ra lỗi");
       }
     } finally {
       setLoading(false);
