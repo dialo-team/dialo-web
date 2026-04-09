@@ -30,10 +30,11 @@
 //   );
 // };
 
-
-import { useState } from "react";
-import styles from "../../styles/module.auth/LoginForm.module.css";
+import { useState, useRef } from "react";
+import styles from "../../styles/module.auth/VerifyForm.module.css";
 import { verifyOtpApi } from "../../../../api/auth/RegisterFormApi";
+import { ErrorModal } from "@/app/components/ErrorModal";
+import { useNavigate } from "react-router-dom";
 
 export const VerifyRegisterForm = ({
   phone,
@@ -42,67 +43,98 @@ export const VerifyRegisterForm = ({
   phone: string;
   onSwitch: () => void;
 }) => {
-  const [otp, setOtp] = useState("");
+  const OTP_LENGTH = 6;
+  const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(""));
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  // Refs cho từng input
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+
+  const [error, setError] = useState("");
+
+  const handleChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return; // Chỉ cho nhập số
+    const newOtp = [...otp];
+    newOtp[index] = value.slice(-1); // chỉ lấy 1 ký tự
+    setOtp(newOtp);
+
+    // Tự focus sang ô tiếp theo
+    if (value && index < OTP_LENGTH - 1) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
 
   const handleVerify = async () => {
-    if (!otp) {
-      alert("Vui lòng nhập OTP");
+    const code = otp.join("");
+    if (code.length < OTP_LENGTH) {
+      setError("Vui lòng nhập đủ 6 số OTP");
       return;
     }
 
     try {
       setLoading(true);
+      setError("");
 
-      await verifyOtpApi({
-        phone,
-        otp,
-      });
+      const res = await verifyOtpApi({ phone, otp: code });
 
-      alert("Xác thực thành công!");
-
-      // 👉 quay về login
-      onSwitch();
+      if (res.data.data?.result)  {
+        // alert("Xác thực thành công!");
+          setError("");
+          onSwitch();
+      } else {
+        setError(res.data.message || "Xác thực thất bại!");
+      }
     } catch (err: any) {
-      alert(err.message || "OTP không đúng");
+      const message = err?.response?.data?.message || "OTP không đúng";
+      setError(message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className={styles.form}>
-      <div className={styles.verifyForm}>
-        <p>Gửi tin nhắn để nhận mã xác thực</p>
+    <>
+      <div className={styles.form}>
+        <div className={styles.verifyForm}>
+          <p>Gửi tin nhắn để nhận mã xác thực qua</p>
+          <h1>{phone}</h1>
 
-        {/* HIỂN THỊ PHONE */}
-        <h1>{phone}</h1>
+          {error && <span className={styles.errorMsg}>{error}</span>}
 
-        <div
-          className={styles.inputGroup}
-          style={{ borderBottomColor: "#008fe5", width: "80%" }}
-        >
-          <input
-            className={styles.verifyField}
-            type="text"
-            placeholder="Nhập mã xác thực"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-          />
+          <div className={styles.otpContainer}>
+            {otp.map((val, idx) => (
+              <input
+                key={idx}
+                ref={(el) => { inputRefs.current[idx] = el }}
+                className={styles.otpInput}
+                type="text"
+                maxLength={1}
+                value={val}
+                onChange={(e) => handleChange(idx, e.target.value)}
+                onKeyDown={(e) => handleKeyDown(idx, e)}
+              />
+            ))}
+          </div>
+
+          <button
+            className={styles.btnLogin}
+            onClick={handleVerify}
+            disabled={loading}
+          >
+            {loading ? "Đang xác thực..." : "Xác thực"}
+          </button>
         </div>
-
-        <button
-          className={styles.btnLogin}
-          onClick={handleVerify}
-          disabled={loading}
-        >
-          {loading ? "Đang xác thực..." : "Xác thực"}
-        </button>
-
-        <span>
-          Soạn tin nhắn với cú pháp "DIABLOPC" gửi đến 6020 (1000đ/tin)...
-        </span>
       </div>
-    </div>
+
+      <ErrorModal message={error} onClose={() => setError("")} />
+    </>
   );
 };

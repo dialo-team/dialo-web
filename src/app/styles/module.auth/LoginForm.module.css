@@ -149,6 +149,12 @@
 .form h3 {
   width: 100%;
 }
+.inputGroupWrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
 .codeQR {
   width: 236px;
   height: auto;

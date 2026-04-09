@@ -1,5 +1,3 @@
-//npm install three @react-three/fiber @react-three/drei lucide-react simplex-noise
-//chay cai o tren de chay <3
 
 import logoDiablo from "../../../assets/logo-diablo.svg";
 import styles from "../../styles/module.auth/LoginForm.module.css";
@@ -14,10 +12,17 @@ import { Canvas } from "@react-three/fiber";
 import { RegisterForm } from "@/app/modules/auth/RegisterForm";
 import { VerifyRegisterForm } from "./VerifyRegisterForm";
 import { VerifyLogin } from "./VerifyLogin";
+import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
+import React from "react";
+
+
+
 export const LoginForm = () => {
   const [currentView, setCurrentView] = useState("pass");
   const [isMobile, setIsMobile] = useState(false);
   const [phoneVerify, setPhoneVerify] = useState("");
+
 
 
   useEffect(() => {
@@ -129,7 +134,7 @@ export const LoginForm = () => {
               onSwitchLogin={() => setCurrentView("pass")}
               onSwitchVerify={(phone: string) => {
                 setPhoneVerify(phone);
-                setCurrentView("verify");
+                setCurrentView("verifyRegisterForm");
               }}
             />
           )}
@@ -140,11 +145,12 @@ export const LoginForm = () => {
               onVerify={() => setCurrentView("verify")}
             />
           )}
+
           {currentView === "verify" && (
             <VerifyPassword onSwitch={() => setCurrentView("pass")} />
           )}
 
-          {currentView === "verifyForm" && (
+          {currentView === "verifyRegisterForm" && (
             <VerifyRegisterForm
               phone={phoneVerify}
               onSwitch={() => setCurrentView("pass")}
@@ -152,7 +158,7 @@ export const LoginForm = () => {
           )}
 
           {currentView === "verifyLogin" && (
-            <VerifyLogin phone={phoneVerify} />
+            <VerifyLogin phone={phoneVerify} onSwitch={() =>  setCurrentView("pass")} />
           )}
 
         </div>

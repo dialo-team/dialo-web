@@ -10,6 +10,7 @@ import { FriendInvite } from "@/app/modules/social/friendPage/friendInvite/Frien
 import { GroupInvite } from "@/app/modules/social/friendPage/groupInvite/GroupInvite";
 import { ChatPage } from "../modules/message/ChatPage";
 import { ChatWindow } from "../modules/message/ChatWindow";
+import { PrivateRoute } from "../modules/auth/PrivateRoute";
 
 
 const adminRoute: RouteObject[] = [];
@@ -29,6 +30,7 @@ const guestRoute = [
   },
   {
     path: "/home",
+    // element: <PrivateRoute><HomePage /></PrivateRoute>,
     element: <HomePage />,
     children: [
       {
