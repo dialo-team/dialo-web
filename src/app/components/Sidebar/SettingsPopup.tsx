@@ -24,6 +24,8 @@ export const SettingsPopup = ({ open, onClose }: Props) => {
   const [openChangePass, setOpenChangePass] = useState(false);
 
   const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
     navigate("/login");
   };
 
