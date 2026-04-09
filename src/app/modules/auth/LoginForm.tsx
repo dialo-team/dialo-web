@@ -139,15 +139,28 @@ export const LoginForm = () => {
             />
           )}
 
-          {currentView === "forgot" && (
+          {/* {currentView === "forgot" && (
             <LoginForgotPass
               onBack={() => setCurrentView("pass")}
               onVerify={() => setCurrentView("verify")}
             />
+          )} */}
+
+          {currentView === "forgot" && (
+            <LoginForgotPass
+              onBack={() => setCurrentView("pass")}
+              onVerify={(phone: string) => {
+                setPhoneVerify(phone);
+                setCurrentView("verify");
+              }}
+            />
           )}
 
           {currentView === "verify" && (
-            <VerifyPassword onSwitch={() => setCurrentView("pass")} />
+            <VerifyPassword
+              phone={phoneVerify}       // bắt buộc phải có
+              onSwitch={() => setCurrentView("pass")} // thay cho onSwitch
+            />
           )}
 
           {currentView === "verifyRegisterForm" && (
@@ -158,7 +171,7 @@ export const LoginForm = () => {
           )}
 
           {currentView === "verifyLogin" && (
-            <VerifyLogin phone={phoneVerify} onSwitch={() =>  navigation("/home")} />
+            <VerifyLogin phone={phoneVerify} onSwitch={() => navigation("/home")} />
           )}
 
         </div>
