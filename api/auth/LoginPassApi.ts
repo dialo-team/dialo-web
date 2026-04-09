@@ -19,3 +19,10 @@ export const verifyLoginOtpApi = (data: {
 }) => {
   return axiosClient.post("/api/v1/auth/old/signin/verify", data);
 };
+
+/**
+ * 3. Đăng xuất (gọi trước khi xóa token local)
+ */
+export const signoutApi = (data: { refreshToken: string }) => {
+  return axiosClient.post("/api/v1/auth/signout", data);
+};
