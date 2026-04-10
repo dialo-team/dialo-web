@@ -1,3 +1,4 @@
+import axios from "axios";
 import axiosClient from "../axiosClient";
 
 /**
@@ -37,23 +38,25 @@ export const resetPasswordApi = (
   return axiosClient.post("/api/v1/auth/password/reset", data
     , {
     headers: {
-      Authorization: `Bearer ${resetToken}`,
+      Authorization: resetToken, 
       "Content-Type": "application/json",
     },
   }
   );
 };
 
+
 // export const resetPasswordApi = (data: { password: string }, resetToken: string) => {
-//   return axiosClient.post("/api/v1/auth/password/reset", data, {
-//     headers: {
-//       Authorization: `Bearer ${resetToken}`,
-//       "Content-Type": "application/json",
-//     },
-//     transformRequest: [(data, headers) => {
-//       // Ghi đè interceptor nếu có
-//       headers.Authorization = `Bearer ${resetToken}`;
-//       return JSON.stringify(data);
-//     }],
-//   });
+//   console.log(data);
+//   console.log("Reset Token:", resetToken); // kiểm tra token
+//   return axios.post(
+//     "http://14.225.254.174:8082/api/v1/auth/password/reset",
+//     data,
+//     {
+//       headers: {
+//         Authorization: resetToken, // chỉ truyền token trực tiếp
+//         "Content-Type": "application/json",
+//       },
+//     }
+//   );
 // };
