@@ -1,251 +1,6 @@
-
-
-// import { useState, useRef } from "react";
-// import styles from "../../styles/module.auth/VerifyForm.module.css";
-// import {
-//   confirmResetOtpApi,
-//   resetPasswordApi,
-// } from "../../../../api/auth/ForgotPasswordApi";
-// import { Eye, EyeOff, LockIcon } from "lucide-react";
-
-// export const VerifyPassword = ({
-//   phone,
-//   onSwitch,
-// }: {
-//   phone: string;
-//   onSwitch: () => void;
-// }) => {
-//   const OTP_LENGTH = 6;
-
-//   const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(""));
-//   const [resetToken, setResetToken] = useState("");
-
-//   const [step, setStep] = useState<"otp" | "password">("otp");
-
-//   const [newPass, setNewPass] = useState("");
-//   const [confirmPass, setConfirmPass] = useState("");
-//   const [showPass1, setShowPass1] = useState(false);
-//   const [showPass2, setShowPass2] = useState(false);
-
-
-//   const [error, setError] = useState("");
-//   const [loading, setLoading] = useState(false);
-
-//   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-//   // nhập OTP
-//   const handleChange = (index: number, value: string) => {
-//     if (!/^\d*$/.test(value)) return;
-
-//     setError("");
-
-//     const newOtp = [...otp];
-//     newOtp[index] = value.slice(-1);
-//     setOtp(newOtp);
-
-//     if (value && index < OTP_LENGTH - 1) {
-//       inputRefs.current[index + 1]?.focus();
-//     }
-//   };
-
-//   // xác thực OTP
-//   const handleVerifyOtp = async () => {
-//     const code = otp.join("").trim();
-
-//     if (code.length < OTP_LENGTH) {
-//       setError("Nhập đủ OTP");
-//       return;
-//     }
-
-//     try {
-//       setLoading(true);
-//       setError("");
-
-
-
-//       const res = await confirmResetOtpApi({
-//         source: phone,
-//         type: "SMS",
-//         otp: code,
-//       });
-
-
-//       // FIX CHÍNH Ở ĐÂY
-//       if (res.data.status === 0) {
-//         const token = res.data.data?.resetToken;
-
-//         if (token) {
-//           setResetToken(token);
-//           setStep("password");
-//         } else {
-//           setError("Không lấy được resetToken");
-//         }
-
-//       } else {
-//         setError(res.data.message || "OTP không đúng");
-//       }
-
-//     } catch (err: any) {
-//       setError(err?.response?.data?.message || "OTP sai");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   // đổi mật khẩu
-//   const handleResetPassword = async () => {
-//     if (!newPass || !confirmPass) {
-//       setError("Nhập đầy đủ mật khẩu");
-//       return;
-//     }
-
-//     if (newPass !== confirmPass) {
-//       setError("Mật khẩu không khớp");
-//       return;
-//     }
-
-//     try {
-//       setLoading(true);
-//       setError("");
-
-//       await resetPasswordApi(
-//         {
-//           password: newPass,
-//         },
-//         resetToken
-//       );
-
-//       alert("Đổi mật khẩu thành công!");
-//       onSwitch();
-
-//     } catch (err: any) {
-//       setError(err?.response?.data?.message || "Lỗi đổi mật khẩu");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   return (
-//     <div className={styles.form}>
-
-//       {/* STEP OTP */}
-//       {step === "otp" && (
-//         <div className={styles.verifyForm}>
-//           <p>Gửi tin nhắn để nhận mã xác thực qua</p>
-//           <h1>{phone}</h1>
-
-//           {error && <span className={styles.errorMsg}>{error}</span>}
-
-//           <div className={styles.otpContainer}>
-//             {otp.map((val, idx) => (
-//               <input
-//                 key={idx}
-//                 ref={(el) => { inputRefs.current[idx] = el }}
-//                 className={styles.otpInput}
-//                 type="text"
-//                 maxLength={1}
-//                 value={val}
-//                 onChange={(e) => handleChange(idx, e.target.value)}
-//               />
-//             ))}
-//           </div>
-
-//           <button
-//             className={styles.btnLogin}
-//             onClick={handleVerifyOtp}
-//             disabled={loading}
-//           >
-//             {loading ? "Đang xác thực..." : "Xác thực"}
-//           </button>
-//         </div>
-//       )}
-
-//       {/* STEP PASSWORD */}
-//       {step === "password" && (
-//         <div className={styles.formInput}>
-//           <p>Nhập mật khẩu mới</p>
-
-//           {error && <span className={styles.errorMsg}>{error}</span>}
-
-//           <input
-//             type="password"
-//             placeholder="Mật khẩu mới"
-//             value={newPass}
-//             onChange={(e) => setNewPass(e.target.value)}
-//           />
-
-//           <input
-//             type="password"
-//             placeholder="Nhập lại mật khẩu"
-//             value={confirmPass}
-//             onChange={(e) => setConfirmPass(e.target.value)}
-//           />
-
-//           <button onClick={handleResetPassword}>
-//             {loading ? "Đang xử lý..." : "Đổi mật khẩu"}
-//           </button>
-//         </div>
-
-//         // <div className={styles.formInput}>
-//         //   <div
-//         //     className={styles.inputGroup}
-//         //     style={{ borderBottomColor: "#008fe5" }}
-//         //   >
-//         //     <LockIcon size={20} color="#555" strokeWidth={2} />
-//         //     <input
-//         //       className={styles.inputField}
-//         //       type={showPass1 ? "text" : "password"}
-//         //       placeholder="Vui lòng nhập mật khẩu"
-//         //     />
-//         //     <button
-//         //       type="button"
-//         //       className={styles.eyeButton}
-//         //       onClick={() => setShowPass1(!showPass1)}
-//         //     >
-//         //       {showPass1 ? (
-//         //         <Eye size={20} color="#555" strokeWidth={2} />
-//         //       ) : (
-//         //         <EyeOff size={20} color="#555" strokeWidth={2} />
-//         //       )}
-//         //     </button>
-//         //   </div>
-
-//         //   <div
-//         //     className={styles.inputGroup}
-//         //     style={{ borderBottomColor: "#008fe5" }}
-//         //   >
-//         //     <LockIcon size={20} color="#555" strokeWidth={2} />
-//         //     <input
-//         //       className={styles.inputField}
-//         //       type={showPass2 ? "text" : "password"}
-//         //       placeholder="Nhập lại mật khẩu"
-//         //     />
-//         //     <button
-//         //       type="button"
-//         //       className={styles.eyeButton}
-//         //       onClick={() => setShowPass2(!showPass2)}
-//         //     >
-//         //       {showPass2 ? (
-//         //         <Eye size={20} color="#555" strokeWidth={2} />
-//         //       ) : (
-//         //         <EyeOff size={20} color="#555" strokeWidth={2} />
-//         //       )}
-//         //     </button>
-//         //   </div>
-
-//         //   <button className={styles.btnLogin} onClick={handleResetPassword}>
-//         //     {loading ? "Đang xử lý..." : "Đổi mật khẩu"}
-//         //   </button>
-
-
-//         // </div>
-//       )}
-//     </div>
-//   );
-// };
-
 import { useState, useRef } from "react";
 import styles from "../../styles/module.auth/VerifyForm.module.css";
+import styles2 from "../../styles/module.auth/LoginForm.module.css";
 import {
   confirmResetOtpApi,
   resetPasswordApi,
@@ -276,6 +31,11 @@ export const VerifyPassword = ({
   const [loading, setLoading] = useState(false);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const [passErrors, setPassErrors] = useState({
+    newPass: "",
+    confirmPass: "",
+  });
 
   // --- OTP input ---
   const handleChange = (index: number, value: string) => {
@@ -329,15 +89,7 @@ export const VerifyPassword = ({
 
   // --- Password reset ---
   const handleResetPassword = async () => {
-    if (!newPass || !confirmPass) {
-      setError("Nhập đầy đủ mật khẩu");
-      return;
-    }
-
-    if (newPass !== confirmPass) {
-      setError("Mật khẩu không khớp");
-      return;
-    }
+    if (!validatePassword()) return;
 
     try {
       setLoading(true);
@@ -351,6 +103,35 @@ export const VerifyPassword = ({
     } finally {
       setLoading(false);
     }
+  };
+
+
+  const validatePassword = () => {
+    const errors = {
+      newPass: "",
+      confirmPass: "",
+    };
+
+    let valid = true;
+
+    if (!newPass) {
+      errors.newPass = "Không được để trống";
+      valid = false;
+    }
+
+    if (!confirmPass) {
+      errors.confirmPass = "Không được để trống";
+      valid = false;
+    }
+
+    if (newPass && confirmPass && newPass !== confirmPass) {
+      errors.newPass = "Không trùng khớp";
+      errors.confirmPass = "Không trùng khớp";
+      valid = false;
+    }
+
+    setPassErrors(errors);
+    return valid;
   };
 
   return (
@@ -368,7 +149,7 @@ export const VerifyPassword = ({
               {otp.map((val, idx) => (
                 <input
                   key={idx}
-                  ref={(el) => { inputRefs.current[idx] = el; return void 0;  }}
+                  ref={(el) => { inputRefs.current[idx] = el; return void 0; }}
                   className={styles.otpInput}
                   type="text"
                   maxLength={1}
@@ -390,38 +171,110 @@ export const VerifyPassword = ({
 
         {/* --- STEP PASSWORD --- */}
         {step === "password" && (
-          <div className={styles.formInput}>
-            {error && <span className={styles.errorMsg}>{error}</span>}
+          <div className={styles2.formInput}>
 
-            <div className={styles.inputGroup} style={{ borderBottomColor: "#008fe5" }}>
-              <LockIcon size={20} color="#555" strokeWidth={2} />
-              <input
-                className={styles.inputField}
-                type={showPass1 ? "text" : "password"}
-                placeholder="Mật khẩu mới"
-                value={newPass}
-                onChange={(e) => setNewPass(e.target.value)}
-              />
-              <button type="button" className={styles.eyeButton} onClick={() => setShowPass1(!showPass1)}>
-                {showPass1 ? <Eye size={20} color="#555" strokeWidth={2} /> : <EyeOff size={20} color="#555" strokeWidth={2} />}
-              </button>
+            {/* NEW PASSWORD */}
+            <div style={{ width: "100%" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <h3 className={styles2.inputLabel} style={{ minWidth: 140 }}>
+                  Mật khẩu mới
+                </h3>
+
+                {passErrors.newPass && (
+                  <span style={{ color: "red", fontSize: 12, flex: 1, whiteSpace: "nowrap", }}>
+                    {passErrors.newPass}
+                  </span>
+                )}
+              </div>
+
+              <div className={styles2.inputGroup}>
+                <LockIcon size={20} color="#555" strokeWidth={2} />
+                <input
+                  className={styles2.inputField}
+                  type={showPass1 ? "text" : "password"}
+                  placeholder="Vui lòng nhập mật khẩu"
+                  value={newPass}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setNewPass(value);
+
+                    setPassErrors((prev) => ({
+                      ...prev,
+                      newPass: "",
+                      confirmPass:
+                        confirmPass && value !== confirmPass
+                          ? "Mật khẩu không khớp"
+                          : "",
+                    }));
+                  }}
+                />
+
+                <button
+                  type="button"
+                  className={styles2.eyeButton}
+                  onClick={() => setShowPass1(!showPass1)}
+                >
+                  {showPass1 ? (
+                    <Eye size={20} color="#555" />
+                  ) : (
+                    <EyeOff size={20} color="#555" />
+                  )}
+                </button>
+              </div>
             </div>
 
-            <div className={styles.inputGroup} style={{ borderBottomColor: "#008fe5" }}>
-              <LockIcon size={20} color="#555" strokeWidth={2} />
-              <input
-                className={styles.inputField}
-                type={showPass2 ? "text" : "password"}
-                placeholder="Nhập lại mật khẩu"
-                value={confirmPass}
-                onChange={(e) => setConfirmPass(e.target.value)}
-              />
-              <button type="button" className={styles.eyeButton} onClick={() => setShowPass2(!showPass2)}>
-                {showPass2 ? <Eye size={20} color="#555" strokeWidth={2} /> : <EyeOff size={20} color="#555" strokeWidth={2} />}
-              </button>
+            {/* CONFIRM PASSWORD */}
+            <div style={{ width: "100%" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <h3 className={styles2.inputLabel} style={{ minWidth: 140 }}>
+                  Nhập lại mật khẩu
+                </h3>
+
+                {passErrors.confirmPass && (
+                  <span style={{ color: "red", fontSize: 12, flex: 1, marginLeft: "auto" }}>
+                    {passErrors.confirmPass}
+                  </span>
+                )}
+              </div>
+
+              <div className={styles2.inputGroup}>
+                <LockIcon size={20} color="#555" strokeWidth={2} />
+
+                <input
+                  className={styles2.inputField}
+                  type={showPass2 ? "text" : "password"}
+                  placeholder="Nhập lại mật khẩu"
+                  value={confirmPass}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setConfirmPass(value);
+
+                    setPassErrors((prev) => ({
+                      ...prev,
+                      confirmPass:
+                        newPass && value !== newPass
+                          ? "Mật khẩu không khớp"
+                          : "",
+                    }));
+                  }}
+                />
+
+                <button
+                  type="button"
+                  className={styles2.eyeButton}
+                  onClick={() => setShowPass2(!showPass2)}
+                >
+                  {showPass2 ? (
+                    <Eye size={20} color="#555" />
+                  ) : (
+                    <EyeOff size={20} color="#555" />
+                  )}
+                </button>
+              </div>
             </div>
 
-            <button className={styles.btnLogin} onClick={handleResetPassword}>
+            {/* BUTTON */}
+            <button className={styles2.btnLogin} onClick={handleResetPassword}>
               {loading ? "Đang xử lý..." : "Đổi mật khẩu"}
             </button>
           </div>
