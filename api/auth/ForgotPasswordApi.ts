@@ -16,7 +16,7 @@ export const requestResetPasswordApi = (data: {
  */
 export const confirmResetOtpApi = (data: {
   source: string;
-  type: "SMS"
+  type: "SMS";
   otp: string;
 }) => {
   return axiosClient.post("/api/v1/auth/password/reset/confirm", data);
@@ -32,16 +32,11 @@ export const resetPasswordApi = (
   },
   resetToken: string
 ) => {
-  console.log(data);
-  console.log("Reset Token:", resetToken); // kiểm tra token
-  
-  return axiosClient.post("/api/v1/auth/password/reset", data
-    , {
+  return axiosClient.post("/api/v1/auth/password/reset", data, {
     headers: {
       Authorization: resetToken, 
     },
-  }
-  );
+  });
 };
 
 

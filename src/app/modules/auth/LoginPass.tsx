@@ -120,7 +120,6 @@
 //   );
 // };
 
-
 import { useState } from "react";
 import styles from "../../styles/module.auth/LoginForm.module.css";
 import { LockIcon, SmartphoneIcon, Eye, EyeOff } from "lucide-react";
@@ -192,9 +191,7 @@ export const LoginPass = ({
         <p>Đăng nhập qua mật khẩu</p>
       </div>
 
-      <div
-        className={styles.formInput}
-      >
+      <div className={styles.formInput}>
         {/* PHONE */}
         <div style={{ width: "100%" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -276,24 +273,15 @@ export const LoginPass = ({
           {loading ? "Đang đăng nhập..." : "Đăng nhập với mật khẩu"}
         </button>
 
-        <button
-          className={styles.btnForgotPass}
-          onClick={onSwitchForgot}
-        >
+        <button className={styles.btnForgotPass} onClick={onSwitchForgot}>
           Quên mật khẩu
         </button>
 
-        <button
-          className={styles.btnForgotPass}
-          onClick={onSwitchRegister}
-        >
+        <button className={styles.btnForgotPass} onClick={onSwitchRegister}>
           Đăng ký tài khoản
         </button>
 
-        <button
-          className={styles.btnBackQR}
-          onClick={onSwitchQR}
-        >
+        <button className={styles.btnBackQR} onClick={onSwitchQR}>
           Đăng nhập qua mã QR
         </button>
       </div>

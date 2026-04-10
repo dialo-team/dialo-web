@@ -10,7 +10,9 @@ const axiosClient = axios.create({
 // Interceptor để tự động thêm token nếu có
 axiosClient.interceptors.request.use((config) => {
   const token = localStorage.getItem("accessToken");
-  if (token) {
+  const hasAuthorizationHeader = Boolean(config.headers?.Authorization);
+
+  if (token && !hasAuthorizationHeader) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
@@ -28,6 +30,14 @@ axiosClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    const requestUrl: string = originalRequest?.url || "";
+    const isPasswordResetFlow = requestUrl.includes("/api/v1/auth/password/reset");
+
+    // Password reset flow sử dụng resetToken riêng, không dùng refresh access token.
+    if (isPasswordResetFlow) {
+      return Promise.reject(error);
+    }
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       const refreshToken = localStorage.getItem("refreshToken");
