@@ -1,3 +1,4 @@
+
 import { useState, useRef } from "react";
 import styles from "../../styles/module.auth/VerifyForm.module.css";
 import styles2 from "../../styles/module.auth/LoginForm.module.css";
@@ -5,15 +6,17 @@ import {
   confirmResetOtpApi,
   resetPasswordApi,
 } from "../../../../api/auth/ForgotPasswordApi";
-import { Eye, EyeOff, LockIcon } from "lucide-react";
+import { Eye, EyeOff, LockIcon, ArrowLeft } from "lucide-react";
 import { ErrorModal } from "@/app/components/ErrorModal";
 
 export const VerifyPassword = ({
   phone,
   onSwitch,
+  onBack,
 }: {
   phone: string;
   onSwitch: () => void;
+  onBack: () => void;
 }) => {
   const OTP_LENGTH = 6;
 
@@ -37,7 +40,7 @@ export const VerifyPassword = ({
     confirmPass: "",
   });
 
-  // --- OTP input ---
+  // --- OTP INPUT ---
   const handleChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return;
     setError("");
@@ -51,11 +54,39 @@ export const VerifyPassword = ({
     }
   };
 
+  // 
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  // PASTE OTP
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+
+    const pasteData = e.clipboardData.getData("text").replace(/\D/g, "");
+    if (!pasteData) return;
+
+    const newOtp = [...otp];
+
+    for (let i = 0; i < OTP_LENGTH; i++) {
+      newOtp[i] = pasteData[i] || "";
+    }
+
+    setOtp(newOtp);
+
+    const lastIndex = Math.min(pasteData.length, OTP_LENGTH) - 1;
+    if (lastIndex >= 0) {
+      inputRefs.current[lastIndex]?.focus();
+    }
+  };
+
   const handleVerifyOtp = async () => {
     const code = otp.join("").trim();
 
     if (code.length < OTP_LENGTH) {
-      setError("Nhập đủ OTP");
+      setError("Vui lòng nhập đủ 6 số OTP");
       return;
     }
 
@@ -79,15 +110,19 @@ export const VerifyPassword = ({
         }
       } else {
         setError(res.data.message || "OTP không đúng");
+        setOtp(Array(OTP_LENGTH).fill(""));
+        inputRefs.current[0]?.focus();
       }
     } catch (err: any) {
-      setError(err?.response?.data?.message || "OTP sai");
+      setError("OTP không hợp lệ!");
+      setOtp(Array(OTP_LENGTH).fill(""));
+      inputRefs.current[0]?.focus();
     } finally {
       setLoading(false);
     }
   };
 
-  // --- Password reset ---
+  // --- RESET PASSWORD ---
   const handleResetPassword = async () => {
     if (!validatePassword()) return;
 
@@ -97,14 +132,13 @@ export const VerifyPassword = ({
 
       await resetPasswordApi({ password: newPass }, resetToken);
 
-      onSwitch(); // chuyển view sau khi đổi mật khẩu thành công
+      onSwitch();
     } catch (err: any) {
       setError(err?.response?.data?.message || "Lỗi đổi mật khẩu");
     } finally {
       setLoading(false);
     }
   };
-
 
   const validatePassword = () => {
     const errors = {
@@ -125,8 +159,8 @@ export const VerifyPassword = ({
     }
 
     if (newPass && confirmPass && newPass !== confirmPass) {
-      errors.newPass = "Không trùng khớp";
-      errors.confirmPass = "Không trùng khớp";
+      errors.newPass = "";
+      errors.confirmPass = "Mật khẩu nhập lại không trùng khớp";
       valid = false;
     }
 
@@ -137,24 +171,34 @@ export const VerifyPassword = ({
   return (
     <>
       <div className={styles.form}>
+        {/* NÚT QUAY LẠI */}
+        {step === "otp" && (
+          <button className={styles2.btnBackPass} onClick={onBack}>
+            <ArrowLeft size={20} />
+            <p>Quay lại</p>
+          </button>
+        )}
+
         {/* --- STEP OTP --- */}
         {step === "otp" && (
           <div className={styles.verifyForm}>
             <p>Gửi tin nhắn để nhận mã xác thực qua</p>
             <h1>{phone}</h1>
 
-            {error && <span className={styles.errorMsg}>{error}</span>}
+            {/* {error && <span className={styles.errorMsg}>{error}</span>} */}
 
             <div className={styles.otpContainer}>
               {otp.map((val, idx) => (
                 <input
                   key={idx}
-                  ref={(el) => { inputRefs.current[idx] = el; return void 0; }}
+                  ref={(el) => { inputRefs.current[idx] = el; }}
                   className={styles.otpInput}
                   type="text"
                   maxLength={1}
                   value={val}
                   onChange={(e) => handleChange(idx, e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(idx, e)}
+                  onPaste={handlePaste}
                 />
               ))}
             </div>
@@ -169,6 +213,7 @@ export const VerifyPassword = ({
           </div>
         )}
 
+
         {/* --- STEP PASSWORD --- */}
         {step === "password" && (
           <div className={styles2.formInput}>
@@ -181,7 +226,7 @@ export const VerifyPassword = ({
                 </h3>
 
                 {passErrors.newPass && (
-                  <span style={{ color: "red", fontSize: 12, flex: 1, whiteSpace: "nowrap", }}>
+                  <span style={{ color: "red", fontSize: 12, whiteSpace: "nowrap", marginLeft: "auto", }}>
                     {passErrors.newPass}
                   </span>
                 )}
@@ -194,18 +239,9 @@ export const VerifyPassword = ({
                   type={showPass1 ? "text" : "password"}
                   placeholder="Vui lòng nhập mật khẩu"
                   value={newPass}
+ 
                   onChange={(e) => {
-                    const value = e.target.value;
-                    setNewPass(value);
-
-                    setPassErrors((prev) => ({
-                      ...prev,
-                      newPass: "",
-                      confirmPass:
-                        confirmPass && value !== confirmPass
-                          ? "Mật khẩu không khớp"
-                          : "",
-                    }));
+                    setNewPass(e.target.value);
                   }}
                 />
 
@@ -231,7 +267,7 @@ export const VerifyPassword = ({
                 </h3>
 
                 {passErrors.confirmPass && (
-                  <span style={{ color: "red", fontSize: 12, flex: 1, marginLeft: "auto" }}>
+                  <span style={{ color: "red", fontSize: 12, marginLeft: "auto", whiteSpace: "nowrap" }}>
                     {passErrors.confirmPass}
                   </span>
                 )}
@@ -246,16 +282,7 @@ export const VerifyPassword = ({
                   placeholder="Nhập lại mật khẩu"
                   value={confirmPass}
                   onChange={(e) => {
-                    const value = e.target.value;
-                    setConfirmPass(value);
-
-                    setPassErrors((prev) => ({
-                      ...prev,
-                      confirmPass:
-                        newPass && value !== newPass
-                          ? "Mật khẩu không khớp"
-                          : "",
-                    }));
+                    setConfirmPass(e.target.value);
                   }}
                 />
 

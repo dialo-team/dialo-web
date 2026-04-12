@@ -1,114 +1,36 @@
 
-
-// import { useState } from "react";
-// import styles from "../../styles/module.auth/LoginForm.module.css";
-// import { verifyOtpApi } from "../../../../api/auth/RegisterFormApi";
-
-// export const VerifyLogin = ({
-//   phone,
-//   onSwitch,
-// }: {
-//   phone: string;
-//   onSwitch: () => void;
-// }) => {
-//   const [otp, setOtp] = useState("");
-//   const [loading, setLoading] = useState(false);
-
-//   const handleVerify = async () => {
-//     if (!otp) {
-//       alert("Vui lòng nhập OTP");
-//       return;
-//     }
-
-//     try {
-//       setLoading(true);
-
-//       await verifyOtpApi({
-//         phone,
-//         otp,
-//       });
-
-//       alert("Xác thực thành công!");
-
-//       // 👉 quay về login
-//       onSwitch();
-//     } catch (err: any) {
-//       alert(err.message || "OTP không đúng");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   return (
-//     <div className={styles.form}>
-//       <div className={styles.verifyForm}>
-//         <p>Gửi tin nhắn để nhận mã xác thực</p>
-
-//         {/* HIỂN THỊ PHONE */}
-//         <h1>{phone}</h1>
-
-//         <div
-//           className={styles.inputGroup}
-//           style={{ borderBottomColor: "#008fe5", width: "80%" }}
-//         >
-//           <input
-//             className={styles.verifyField}
-//             type="text"
-//             placeholder="Nhập mã xác thực"
-//             value={otp}
-//             onChange={(e) => setOtp(e.target.value)}
-//           />
-//         </div>
-
-//         <button
-//           className={styles.btnLogin}
-//           onClick={handleVerify}
-//           disabled={loading}
-//         >
-//           {loading ? "Đang xác thực..." : "Xác thực"}
-//         </button>
-
-//         <span>
-//           Soạn tin nhắn với cú pháp "DIABLOPC" gửi đến 6020 (1000đ/tin)...
-//         </span>
-//       </div>
-//     </div>
-//   );
-// };
-
-
-
 import { useState, useRef } from "react";
 import styles from "../../styles/module.auth/VerifyForm.module.css";
+import styles2 from "../../styles/module.auth/LoginForm.module.css";
 import { verifyLoginOtpApi } from "../../../../api/auth/LoginPassApi";
 import { ErrorModal } from "@/app/components/ErrorModal";
 import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 
 export const VerifyLogin = ({
   phone,
   onSwitch,
+  onBack, 
 }: {
   phone: string;
   onSwitch: () => void;
+  onBack: () => void; 
 }) => {
   const OTP_LENGTH = 6;
   const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(""));
   const [loading, setLoading] = useState(false);
-
-  // Refs cho từng input
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-
   const [error, setError] = useState("");
+
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const navigate = useNavigate();
 
   const handleChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return; // Chỉ cho nhập số
+    if (!/^\d*$/.test(value)) return;
+
     const newOtp = [...otp];
-    newOtp[index] = value.slice(-1); // chỉ lấy 1 ký tự
+    newOtp[index] = value.slice(-1);
     setOtp(newOtp);
 
-    // Tự focus sang ô tiếp theo
     if (value && index < OTP_LENGTH - 1) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -120,8 +42,30 @@ export const VerifyLogin = ({
     }
   };
 
+  // PASTE OTP
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+
+    const pasteData = e.clipboardData.getData("text").replace(/\D/g, "");
+    if (!pasteData) return;
+
+    const newOtp = [...otp];
+
+    for (let i = 0; i < OTP_LENGTH; i++) {
+      newOtp[i] = pasteData[i] || "";
+    }
+
+    setOtp(newOtp);
+
+    const lastIndex = Math.min(pasteData.length, OTP_LENGTH) - 1;
+    if (lastIndex >= 0) {
+      inputRefs.current[lastIndex]?.focus();
+    }
+  };
+
   const handleVerify = async () => {
     const code = otp.join("");
+
     if (code.length < OTP_LENGTH) {
       setError("Vui lòng nhập đủ 6 số OTP");
       return;
@@ -136,17 +80,19 @@ export const VerifyLogin = ({
       if (res.data.data?.accessToken) {
         localStorage.setItem("accessToken", res.data.data.accessToken);
         localStorage.setItem("refreshToken", res.data.data.refreshToken);
-        // onSwitch(); // hoặcnếu muốn redirect ngay
-        navigate("/home") 
+
+        navigate("/home"); 
       } else {
-        setError(res.data.message || "Xác thực thất bại!");
+        setError( "OTP không hợp lệ!");
+        setOtp(Array(OTP_LENGTH).fill(""));
+        inputRefs.current[0]?.focus();
       }
     } catch (err: any) {
-
       if (err.response) {
-        // Lỗi từ server
-        if (err.response.status === 500 ) {
-          setError("OTP không đúng");
+        if (err.response.status === 500) {
+          setError("OTP không hợp lệ!");
+          setOtp(Array(OTP_LENGTH).fill(""));
+          inputRefs.current[0]?.focus();
         } else {
           setError("Đã xảy ra lỗi. Vui lòng thử lại sau.");
         }
@@ -161,11 +107,15 @@ export const VerifyLogin = ({
   return (
     <>
       <div className={styles.form}>
+        {/* NÚT QUAY LẠI */}
+        <button className={styles2.btnBackPass} onClick={onBack}>
+          <ArrowLeft size={20} />
+          <p>Quay lại</p>
+        </button>
+
         <div className={styles.verifyForm}>
           <p>Gửi tin nhắn để nhận mã xác thực qua</p>
           <h1>{phone}</h1>
-
-          {error && <span className={styles.errorMsg}>{error}</span>}
 
           <div className={styles.otpContainer}>
             {otp.map((val, idx) => (
@@ -178,6 +128,7 @@ export const VerifyLogin = ({
                 value={val}
                 onChange={(e) => handleChange(idx, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(idx, e)}
+                onPaste={handlePaste} 
               />
             ))}
           </div>
@@ -196,4 +147,3 @@ export const VerifyLogin = ({
     </>
   );
 };
-

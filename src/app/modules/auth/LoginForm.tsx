@@ -45,25 +45,7 @@ export const LoginForm = () => {
                 intensity={3}
                 color="#ffffff"
               />
-              {/* <directionalLight
-                position={[0, -5, 5]}
-                intensity={3}
-                color="#ffffff"
-              /> */}
-              {/* <spotLight
-                position={[-10, 10, 5]}
-                angle={0.5}
-                penumbra={1}
-                intensity={5}
-                color="#ffffff"
-                distance={30}
-              />
-              <pointLight
-                position={[10, -5, 5]}
-                intensity={3}
-                color="#FF8040"
-              /> */}
-
+              
               <group position={[3.5, 3, 0]} scale={1.5}>
                 <Decoration />
               </group>
@@ -105,14 +87,6 @@ export const LoginForm = () => {
             <LoginQR onSwitchLogin={() => setCurrentView("pass")} />
           )}
 
-          {/* {currentView === "pass" && (
-            <LoginPass
-              onSwitchQR={() => setCurrentView("qr")}
-              onSwitchForgot={() => setCurrentView("forgot")}
-              onSwitchRegister={() => setCurrentView("register")}
-            />
-          )} */}
-
           {currentView === "pass" && (
             <LoginPass
               onSwitchQR={() => setCurrentView("qr")}
@@ -125,10 +99,6 @@ export const LoginForm = () => {
             />
           )}
 
-          {/* {currentView === "register" && (
-            <RegisterForm onSwitchLogin={() => setCurrentView("pass")} />
-          )} */}
-
           {currentView === "register" && (
             <RegisterForm
               onSwitchLogin={() => setCurrentView("pass")}
@@ -138,13 +108,6 @@ export const LoginForm = () => {
               }}
             />
           )}
-
-          {/* {currentView === "forgot" && (
-            <LoginForgotPass
-              onBack={() => setCurrentView("pass")}
-              onVerify={() => setCurrentView("verify")}
-            />
-          )} */}
 
           {currentView === "forgot" && (
             <LoginForgotPass
@@ -158,8 +121,9 @@ export const LoginForm = () => {
 
           {currentView === "verify" && (
             <VerifyPassword
-              phone={phoneVerify}       // bắt buộc phải có
-              onSwitch={() => setCurrentView("pass")} // thay cho onSwitch
+              phone={phoneVerify}       
+              onSwitch={() => setCurrentView("pass")} 
+              onBack={() => setCurrentView("forgot")} 
             />
           )}
 
@@ -167,11 +131,16 @@ export const LoginForm = () => {
             <VerifyRegisterForm
               phone={phoneVerify}
               onSwitch={() => setCurrentView("pass")}
+              onBack={() => setCurrentView("register")}
+              
             />
           )}
 
           {currentView === "verifyLogin" && (
-            <VerifyLogin phone={phoneVerify} onSwitch={() => navigation("/home")} />
+            <VerifyLogin phone={phoneVerify} 
+            onSwitch={() => navigation("/home")}
+            onBack={() => setCurrentView("pass")} 
+            />
           )}
 
         </div>
