@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { AccountModal } from "@/app/modules/myAccount/AccountModal";
 import { ChangePasswordModal } from "@/app/modules/myAccount/ChangePasswordModal";
+import { signoutApi } from "../../../../api/auth/LoginPassApi";
 
 interface Props {
   open: boolean;
@@ -23,8 +24,27 @@ export const SettingsPopup = ({ open, onClose }: Props) => {
   const [openAccount, setOpenAccount] = useState(false);
   const [openChangePass, setOpenChangePass] = useState(false);
 
-  const handleLogout = () => {
-    navigate("/login");
+  const handleLogout = async () => {
+    const refreshToken = localStorage.getItem("refreshToken");
+
+    if (!refreshToken) {
+      console.warn("Missing refreshToken, skip signout API call");
+      return;
+    }
+
+    try {
+      // Gọi API signout của BE (Bearer token tự được gắn bởi axios interceptor)
+      const res = await signoutApi({ refreshToken });
+      console.log("Signout success:", res.data);
+
+      // Chỉ xóa token và điều hướng khi signout thành công
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      navigate("/login");
+    } catch (err) {
+      // Nếu signout fail thì giữ nguyên màn hiện tại
+      console.error("Signout API error:", err);
+    }
   };
 
   return (

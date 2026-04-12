@@ -1,5 +1,3 @@
-//npm install three @react-three/fiber @react-three/drei lucide-react simplex-noise
-//chay cai o tren de chay <3
 
 import logoDiablo from "../../../assets/logo-diablo.svg";
 import styles from "../../styles/module.auth/LoginForm.module.css";
@@ -12,9 +10,20 @@ import Decoration from "./Decoration";
 import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { RegisterForm } from "@/app/modules/auth/RegisterForm";
+import { VerifyRegisterForm } from "./VerifyRegisterForm";
+import { VerifyLogin } from "./VerifyLogin";
+import { useNavigate } from "react-router-dom";
+import React from "react";
+
+
+
 export const LoginForm = () => {
   const [currentView, setCurrentView] = useState("pass");
   const [isMobile, setIsMobile] = useState(false);
+  const [phoneVerify, setPhoneVerify] = useState("");
+  const navigation = useNavigate()
+
+
 
   useEffect(() => {
     const media = window.matchMedia("(max-width: 768px)");
@@ -36,25 +45,7 @@ export const LoginForm = () => {
                 intensity={3}
                 color="#ffffff"
               />
-              {/* <directionalLight
-                position={[0, -5, 5]}
-                intensity={3}
-                color="#ffffff"
-              /> */}
-              {/* <spotLight
-                position={[-10, 10, 5]}
-                angle={0.5}
-                penumbra={1}
-                intensity={5}
-                color="#ffffff"
-                distance={30}
-              />
-              <pointLight
-                position={[10, -5, 5]}
-                intensity={3}
-                color="#FF8040"
-              /> */}
-
+              
               <group position={[3.5, 3, 0]} scale={1.5}>
                 <Decoration />
               </group>
@@ -101,21 +92,57 @@ export const LoginForm = () => {
               onSwitchQR={() => setCurrentView("qr")}
               onSwitchForgot={() => setCurrentView("forgot")}
               onSwitchRegister={() => setCurrentView("register")}
+              onSwitchVerify={(phone: string) => {
+                setPhoneVerify(phone);
+                setCurrentView("verifyLogin");
+              }}
             />
           )}
 
           {currentView === "register" && (
-            <RegisterForm onSwitchLogin={() => setCurrentView("pass")} />
+            <RegisterForm
+              onSwitchLogin={() => setCurrentView("pass")}
+              onSwitchVerify={(phone: string) => {
+                setPhoneVerify(phone);
+                setCurrentView("verifyRegisterForm");
+              }}
+            />
           )}
+
           {currentView === "forgot" && (
             <LoginForgotPass
               onBack={() => setCurrentView("pass")}
-              onVerify={() => setCurrentView("verify")}
+              onVerify={(phone: string) => {
+                setPhoneVerify(phone);
+                setCurrentView("verify");
+              }}
             />
           )}
+
           {currentView === "verify" && (
-            <VerifyPassword onSwitch={() => setCurrentView("pass")} />
+            <VerifyPassword
+              phone={phoneVerify}       
+              onSwitch={() => setCurrentView("pass")} 
+              onBack={() => setCurrentView("forgot")} 
+            />
           )}
+
+          {currentView === "verifyRegisterForm" && (
+            <VerifyRegisterForm
+              phone={phoneVerify}
+              onSwitch={() => setCurrentView("pass")}
+              onBack={() => setCurrentView("register")}
+              
+            />
+          )}
+
+          {currentView === "verifyLogin" && (
+            <VerifyLogin phone={phoneVerify} 
+            onSwitch={() => navigation("/home")}
+            onBack={() => setCurrentView("pass")} 
+            />
+          )}
+
         </div>
       </div>
     </div>

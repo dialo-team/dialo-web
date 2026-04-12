@@ -1,0 +1,87 @@
+.form {
+  width: 100%;
+  display: flex;
+  flex-direction: column; 
+  align-items: center;   
+  margin-top: 24px;
+  width: min(100%, 460px);
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  gap: 10px;
+}
+
+.verifyForm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(100%, 400px);
+  background-color: #e1eff9;
+  border-radius: 8px;
+  padding: 24px;
+  gap: 16px;
+}
+
+.verifyForm h1 {
+  color: #0189e7;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.verifyForm p {
+  color: #666666;
+  font-size: 14px;
+  text-align: center;
+}
+
+.errorMsg {
+  color: red;
+  font-size: 12px;
+  align-self: flex-start;
+}
+
+.otpContainer {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin: 8px 0 16px 0;
+}
+
+.otpInput {
+  width: 40px;
+  height: 50px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  border: 1px solid #008fe5;
+  border-radius: 6px;
+  outline: none;
+  transition: border 0.2s, box-shadow 0.2s;
+  background-color: white;
+}
+
+.otpInput:focus {
+  border-color: #005bb5;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+}
+
+.btnLogin {
+  width: 100%;
+  padding: 10px 0;
+  background-color: var(--main-color);
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btnLogin:disabled {
+  background-color: #aaa;
+  cursor: not-allowed;
+}
+
+.btnLogin:hover:not(:disabled) {
+  background-color: #006fcf;
+}

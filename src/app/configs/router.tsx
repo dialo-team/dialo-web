@@ -10,26 +10,18 @@ import { FriendInvite } from "@/app/modules/social/friendPage/friendInvite/Frien
 import { GroupInvite } from "@/app/modules/social/friendPage/groupInvite/GroupInvite";
 import { ChatPage } from "../modules/message/ChatPage";
 import { ChatWindow } from "../modules/message/ChatWindow";
+import { PrivateRoute } from "../modules/auth/PrivateRoute";
 
 
 const adminRoute: RouteObject[] = [];
 
 const userRoute: RouteObject[] = [];
 
-const guestRoute = [
-  {
-    path: "/login", // Đường dẫn trên trình duyệt
-    element: <LoginPage />, // Component sẽ hiện ra
-  },
-
-  // Nếu muốn vào trang chủ (/) cũng hiện Login luôn thì thêm cái này:
-  {
-    path: "/",
-    element: <LoginPage />,
-  },
+const protectedRoute = [
   {
     path: "/home",
-    element: <HomePage />,
+    element: <PrivateRoute><HomePage /></PrivateRoute>,
+    // element: <HomePage />,
     children: [
       {
         path: "chat",
@@ -37,7 +29,7 @@ const guestRoute = [
         children: [
           {
             index: true,
-            element: <ChatWindow />, 
+            element: <ChatWindow />,
           },
         ],
       },
@@ -69,10 +61,25 @@ const guestRoute = [
       },
     ],
   },
+]
+
+const guestRoute = [
+  {
+    path: "/login", // Đường dẫn trên trình duyệt
+    element: <LoginPage />, // Component sẽ hiện ra
+  },
+
+  // Nếu muốn vào trang chủ (/) cũng hiện Login luôn thì thêm cái này:
+  {
+    path: "/",
+    element: <LoginPage />,
+  },
+
 ];
 
 export const routes = createBrowserRouter([
   ...guestRoute,
   ...userRoute,
   ...adminRoute,
+  ...protectedRoute
 ]);
