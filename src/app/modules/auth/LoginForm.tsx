@@ -13,7 +13,6 @@ import { RegisterForm } from "@/app/modules/auth/RegisterForm";
 import { VerifyRegisterForm } from "./VerifyRegisterForm";
 import { VerifyLogin } from "./VerifyLogin";
 import { useNavigate } from "react-router-dom";
-import React from "react";
 
 
 
@@ -21,6 +20,7 @@ export const LoginForm = () => {
   const [currentView, setCurrentView] = useState("pass");
   const [isMobile, setIsMobile] = useState(false);
   const [phoneVerify, setPhoneVerify] = useState("");
+  const [registerPassword, setRegisterPassword] = useState("");
   const navigation = useNavigate()
 
 
@@ -45,7 +45,7 @@ export const LoginForm = () => {
                 intensity={3}
                 color="#ffffff"
               />
-              
+
               <group position={[3.5, 3, 0]} scale={1.5}>
                 <Decoration />
               </group>
@@ -102,8 +102,9 @@ export const LoginForm = () => {
           {currentView === "register" && (
             <RegisterForm
               onSwitchLogin={() => setCurrentView("pass")}
-              onSwitchVerify={(phone: string) => {
+              onSwitchVerify={(phone: string, password: string) => {
                 setPhoneVerify(phone);
+                setRegisterPassword(password);
                 setCurrentView("verifyRegisterForm");
               }}
             />
@@ -121,25 +122,26 @@ export const LoginForm = () => {
 
           {currentView === "verify" && (
             <VerifyPassword
-              phone={phoneVerify}       
-              onSwitch={() => setCurrentView("pass")} 
-              onBack={() => setCurrentView("forgot")} 
+              phone={phoneVerify}
+              onSwitch={() => setCurrentView("pass")}
+              onBack={() => setCurrentView("forgot")}
             />
           )}
 
           {currentView === "verifyRegisterForm" && (
             <VerifyRegisterForm
               phone={phoneVerify}
+              password={registerPassword}
               onSwitch={() => setCurrentView("pass")}
               onBack={() => setCurrentView("register")}
-              
             />
           )}
 
           {currentView === "verifyLogin" && (
-            <VerifyLogin phone={phoneVerify} 
-            onSwitch={() => navigation("/home")}
-            onBack={() => setCurrentView("pass")} 
+            <VerifyLogin
+              phone={phoneVerify}
+              onSwitch={() => navigation("/home")}
+              onBack={() => setCurrentView("pass")}
             />
           )}
 

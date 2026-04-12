@@ -9,7 +9,7 @@ export const RegisterForm = ({
   onSwitchVerify,
 }: {
   onSwitchLogin: () => void;
-  onSwitchVerify: (phone: string) => void;
+  onSwitchVerify: (phone: string, password: string) => void;
 }) => {
   const [showPass, setShowPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
@@ -75,8 +75,8 @@ export const RegisterForm = ({
 
     try {
       setLoading(true);
-      await registerApi({ phone, password });
-      onSwitchVerify(phone);
+      await registerApi({ phone });
+      onSwitchVerify(phone, password);
     } catch (err: any) {
       const status = err?.response?.status;
       const path = err?.response?.data?.path;

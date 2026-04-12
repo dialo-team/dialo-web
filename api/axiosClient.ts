@@ -18,13 +18,6 @@ axiosClient.interceptors.request.use((config) => {
   return config;
 });
 
-// axiosClient.interceptors.response.use(
-//   (response) => response,
-//   (error) => {
-//     return Promise.reject(error.response?.data || error);
-//   }
-// );
-
 
 axiosClient.interceptors.response.use(
   (response) => response,

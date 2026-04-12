@@ -4,11 +4,9 @@ import axiosClient from "../axiosClient";
  * 1. Đăng ký tài khoản
  */
 export const registerApi = (data: {
-//   fullName: string;
   phone: string;
-  password: string;
 }) => {
-  return axiosClient.post("/api/v1/auth/old/signup", data);
+  return axiosClient.post("/api/v1/auth/signup/request", data);
 };
 
 /**
@@ -16,7 +14,8 @@ export const registerApi = (data: {
  */
 export const verifyOtpApi = (data: {
   phone: string;
+  password: string;
   otp: string;
 }) => {
-  return axiosClient.post("/api/v1/auth/old/signup/verify", data);
+  return axiosClient.post("/api/v1/auth/signup", data);
 };

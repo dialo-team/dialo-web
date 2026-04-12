@@ -7,10 +7,12 @@ import { ArrowLeft } from "lucide-react";
 
 export const VerifyRegisterForm = ({
   phone,
+  password,
   onSwitch,
   onBack,
 }: {
   phone: string;
+  password: string;
   onSwitch: () => void;
   onBack: () => void;
 }) => {
@@ -73,9 +75,9 @@ export const VerifyRegisterForm = ({
       setLoading(true);
       setError("");
 
-      const res = await verifyOtpApi({ phone, otp: code });
+      const res = await verifyOtpApi({ phone, password, otp: code });
 
-      if (res.data.data?.result) {
+      if (res.data.status === 200) {
         setSuccess("Đăng ký thành công!");
         setError("");
         onSwitch();
