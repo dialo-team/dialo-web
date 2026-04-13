@@ -80,7 +80,7 @@ export const VerifyRegisterForm = ({
       if (res.data.status === 200) {
         setSuccess("Đăng ký thành công!");
         setError("");
-        onSwitch();
+        // onSwitch();
       } else {
         setError("OTP không hợp lệ!");
         setOtp(Array(OTP_LENGTH).fill(""));
@@ -139,7 +139,13 @@ export const VerifyRegisterForm = ({
 
       <ErrorModal message={error} onClose={() => setError("")} />
       {success && (
-        <ErrorModal  message={success} onClose={() => setSuccess("")} />
+        <ErrorModal
+          message={success}
+          onClose={() => {
+            setSuccess("");
+            onSwitch(); 
+          }}
+        />
       )}
     </>
   );

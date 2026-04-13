@@ -3,17 +3,16 @@ import styles from "../../styles/module.auth/LoginForm.module.css";
 import { LockIcon, SmartphoneIcon, Eye, EyeOff } from "lucide-react";
 import { loginPassApi } from "../../../../api/auth/LoginPassApi";
 import { ErrorModal } from "@/app/components/ErrorModal";
+import { useNavigate } from "react-router-dom";
 
 export const LoginPass = ({
   onSwitchQR,
   onSwitchForgot,
   onSwitchRegister,
-  onSwitchVerify,
 }: {
   onSwitchQR: () => void;
   onSwitchForgot: () => void;
   onSwitchRegister: () => void;
-  onSwitchVerify: (phone: string) => void;
 }) => {
   const [showPassWord, setShowPassWord] = useState(false);
   const [phone, setPhone] = useState("");
@@ -25,6 +24,8 @@ export const LoginPass = ({
     phone: "",
     password: "",
   });
+
+  const navigate = useNavigate();
 
   // VALIDATE
   const validate = () => {
@@ -53,12 +54,32 @@ export const LoginPass = ({
 
     try {
       setLoading(true);
-      await loginPassApi({ phone, password });
-      onSwitchVerify(phone);
+
+      const res = await loginPassApi({ phone, password });
+
+      if (res.data.status === 200) {
+        const data = res.data.data;
+
+        //  LƯU TOKEN 
+        localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem("refreshToken", data.refreshToken);
+        localStorage.setItem("tokenType", data.tokenType);
+        localStorage.setItem("sessId", data.sessId);
+
+        navigate("/home");
+
+      } else {
+        if (res.data.status === 500) {
+          setError("Số điện thoại hoặc mật khẩu không đúng");
+        } else {
+          setError(res.data.message || "Đăng nhập thất bại");
+        }
+      }
+
     } catch (err: any) {
       const status = err?.response?.status;
 
-      if (status === 403) {
+      if (status === 500) {
         setError("Số điện thoại hoặc mật khẩu không đúng");
       } else {
         setError(err?.response?.data?.message || "Đăng nhập thất bại");
@@ -103,7 +124,7 @@ export const LoginPass = ({
               onChange={(e) => {
                 const value = e.target.value.replace(/\D/g, "");
                 setPhone(value);
-                setErrors((prev) => ({ ...prev, phone: "" })); // 🔥 xoá lỗi ngay
+                setErrors((prev) => ({ ...prev, phone: "" })); 
               }}
             />
           </div>

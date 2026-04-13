@@ -1,6 +1,6 @@
 import { useState } from "react";
 import styles from "../../styles/module.auth/LoginForm.module.css";
-import { LockIcon, SmartphoneIcon, User, Eye, EyeOff } from "lucide-react";
+import { LockIcon, SmartphoneIcon, Eye, EyeOff } from "lucide-react";
 import { registerApi } from "../../../../api/auth/RegisterFormApi";
 import { ErrorModal } from "@/app/components/ErrorModal";
 
@@ -14,7 +14,6 @@ export const RegisterForm = ({
   const [showPass, setShowPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
 
-  const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");

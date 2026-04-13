@@ -40,6 +40,8 @@ export const VerifyPassword = ({
     confirmPass: "",
   });
 
+  const [success, setSuccess] = useState("");
+
   // --- OTP INPUT ---
   const handleChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return;
@@ -100,7 +102,7 @@ export const VerifyPassword = ({
         otp: code,
       });
 
-      if (res.data.status === 0) {
+      if (res.data.status === 200) {
         const token = res.data.data?.resetToken;
         if (token) {
           setResetToken(token);
@@ -131,8 +133,9 @@ export const VerifyPassword = ({
       setError("");
 
       await resetPasswordApi({ password: newPass }, resetToken);
+      setSuccess("Đổi mật khẩu thành công!");
 
-      onSwitch();
+      // onSwitch();
     } catch (err: any) {
       setError(err?.response?.data?.message || "Lỗi đổi mật khẩu");
     } finally {
@@ -239,7 +242,7 @@ export const VerifyPassword = ({
                   type={showPass1 ? "text" : "password"}
                   placeholder="Vui lòng nhập mật khẩu"
                   value={newPass}
- 
+
                   onChange={(e) => {
                     setNewPass(e.target.value);
                   }}
@@ -310,6 +313,15 @@ export const VerifyPassword = ({
 
       {/* Error modal */}
       <ErrorModal message={error} onClose={() => setError("")} />
+      {success && (
+        <ErrorModal
+          message={success}
+          onClose={() => {
+            setSuccess("");
+            onSwitch();
+          }}
+        />
+      )}
     </>
   );
 };

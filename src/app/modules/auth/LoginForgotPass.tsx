@@ -16,8 +16,12 @@ export const LoginForgotPass = ({
   const [loading, setLoading] = useState(false);
 
   const handleSendOtp = async () => {
+
     if (!phone) {
-      setError("Số điện thoại không được rỗng");
+      setError("Số điện thoại không được để trống");
+      return;
+    } else if (!/^\d{10}$/.test(phone)) {
+      setError("Phải 10 số");
       return;
     }
 
@@ -25,15 +29,26 @@ export const LoginForgotPass = ({
       setLoading(true);
       setError("");
 
-      await requestResetPasswordApi({
+      const res = await requestResetPasswordApi({
         source: phone,
         type: "SMS",
       });
 
-      onVerify(phone); // chuyển sang màn OTP
+      if (res.data.status !== 200) {
+        setError("Số điện thoại không đúng");
+        return;
+      }
+
+      onVerify(phone);
+
 
     } catch (err: any) {
-      setError("Số điện thoại phải 10 số");
+      if (err?.response?.status === 500) {
+        setError("Số điện thoại không đúng");
+      } else {
+        setError(err?.response?.data?.message || "Lỗi hệ thống");
+      }
+
     } finally {
       setLoading(false);
     }
