@@ -1,22 +1,32 @@
+
+
 import { useState, useEffect } from "react";
 import styles from "../../../../styles/module.social/FriendsPage/searchAndAddFriend/InviteFriendModal.module.css";
 import type { User } from "@/app/types/social/User";
+import { userApi } from "../../../../../../api/social/searchAndAddFriend/userApi";
 
 interface Props {
   open: boolean;
   onClose: () => void;
   user: User | null;
+
+  // popup message (ErrorModal)
   onSend: (message: string) => void;
+
+  // clear search result
+  onSuccess: () => void;
 }
 
 export const InviteFriendModal = ({
   open,
   onClose,
-  user, // fallback nếu chưa có
+  user,
   onSend,
+  onSuccess,
 }: Props) => {
   const [message, setMessage] = useState("");
 
+  // auto fill message
   useEffect(() => {
     if (user) {
       setMessage(
@@ -26,6 +36,29 @@ export const InviteFriendModal = ({
   }, [user]);
 
   if (!open || !user) return null;
+
+  // send request API
+  const handleSendRequest = async () => {
+  if (!user) return;
+
+  // 1. ĐÓNG MODAL TRƯỚC
+  onClose();
+
+  try {
+    await userApi.sendFriendRequest(user.id, message);
+
+    // 2. báo thành công
+    onSend("Gửi lời mời thành công!");
+
+    // 3. xóa search result
+    onSuccess();
+  } catch (err) {
+    console.error(err);
+
+    // 2. báo lỗi
+    onSend("Gửi lời mời thất bại!");
+  }
+};
 
   return (
     <div className={styles.overlay} onClick={onClose}>
@@ -55,10 +88,7 @@ export const InviteFriendModal = ({
 
           <button
             className={styles.confirm}
-            onClick={() => {
-              onSend(message);
-              onClose();
-            }}
+            onClick={handleSendRequest}
           >
             Gửi yêu cầu
           </button>

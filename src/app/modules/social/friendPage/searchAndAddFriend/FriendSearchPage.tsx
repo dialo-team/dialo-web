@@ -2,10 +2,9 @@ import { useSearchParams } from "react-router-dom";
 import styles from "../../../../styles/module.social/FriendsPage/searchAndAddFriend/FriendSearchPage.module.css";
 import { useEffect, useState } from "react";
 import { InviteFriendModal } from "./InviteFriendModal";
-import { userApi } from "../../../../../../api/social/searchAndAddFriend/userApi"
+import { userApi } from "../../../../../../api/social/searchAndAddFriend/userApi";
 import type { User } from "@/app/types/social/User";
-
-
+import { ErrorModal } from "@/app/components/ErrorModal";
 
 export const FriendSearchPage = () => {
   const [params] = useSearchParams();
@@ -15,9 +14,12 @@ export const FriendSearchPage = () => {
   const [loading, setLoading] = useState(false);
   const [openAdd, setOpenAdd] = useState(false);
 
+  // popup message
+  const [modalMessage, setModalMessage] = useState("");
+
   const isValidPhone = /^\d{10}$/.test(phone);
 
-  //  gọi API
+  // search API
   useEffect(() => {
     if (!isValidPhone) {
       setUser(null);
@@ -28,7 +30,6 @@ export const FriendSearchPage = () => {
       setLoading(true);
 
       const res = await userApi.getUserByPhone(phone);
-      console.log("RES:", res);
 
       setUser(res);
       setLoading(false);
@@ -42,15 +43,12 @@ export const FriendSearchPage = () => {
       <div className={styles.container}>
         <h2>Kết quả tìm kiếm</h2>
 
-        {/* không hợp lệ */}
         {!isValidPhone && (
           <span>Không có kết quả phù hợp</span>
         )}
 
-        {/* loading */}
         {loading && <span>Đang tìm kiếm...</span>}
 
-        {/* có user */}
         {user && isValidPhone && (
           <div className={styles.userItem}>
             <div className={styles.userInfo}>
@@ -81,20 +79,27 @@ export const FriendSearchPage = () => {
           </div>
         )}
 
-        {/*  không tìm thấy */}
         {!loading && isValidPhone && !user && (
           <span>Không có kết quả phù hợp</span>
         )}
       </div>
 
+      {/* MODAL GỬI LỜI MỜI */}
       <InviteFriendModal
         open={openAdd}
         onClose={() => setOpenAdd(false)}
         user={user}
-        onSend={(msg) => {
-          console.log("Gửi lời mời tới:", user?.userName);
-          console.log("Lời giới thiệu:", msg);
+        onSend={(msg) => setModalMessage(msg)}
+        onSuccess={() => {
+          setUser(null);      // 🔥 xóa kết quả search
+          setOpenAdd(false);  // đóng modal
         }}
+      />
+
+      {/* SUCCESS / ERROR MODAL */}
+      <ErrorModal
+        message={modalMessage}
+        onClose={() => setModalMessage("")}
       />
     </>
   );

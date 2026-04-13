@@ -14,4 +14,21 @@ export const userApi = {
       return null;
     }
   },
+
+  sendFriendRequest: async (
+    targetId: string,
+    reason: string
+  ): Promise<void> => {
+    try {
+      await axiosClient.post(
+        `/api/v1/users/${targetId}/request`,
+        {
+          reason,
+        }
+      );
+    } catch (error) {
+      console.error("sendFriendRequest error:", error);
+      throw error;
+    }
+  },
 };
