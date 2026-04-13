@@ -11,9 +11,6 @@ import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { RegisterForm } from "@/app/modules/auth/RegisterForm";
 import { VerifyRegisterForm } from "./VerifyRegisterForm";
-import { VerifyLogin } from "./VerifyLogin";
-import { useNavigate } from "react-router-dom";
-
 
 
 export const LoginForm = () => {
@@ -21,7 +18,6 @@ export const LoginForm = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [phoneVerify, setPhoneVerify] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
-  const navigation = useNavigate()
 
 
 
@@ -92,10 +88,6 @@ export const LoginForm = () => {
               onSwitchQR={() => setCurrentView("qr")}
               onSwitchForgot={() => setCurrentView("forgot")}
               onSwitchRegister={() => setCurrentView("register")}
-              onSwitchVerify={(phone: string) => {
-                setPhoneVerify(phone);
-                setCurrentView("verifyLogin");
-              }}
             />
           )}
 
@@ -134,14 +126,6 @@ export const LoginForm = () => {
               password={registerPassword}
               onSwitch={() => setCurrentView("pass")}
               onBack={() => setCurrentView("register")}
-            />
-          )}
-
-          {currentView === "verifyLogin" && (
-            <VerifyLogin
-              phone={phoneVerify}
-              onSwitch={() => navigation("/home")}
-              onBack={() => setCurrentView("pass")}
             />
           )}
 

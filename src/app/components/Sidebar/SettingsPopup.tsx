@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { User, KeyRound, LogOut } from "lucide-react";
 import styles from "../../styles/components/SettingsPopup.module.css";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AccountModal } from "@/app/modules/myAccount/AccountModal";
 import { ChangePasswordModal } from "@/app/modules/myAccount/ChangePasswordModal";
 import { signoutApi } from "../../../../api/auth/LoginPassApi";
@@ -23,6 +23,24 @@ export const SettingsPopup = ({ open, onClose }: Props) => {
   const navigate = useNavigate();
   const [openAccount, setOpenAccount] = useState(false);
   const [openChangePass, setOpenChangePass] = useState(false);
+  const popupRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      popupRef.current &&
+      !popupRef.current.contains(event.target as Node)
+    ) {
+      onClose(); // đóng popup
+    }
+  };
+
+  document.addEventListener("mousedown", handleClickOutside);
+
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, [onClose]);
 
   const handleLogout = async () => {
     const refreshToken = localStorage.getItem("refreshToken");
@@ -52,6 +70,7 @@ export const SettingsPopup = ({ open, onClose }: Props) => {
       <AnimatePresence>
         {open && (
           <motion.div
+            ref={popupRef}
             initial={{ opacity: 0, y: 15, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
