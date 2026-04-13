@@ -20,6 +20,7 @@ axiosClient.interceptors.request.use((config) => {
 
 
 axiosClient.interceptors.response.use(
+  // (response) => response,
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
@@ -50,5 +51,6 @@ axiosClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
 
 export default axiosClient;

@@ -1,21 +1,27 @@
 import { useState, useEffect } from "react";
 import styles from "../../../../styles/module.social/FriendsPage/searchAndAddFriend/InviteFriendModal.module.css";
+import type { User } from "@/app/types/social/User";
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  user: any;
+  user: User | null;
   onSend: (message: string) => void;
 }
 
-export const InviteFriendModal = ({ open, onClose, user, onSend }: Props) => {
-  const [message, setMessage] = useState(
-    user ? "Xin chào, mình là Trúc. Kết bạn với mình nhé!" : "",
-  );
+export const InviteFriendModal = ({
+  open,
+  onClose,
+  user, // fallback nếu chưa có
+  onSend,
+}: Props) => {
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     if (user) {
-      setMessage("Xin chào, mình là Trúc. Kết bạn với mình nhé!");
+      setMessage(
+        `Xin chào, mình là ${user.userName}. Kết bạn với mình nhé!`
+      );
     }
   }, [user]);
 
@@ -27,8 +33,13 @@ export const InviteFriendModal = ({ open, onClose, user, onSend }: Props) => {
         <h3 className={styles.title}>Gửi lời mời kết bạn</h3>
 
         <div className={styles.userBox}>
-          <img src={user.avatar} />
-          <span>{user.name}</span>
+          <img
+            src={
+              user.avatar ||
+              "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa"
+            }
+          />
+          <span>{user.userName}</span>
         </div>
 
         <textarea
