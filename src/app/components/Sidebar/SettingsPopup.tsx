@@ -6,6 +6,7 @@ import { useState, useRef, useEffect } from "react";
 import { AccountModal } from "@/app/modules/myAccount/AccountModal";
 import { ChangePasswordModal } from "@/app/modules/myAccount/ChangePasswordModal";
 import { signoutApi } from "../../../../api/auth/LoginPassApi";
+import { useAuthStore } from "../../../../store/authStore";
 
 interface Props {
   open: boolean;
@@ -52,8 +53,14 @@ export const SettingsPopup = ({ open, onClose }: Props) => {
 
     try {
       // Gọi API signout của BE (Bearer token tự được gắn bởi axios interceptor)
-      const res = await signoutApi({ refreshToken });
-      console.log("Signout success:", res.data);
+      // const res = await signoutApi({ refreshToken });
+      // console.log("Signout success:", res.data);
+      if (refreshToken) {
+      try {
+        await signoutApi({ refreshToken });
+      } catch {}
+    }
+      useAuthStore.getState().clearUser();
 
       // Chỉ xóa token và điều hướng khi signout thành công
       localStorage.removeItem("accessToken");

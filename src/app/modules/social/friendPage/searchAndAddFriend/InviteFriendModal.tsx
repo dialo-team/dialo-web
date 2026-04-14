@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import styles from "../../../../styles/module.social/FriendsPage/searchAndAddFriend/InviteFriendModal.module.css";
 import type { User } from "@/app/types/social/User";
 import { userApi } from "../../../../../../api/social/searchAndAddFriend/userApi";
+import { useAuthStore } from "../../../../../../store/authStore";
 
 interface Props {
   open: boolean;
@@ -25,17 +26,18 @@ export const InviteFriendModal = ({
   onSuccess,
 }: Props) => {
   const [message, setMessage] = useState("");
+  const me = useAuthStore((state) => state.user);
 
   // auto fill message
   useEffect(() => {
-    if (user) {
+    if (user && me) {
       setMessage(
-        `Xin chào, mình là ${user.userName}. Kết bạn với mình nhé!`
+        `Xin chào, mình là ${me.userName}. Kết bạn với mình nhé!`
       );
     }
   }, [user]);
 
-  if (!open || !user) return null;
+  if (!open || !user || !me) return null;
 
   // send request API
   const handleSendRequest = async () => {
@@ -68,11 +70,11 @@ export const InviteFriendModal = ({
         <div className={styles.userBox}>
           <img
             src={
-              user.avatar ||
+              me.avatar ||
               "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa"
             }
           />
-          <span>{user.userName}</span>
+          <span>{me.userName}</span>
         </div>
 
         <textarea

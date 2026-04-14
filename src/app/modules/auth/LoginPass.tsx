@@ -4,6 +4,8 @@ import { LockIcon, SmartphoneIcon, Eye, EyeOff } from "lucide-react";
 import { loginPassApi } from "../../../../api/auth/LoginPassApi";
 import { ErrorModal } from "@/app/components/ErrorModal";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../../../store/authStore";
+import { getMeApi } from "../../../../api/social/me/meApi";
 
 export const LoginPass = ({
   onSwitchQR,
@@ -66,6 +68,11 @@ export const LoginPass = ({
         localStorage.setItem("tokenType", data.tokenType);
         localStorage.setItem("sessId", data.sessId);
 
+         // save user vào store + localStorage
+        const meRes = await getMeApi();
+        const user = meRes.data;
+        useAuthStore.getState().setUser(user);
+
         navigate("/home");
 
       } else {
@@ -124,7 +131,7 @@ export const LoginPass = ({
               onChange={(e) => {
                 const value = e.target.value.replace(/\D/g, "");
                 setPhone(value);
-                setErrors((prev) => ({ ...prev, phone: "" })); 
+                setErrors((prev) => ({ ...prev, phone: "" }));
               }}
             />
           </div>
