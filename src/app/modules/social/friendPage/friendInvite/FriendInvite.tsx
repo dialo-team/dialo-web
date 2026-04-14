@@ -5,14 +5,33 @@ import {
   MessageCircle,
   UserPlus,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import styles from "../../../../styles/module.social/FriendsPage/FrientdInvite.module.css";
 
 import {
   getReceivedRequestsApi,
   getSentRequestsApi,
+  cancelFriendRequestApi,
+  rejectFriendRequestApi,
 } from "../../../../../../api/social/friendInvite/getFriendInviteApi";
+
+// ================= TYPES =================
+interface ReceivedItem {
+  id: string;
+  senderId: string;
+  name: string;
+  avatar: string;
+  date: string;
+}
+
+interface SentItem {
+  id: string;
+  targetId: string;
+  name: string;
+  avatar: string;
+  date: string;
+}
 
 export const FriendInvite = () => {
   const navigate = useNavigate();
@@ -21,58 +40,60 @@ export const FriendInvite = () => {
     onBackToSidebar?: () => void;
   }>();
 
-  const [received, setReceived] = useState<any[]>([]);
-  const [sent, setSent] = useState<any[]>([]);
+  const [received, setReceived] = useState<ReceivedItem[]>([]);
+  const [sent, setSent] = useState<SentItem[]>([]);
   const [loading, setLoading] = useState(false);
 
   const [showAllSent, setShowAllSent] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // CALL API
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
+  // ================= FETCH DATA =================
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
 
-        const [receivedRes, sentRes] = await Promise.all([
-          getReceivedRequestsApi(),
-          getSentRequestsApi(),
-        ]);
+      const [receivedRes, sentRes] = await Promise.all([
+        getReceivedRequestsApi(),
+        getSentRequestsApi(),
+      ]);
 
-        const receivedData = receivedRes.data || [];
-        const sentData = sentRes.data || [];
+      const receivedData = receivedRes.data || [];
+      const sentData = sentRes.data || [];
 
-        // map UI
-        const mapReceived = (item: any) => ({
-          id: item.friendshipId,
-          name: item.senderId,
-          avatar:
-            "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
-          date: new Date(item.requestedAt).toLocaleDateString("vi-VN"),
-          message: "Đã gửi lời mời kết bạn",
-        });
+      // map RECEIVED
+      const mapReceived: ReceivedItem[] = receivedData.map((item: any) => ({
+        id: item.friendshipId,
+        senderId: item.senderId,
+        name: item.senderId,
+        avatar:
+          "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
+        date: new Date(item.requestedAt).toLocaleDateString("vi-VN"),
+      }));
 
-        const mapSent = (item: any) => ({
-          id: item.friendshipId,
-          name: item.receiverId,
-          avatar:
-            "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
-          date: new Date(item.requestedAt).toLocaleDateString("vi-VN"),
-        });
+      // map SENT
+      const mapSent: SentItem[] = sentData.map((item: any) => ({
+        id: item.friendshipId,
+        targetId: item.receiverId,
+        name: item.receiverId,
+        avatar:
+          "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
+        date: new Date(item.requestedAt).toLocaleDateString("vi-VN"),
+      }));
 
-        setReceived(receivedData.map(mapReceived));
-        setSent(sentData.map(mapSent));
-      } catch (err) {
-        console.error("Lỗi fetch friend requests:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+      setReceived(mapReceived);
+      setSent(mapSent);
+    } catch (err) {
+      console.error("Lỗi fetch friend requests:", err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const visibleSent = showAllSent ? sent : sent.slice(0, 3);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // ================= ACTIONS =================
 
   const handleBack = () => {
     if (isMobile && onBackToSidebar) {
@@ -82,6 +103,29 @@ export const FriendInvite = () => {
     navigate(-1);
   };
 
+  // 🔥 Thu hồi lời mời (SENT)
+  const handleCancelRequest = async (targetId: string) => {
+    try {
+      await cancelFriendRequestApi(targetId);
+      await fetchData();
+    } catch (err) {
+      console.error("Thu hồi thất bại:", err);
+    }
+  };
+
+  // 🔥 Từ chối lời mời (RECEIVED)
+  const handleRejectRequest = async (senderId: string) => {
+    try {
+      await rejectFriendRequestApi(senderId);
+      await fetchData();
+    } catch (err) {
+      console.error("Từ chối thất bại:", err);
+    }
+  };
+
+  const visibleSent = showAllSent ? sent : sent.slice(0, 3);
+
+  // ================= UI =================
   return (
     <>
       {/* HEADER */}
@@ -132,11 +176,16 @@ export const FriendInvite = () => {
                   </div>
 
                   <p className={styles.invitedMessage}>
-                    {item.message}
+                    Đã gửi lời mời kết bạn
                   </p>
 
                   <div className={styles.cardActions}>
-                    <button className={styles.btn}>
+                    <button
+                      className={styles.btn}
+                      onClick={() =>
+                        handleRejectRequest(item.senderId)
+                      }
+                    >
                       Từ chối
                     </button>
                     <button className={styles.primaryBtn}>
@@ -178,7 +227,12 @@ export const FriendInvite = () => {
                       <MessageCircle />
                     </div>
 
-                    <button className={styles.btn}>
+                    <button
+                      className={styles.btn}
+                      onClick={() =>
+                        handleCancelRequest(item.targetId)
+                      }
+                    >
                       Thu hồi lời mời
                     </button>
                   </li>
