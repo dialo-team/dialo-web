@@ -14,6 +14,7 @@ import {
   getSentRequestsApi,
   cancelFriendRequestApi,
   rejectFriendRequestApi,
+  acceptFriendRequestApi,
 } from "../../../../../../api/social/friendInvite/getFriendInviteApi";
 
 // ================= TYPES =================
@@ -103,7 +104,7 @@ export const FriendInvite = () => {
     navigate(-1);
   };
 
-  // 🔥 Thu hồi lời mời (SENT)
+  //  Thu hồi lời mời (SENT)
   const handleCancelRequest = async (targetId: string) => {
     try {
       await cancelFriendRequestApi(targetId);
@@ -113,13 +114,23 @@ export const FriendInvite = () => {
     }
   };
 
-  // 🔥 Từ chối lời mời (RECEIVED)
+  // Từ chối lời mời (RECEIVED)
   const handleRejectRequest = async (senderId: string) => {
     try {
       await rejectFriendRequestApi(senderId);
       await fetchData();
     } catch (err) {
       console.error("Từ chối thất bại:", err);
+    }
+  };
+
+  // Chấp nhận lời mời
+  const handleAcceptRequest = async (senderId: string) => {
+    try {
+      await acceptFriendRequestApi(senderId);
+      await fetchData(); // reload lại list
+    } catch (err) {
+      console.error("Chấp nhận thất bại:", err);
     }
   };
 
@@ -188,7 +199,10 @@ export const FriendInvite = () => {
                     >
                       Từ chối
                     </button>
-                    <button className={styles.primaryBtn}>
+                    <button
+                      className={styles.primaryBtn}
+                      onClick={() => handleAcceptRequest(item.senderId)}
+                    >
                       Đồng ý
                     </button>
                   </div>

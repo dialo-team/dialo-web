@@ -131,16 +131,16 @@
 
 .friendInfo span {
   color: #16284d;
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 400;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .friendItem img {
-  width: 56px;
-  height: 56px;
+  width: 45px;
+  height: 45px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
