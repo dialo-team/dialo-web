@@ -8,7 +8,6 @@ import {
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import styles from "../../../../styles/module.social/FriendsPage/FrientdInvite.module.css";
-
 import {
   getReceivedRequestsApi,
   getSentRequestsApi,
@@ -16,6 +15,7 @@ import {
   rejectFriendRequestApi,
   acceptFriendRequestApi,
 } from "../../../../../../api/social/friendInvite/getFriendInviteApi";
+import { getUserInfoApi } from "../../../../../../api/social/searchAndAddFriend/userApi";
 
 // ================= TYPES =================
 interface ReceivedItem {
@@ -49,6 +49,47 @@ export const FriendInvite = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   // ================= FETCH DATA =================
+  // const fetchData = useCallback(async () => {
+  //   try {
+  //     setLoading(true);
+
+  //     const [receivedRes, sentRes] = await Promise.all([
+  //       getReceivedRequestsApi(),
+  //       getSentRequestsApi(),
+  //     ]);
+
+  //     const receivedData = receivedRes.data || [];
+  //     const sentData = sentRes.data || [];
+
+  //     // map RECEIVED
+  //     const mapReceived: ReceivedItem[] = receivedData.map((item: any) => ({
+  //       id: item.friendshipId,
+  //       senderId: item.senderId,
+  //       name: item.senderId,
+  //       avatar:
+  //         "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
+  //       date: new Date(item.requestedAt).toLocaleDateString("vi-VN"),
+  //     }));
+
+  //     // map SENT
+  //     const mapSent: SentItem[] = sentData.map((item: any) => ({
+  //       id: item.friendshipId,
+  //       targetId: item.receiverId,
+  //       name: item.receiverId,
+  //       avatar:
+  //         "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
+  //       date: new Date(item.requestedAt).toLocaleDateString("vi-VN"),
+  //     }));
+
+  //     setReceived(mapReceived);
+  //     setSent(mapSent);
+  //   } catch (err) {
+  //     console.error("Lỗi fetch friend requests:", err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, []);
+
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
@@ -61,25 +102,78 @@ export const FriendInvite = () => {
       const receivedData = receivedRes.data || [];
       const sentData = sentRes.data || [];
 
-      // map RECEIVED
-      const mapReceived: ReceivedItem[] = receivedData.map((item: any) => ({
-        id: item.friendshipId,
-        senderId: item.senderId,
-        name: item.senderId,
-        avatar:
-          "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
-        date: new Date(item.requestedAt).toLocaleDateString("vi-VN"),
-      }));
+      // ================= RECEIVED =================
+      // const mapReceived: ReceivedItem[] = receivedData.map((item: any) => ({
+      //   id: item.friendshipId,
+      //   senderId: item.senderId,
+      //   name: item.senderId, // chưa có API user -> tạm
+      //   avatar:
+      //     "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
+      //   date: new Date(item.requestedAt).toLocaleDateString("vi-VN"),
+      // }));
 
-      // map SENT
-      const mapSent: SentItem[] = sentData.map((item: any) => ({
-        id: item.friendshipId,
-        targetId: item.receiverId,
-        name: item.receiverId,
-        avatar:
-          "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
-        date: new Date(item.requestedAt).toLocaleDateString("vi-VN"),
-      }));
+      const mapReceived: ReceivedItem[] = await Promise.all(
+        receivedData.map(async (item: any) => {
+          try {
+            const userRes = await getUserInfoApi(item.senderId);
+
+            const user = userRes.data?.data || userRes.data;
+
+            return {
+              id: item.friendshipId,
+              senderId: item.senderId,
+              name: user.userName, // 🔥 tên thật
+              avatar:
+                user.avatar ||
+                "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
+              date: new Date(item.requestedAt).toLocaleDateString("vi-VN"),
+            };
+          } catch (err) {
+            console.error("Lỗi load sender info:", err);
+
+            return {
+              id: item.friendshipId,
+              senderId: item.senderId,
+              name: item.senderId, // fallback
+              avatar:
+                "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
+              date: new Date(item.requestedAt).toLocaleDateString("vi-VN"),
+            };
+          }
+        })
+      );
+
+      // ================= SENT =================
+      const mapSent: SentItem[] = await Promise.all(
+        sentData.map(async (item: any) => {
+          try {
+            const userRes = await getUserInfoApi(item.receiverId);
+            const user = userRes.data?.data || userRes.data;
+
+            return {
+              id: item.friendshipId,
+              targetId: item.receiverId,
+              name: user.userName,
+              avatar:
+                user.avatar ||
+                "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
+              date: new Date(item.requestedAt).toLocaleDateString("vi-VN"),
+            };
+          } catch (err) {
+            console.error("Lỗi load user info:", err);
+
+            // fallback nếu lỗi
+            return {
+              id: item.friendshipId,
+              targetId: item.receiverId,
+              name: item.receiverId,
+              avatar:
+                "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
+              date: new Date(item.requestedAt).toLocaleDateString("vi-VN"),
+            };
+          }
+        })
+      );
 
       setReceived(mapReceived);
       setSent(mapSent);
@@ -163,7 +257,7 @@ export const FriendInvite = () => {
           {loading ? (
             <p>Đang tải...</p>
           ) : received.length === 0 ? (
-            <p className={styles.emptyText}>
+            <p>
               Không có lời mời kết bạn
             </p>
           ) : (
@@ -212,7 +306,7 @@ export const FriendInvite = () => {
           )}
 
           {/* ================= SENT ================= */}
-          <p className={styles.sectionHeader}>
+          <p className={styles.sectionTitle}>
             Lời mời đã gửi ({sent.length})
           </p>
 
@@ -279,7 +373,7 @@ export const FriendInvite = () => {
           </p>
 
           {showSuggestions && (
-            <p style={{ padding: 10 }}>Chưa có dữ liệu</p>
+            <p>Chưa có dữ liệu</p>
           )}
         </div>
       </div>

@@ -7,10 +7,12 @@
 import styles from "../../../../styles/module.social/FriendsPage/FriendContentList.module.css";
 import { useEffect, useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
-import { getFriendsApi, unfriendApi  } from "../../../../../../api/social/listFriend/ListFriendApi";
+import { getFriendsApi, unfriendApi } from "../../../../../../api/social/listFriend/ListFriendApi";
 import { RenameFriendModal } from "./RenameFriendModal";
 import { DeleteFriendModal } from "./DeleteFriendModal";
 import { FriendInfoModal } from "./FriendInfoModal";
+import { blockUserApi } from "../../../../../../api/social/listFriend/ListFriendApi";
+import { BlockFriendModal } from "./BlockFriendModal";
 
 export const FriendListPage = () => {
   const navigate = useNavigate();
@@ -28,6 +30,7 @@ export const FriendListPage = () => {
   const [openRename, setOpenRename] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const [selectedFriend, setSelectedFriend] = useState<any>(null);
+  const [openBlock, setOpenBlock] = useState(false);
 
   const handleBack = () => {
     if (isMobile && onBackToSidebar) {
@@ -56,20 +59,36 @@ export const FriendListPage = () => {
   }, []);
 
   const handleDeleteFriend = async () => {
-  if (!selectedFriend) return;
+    if (!selectedFriend) return;
 
-  try {
-    await unfriendApi(selectedFriend.friendId);
+    try {
+      await unfriendApi(selectedFriend.friendId);
 
-    // reload lại list
-    const res = await getFriendsApi();
-    setFriends(res?.data?.friends || []);
+      // reload lại list
+      const res = await getFriendsApi();
+      setFriends(res?.data?.friends || []);
 
-    setOpenDelete(false);
-  } catch (err) {
-    console.error("Xóa bạn thất bại:", err);
-  }
-};
+      setOpenDelete(false);
+    } catch (err) {
+      console.error("Xóa bạn thất bại:", err);
+    }
+  };
+
+  const handleBlockFriend = async () => {
+    if (!selectedFriend) return;
+
+    try {
+      await blockUserApi(selectedFriend.friendId);
+
+      // reload lại list
+      const res = await getFriendsApi();
+      setFriends(res?.data?.friends || []);
+
+      setOpenBlock(false);
+    } catch (err) {
+      console.error("Chặn thất bại:", err);
+    }
+  };
 
   // ================= UI =================
   return (
@@ -164,6 +183,17 @@ export const FriendListPage = () => {
                         </div>
 
                         <div
+                          className={styles.menuAction}
+                          onClick={() => {
+                            setSelectedFriend(f);
+                            setOpenBlock(true);
+                            setOpenMenu(null);
+                          }}
+                        >
+                          Chặn người này
+                        </div>
+
+                        <div
                           className={`${styles.menuAction} ${styles.danger}`}
                           onClick={() => {
                             setSelectedFriend(f);
@@ -201,6 +231,13 @@ export const FriendListPage = () => {
         onClose={() => setOpenDelete(false)}
         friend={selectedFriend}
         onConfirm={handleDeleteFriend}
+      />
+
+      <BlockFriendModal
+        open={openBlock}
+        onClose={() => setOpenBlock(false)}
+        friend={selectedFriend}
+        onConfirm={handleBlockFriend}
       />
     </>
   );
