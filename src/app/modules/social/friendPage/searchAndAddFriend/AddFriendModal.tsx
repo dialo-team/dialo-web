@@ -89,6 +89,11 @@ export default function AddFriendModal({ onClose }: Props) {
         onSend={(msg) => {
           console.log("Gửi lời mời:", msg);
         }}
+        onSuccess={() => {
+
+          setResults([]);
+          setKeyword("");
+        }}
       />
     </>
   );
