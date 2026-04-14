@@ -48,7 +48,6 @@
   display: flex;
   flex-direction: column;
   background: #f3f5fa;
-  padding: 28px;
   border-radius: 0 0 24px 24px;
   height: calc(100% - 85px);
   min-height: 0;
@@ -58,8 +57,8 @@
 .sectionTitle {
   margin: 0 0 18px;
   color: #1a2d57;
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 17px;
+  font-weight: 700;
 }
 
 .mainInvite {
@@ -91,6 +90,7 @@
   padding: 0;
   margin: 0;
 }
+
 .invitedCard {
   list-style: none;
   min-width: 0;
@@ -104,6 +104,7 @@
   gap: 10px;
   overflow: visible;
 }
+
 .btn {
   border-radius: 6px;
   cursor: pointer;
@@ -111,17 +112,21 @@
   padding: 0px 16px;
   background-color: rgb(235, 236, 240);
 }
+
 .btn:hover {
   opacity: 0.7;
 }
+
 .primaryBtn:hover {
   opacity: 0.7;
 }
+
 .primaryBtn {
   composes: btn;
   background-color: #e5f1ff;
   color: #0045ad;
 }
+
 .invitedHeader {
   display: flex;
   gap: 10px;
@@ -133,10 +138,12 @@
   padding: 4px;
   position: relative;
 }
+
 .messageIcon:hover {
   background-color: #cacbce;
   border-radius: 50%;
 }
+
 .messageIcon::before {
   content: "";
   position: absolute;
@@ -145,7 +152,8 @@
   transform: translateX(-50%);
   border-width: 6px;
   border-style: solid;
-  border-color: #094bb0 transparent transparent transparent; /* tam giác chỉ xuống */
+  border-color: #094bb0 transparent transparent transparent;
+  /* tam giác chỉ xuống */
   opacity: 0;
   pointer-events: none;
   /* transition: opacity 0.2s; */
@@ -155,6 +163,7 @@
 .messageIcon:hover::before {
   opacity: 1;
 }
+
 .messageIcon::after {
   content: "Nhắn tin";
   position: absolute;
@@ -172,27 +181,32 @@
   /* transition: opacity 0.2s; */
   z-index: 999;
 }
+
 .messageIcon:hover::after {
   opacity: 1;
 }
+
 .invitedAvatar {
   width: 48px;
   height: 48px;
   border-radius: 50%;
 }
+
 .invitedName {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 550;
   color: #16284d;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .invitedDate {
   font-size: 13px;
   font-weight: 400;
   color: #6b7a99;
 }
+
 .invitedMessage {
   background-color: #f7f9fc;
   border: 1px solid #dfe5ef;
@@ -204,12 +218,13 @@
   word-break: break-word;
   font-size: 14px;
 }
+
 .sectionHeader {
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 700;
   color: #1a2d57;
   margin: 0 0 14px;
 }
@@ -229,6 +244,7 @@
 .inviteList {
   composes: invitedList;
 }
+
 .inviteCard {
   list-style: none;
   min-width: 0;
@@ -241,16 +257,19 @@
   flex-direction: column;
   gap: 12px;
 }
+
 .inviteCardHeader {
   display: flex;
   align-items: center;
   gap: 10px;
 }
+
 .inviteInfo {
   display: flex;
   flex-direction: column;
   flex: 1;
 }
+
 .inviteSubText {
   font-size: 13px;
   color: #6b7a99;
@@ -260,6 +279,7 @@
 .suggestionList {
   composes: invitedList;
 }
+
 .suggestionCard {
   list-style: none;
   border-radius: 12px;
@@ -271,12 +291,15 @@
   flex-direction: column;
   gap: 12px;
 }
+
 .suggestionCardHeader {
   composes: inviteCardHeader;
 }
+
 .mutualText {
   composes: inviteSubText;
 }
+
 .suggestionActions {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -328,9 +351,12 @@
     height: calc(100% - 75px);
   }
 
-  .sectionTitle {
+  /* .sectionTitle {
     margin-bottom: 18px;
-  }
+    font-weight: 700;
+    color: black;
+    font-size: 16px;
+  } */
 
   .mainInvite {
     height: auto;

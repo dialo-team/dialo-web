@@ -22,3 +22,8 @@ export const cancelFriendRequestApi = (targetId: string) => {
 export const rejectFriendRequestApi = (targetId: string) => {
   return axiosClient.post(`/api/v1/users/${targetId}/reject`);
 };
+
+// chấp nhận lời mời
+export const acceptFriendRequestApi = (targetId: string) => {
+  return axiosClient.post(`/api/v1/users/${targetId}/accept`);
+};

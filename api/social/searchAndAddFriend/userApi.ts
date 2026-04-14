@@ -32,3 +32,7 @@ export const userApi = {
     }
   },
 };
+
+export const getUserInfoApi = (userId: string) => {
+  return axiosClient.get(`/api/v1/users/${userId}/info`);
+};

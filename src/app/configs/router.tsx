@@ -11,6 +11,7 @@ import { GroupInvite } from "@/app/modules/social/friendPage/groupInvite/GroupIn
 import { ChatPage } from "../modules/message/ChatPage";
 import { ChatWindow } from "../modules/message/ChatWindow";
 import { PrivateRoute } from "../modules/auth/PrivateRoute";
+import { BlockedList } from "../modules/social/friendPage/listFriend/BlockedLlist";
 
 
 const adminRoute: RouteObject[] = [];
@@ -52,6 +53,10 @@ const protectedRoute = [
           {
             path: "groupInvite",
             element: <GroupInvite />,
+          },
+           {
+            path: "blockList",
+            element: <BlockedList />,
           },
           {
             path: "search",
