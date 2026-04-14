@@ -11,10 +11,26 @@ const axiosClient = axios.create({
 axiosClient.interceptors.request.use((config) => {
   const token = localStorage.getItem("accessToken");
   const hasAuthorizationHeader = Boolean(config.headers?.Authorization);
+  const hasUserIdHeader = Boolean((config.headers as any)?.["X-User-Id"]);
 
   if (token && !hasAuthorizationHeader) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  if (!hasUserIdHeader) {
+    try {
+      const savedUser = localStorage.getItem("user");
+      if (savedUser) {
+        const parsedUser = JSON.parse(savedUser);
+        if (parsedUser?.id) {
+          (config.headers as any)["X-User-Id"] = parsedUser.id;
+        }
+      }
+    } catch {
+      // ignore invalid localStorage user payload
+    }
+  }
+
   return config;
 });
 

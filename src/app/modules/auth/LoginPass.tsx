@@ -67,6 +67,7 @@ export const LoginPass = ({
         localStorage.setItem("refreshToken", data.refreshToken);
         localStorage.setItem("tokenType", data.tokenType);
         localStorage.setItem("sessId", data.sessId);
+        localStorage.setItem("phone", phone);
 
          // save user vào store + localStorage
         const meRes = await getMeApi();

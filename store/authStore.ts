@@ -10,6 +10,7 @@ type QR = {
 type User = {
   id: string;
   userName: string;
+  phone?: string | null;
   bio: string;
   gender: string | null;
   dob: string | null;

@@ -1,13 +1,11 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axiosClient from "../../../../api/axiosClient";
 
 interface Props {
   children: React.ReactNode;
 }
-
-const API_BASE_URL = "http://14.225.254.174:8082";
 
 // Xoa token khi xac dinh phien khong con hop le.
 const clearAuthStorage = () => {
@@ -18,7 +16,8 @@ const clearAuthStorage = () => {
 // Giai ma payload JWT de doc thong tin exp o client.
 const parseJwtPayload = (token: string) => {
   try {
-    const parts = token.split(".");
+    const rawToken = token.startsWith("Bearer ") ? token.slice(7) : token;
+    const parts = rawToken.split(".");
     if (parts.length !== 3) return null;
 
     const normalized = parts[1].replace(/-/g, "+").replace(/_/g, "/");
@@ -37,7 +36,7 @@ const isAccessTokenUsable = (token: string) => {
   if (!payload || typeof payload.exp !== "number") return false;
 
   const nowInSeconds = Math.floor(Date.now() / 1000);
-  return payload.exp > nowInSeconds;
+  return payload.exp > nowInSeconds + 10;
 };
 
 export const PrivateRoute = ({ children }: Props) => {
@@ -74,12 +73,9 @@ export const PrivateRoute = ({ children }: Props) => {
 
       try {
         // Access token het han/sai -> thu refresh qua BE de xac nhan lai phien.
-        const res = await axios.post(
-          `${API_BASE_URL}/api/v1/auth/refresh-token`,
-          {
-            refreshToken,
-          },
-        );
+        const res = await axiosClient.post("/api/v1/auth/refresh-token", {
+          refreshToken,
+        });
 
         // Ho tro 2 dang response: { data: { accessToken } } hoac { accessToken }.
         const newAccessToken =
