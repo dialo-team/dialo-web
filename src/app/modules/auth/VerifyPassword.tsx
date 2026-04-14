@@ -111,12 +111,20 @@ export const VerifyPassword = ({
           setError("Không lấy được resetToken");
         }
       } else {
-        setError(res.data.message || "OTP không đúng");
+        if (res.data.status === 500) {
+          setError("Lỗi server");
+        } else {
+          setError(res.data.message || "OTP không đúng");
+        }
         setOtp(Array(OTP_LENGTH).fill(""));
         inputRefs.current[0]?.focus();
       }
     } catch (err: any) {
-      setError("OTP không hợp lệ!");
+      if (err?.response?.status === 500) {
+        setError("Lỗi server");
+      } else {
+        setError(err?.response?.data?.message || "OTP không hợp lệ!");
+      }
       setOtp(Array(OTP_LENGTH).fill(""));
       inputRefs.current[0]?.focus();
     } finally {
@@ -137,7 +145,11 @@ export const VerifyPassword = ({
 
       // onSwitch();
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Lỗi đổi mật khẩu");
+      if (err?.response?.status === 500) {
+        setError("Lỗi server");
+      } else {
+        setError(err?.response?.data?.message || "Lỗi đổi mật khẩu");
+      }
     } finally {
       setLoading(false);
     }

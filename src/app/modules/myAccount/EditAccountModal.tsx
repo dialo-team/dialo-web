@@ -97,13 +97,10 @@ export const EditAccountModal = ({ open, onClose }: Props) => {
       setLoading(true);
       setError("");
       const basicInfoPayload = { userName: name, dob, gender };
-      console.log("updateBasicInfoApi payload:", basicInfoPayload);
       try {
-        const basicInfoRes = await updateBasicInfoApi(basicInfoPayload);
+        await updateBasicInfoApi(basicInfoPayload);
         basicInfoSaved = true;
-        console.log("updateBasicInfoApi success:", basicInfoRes.data);
       } catch (err: any) {
-        console.error("updateBasicInfoApi error:", err);
         basicInfoErrorMessage =
           err?.response?.data?.message || "Lưu thông tin cơ bản thất bại";
       }
@@ -113,11 +110,9 @@ export const EditAccountModal = ({ open, onClose }: Props) => {
         bioSaved = true;
       } else {
         try {
-          const bioRes = await updateBioApi({ bio });
+          await updateBioApi({ bio });
           bioSaved = true;
-          console.log("updateBioApi success:", bioRes.data);
         } catch (err: any) {
-          console.error("updateBioApi error:", err);
           bioErrorMessage = err?.response?.data?.message || "Lưu bio thất bại";
         }
       }

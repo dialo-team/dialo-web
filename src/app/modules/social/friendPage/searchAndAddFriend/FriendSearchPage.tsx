@@ -3,6 +3,7 @@ import styles from "../../../../styles/module.social/FriendsPage/searchAndAddFri
 import { useEffect, useState } from "react";
 import { InviteFriendModal } from "./InviteFriendModal";
 import { userApi } from "../../../../../../api/social/searchAndAddFriend/userApi";
+import { getFriendsApi } from "../../../../../../api/social/listFriend/ListFriendApi";
 import type { User } from "@/app/types/social/User";
 import { ErrorModal } from "@/app/components/ErrorModal";
 
@@ -11,31 +12,82 @@ export const FriendSearchPage = () => {
   const phone = params.get("q") || "";
 
   const [user, setUser] = useState<User | null>(null);
+  const [friendIds, setFriendIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [openAdd, setOpenAdd] = useState(false);
+  const [searchError, setSearchError] = useState("");
 
   // popup message
   const [modalMessage, setModalMessage] = useState("");
 
   const isValidPhone = /^\d{10}$/.test(phone);
+  const isAlreadyFriend = Boolean(user?.id && friendIds.has(user.id));
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchFriends = async () => {
+      try {
+        const res = await getFriendsApi();
+        const ids = (res?.data?.friends || [])
+          .map((f: any) => f.friendId)
+          .filter(Boolean);
+
+        if (isMounted) {
+          setFriendIds(new Set(ids));
+        }
+      } catch (err) {
+        console.error("Lỗi load danh sách bạn bè:", err);
+      }
+    };
+
+    fetchFriends();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // search API
   useEffect(() => {
     if (!isValidPhone) {
+      setOpenAdd(false);
       setUser(null);
+      setSearchError("");
+      setLoading(false);
       return;
     }
 
+    let isCancelled = false;
+    const activeQuery = phone;
+
     const fetchUser = async () => {
-      setLoading(true);
+      try {
+        setLoading(true);
+        setSearchError("");
 
-      const res = await userApi.getUserByPhone(phone);
+        const res = await userApi.getUserByPhone(activeQuery);
 
-      setUser(res);
-      setLoading(false);
+        if (!isCancelled && activeQuery === phone) {
+          setUser(res);
+        }
+      } catch (err: any) {
+        if (!isCancelled) {
+          setUser(null);
+          setSearchError(err?.response?.data?.message || "Không thể tìm kiếm lúc này");
+        }
+      } finally {
+        if (!isCancelled) {
+          setLoading(false);
+        }
+      }
     };
 
     fetchUser();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [phone]);
 
   return (
@@ -43,7 +95,11 @@ export const FriendSearchPage = () => {
       <div className={styles.container}>
         <h2>Kết quả tìm kiếm</h2>
 
-        {!isValidPhone && (
+        {searchError ? (
+          <span>{searchError}</span>
+        ) : null}
+
+        {!isValidPhone && !searchError && (
           <span>Không có kết quả phù hợp</span>
         )}
 
@@ -69,17 +125,23 @@ export const FriendSearchPage = () => {
                 Nhắn tin
               </button>
 
-              <button
-                className={styles.addBtn}
-                onClick={() => setOpenAdd(true)}
-              >
-                Kết bạn
-              </button>
+              {isAlreadyFriend ? (
+                <button className={styles.addedBtn} disabled>
+                  Đã là bạn bè
+                </button>
+              ) : (
+                <button
+                  className={styles.addBtn}
+                  onClick={() => setOpenAdd(true)}
+                >
+                  Kết bạn
+                </button>
+              )}
             </div>
           </div>
         )}
 
-        {!loading && isValidPhone && !user && (
+        {!loading && isValidPhone && !user && !searchError && (
           <span>Không có kết quả phù hợp</span>
         )}
       </div>

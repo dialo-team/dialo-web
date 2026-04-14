@@ -82,14 +82,21 @@ export const VerifyRegisterForm = ({
         setError("");
         // onSwitch();
       } else {
-        setError("OTP không hợp lệ!");
+        if (res.data.status === 500) {
+          setError("Lỗi server");
+        } else {
+          setError(res.data.message || "OTP không hợp lệ!");
+        }
         setOtp(Array(OTP_LENGTH).fill(""));
         inputRefs.current[0]?.focus();
         // setError(res.data.message || "Xác thực thất bại!");
       }
     } catch (err: any) {
-      // const message =  ;
-      setError("Xác thực thất bại");
+      if (err?.response?.status === 500) {
+        setError("Lỗi server");
+      } else {
+        setError(err?.response?.data?.message || "Xác thực thất bại");
+      }
       setOtp(Array(OTP_LENGTH).fill(""));
       inputRefs.current[0]?.focus();
     } finally {

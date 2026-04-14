@@ -13,6 +13,21 @@ interface Props {
   onClose: () => void;
 }
 
+const MAX_IMAGE_FILE_SIZE = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+const validateImageFile = (file: File) => {
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    return "Chỉ hỗ trợ ảnh JPG, PNG hoặc WEBP";
+  }
+
+  if (file.size > MAX_IMAGE_FILE_SIZE) {
+    return "Dung lượng ảnh tối đa là 5MB";
+  }
+
+  return "";
+};
+
 export const AccountModal = ({ open, onClose }: Props) => {
   const [openEdit, setOpenEdit] = useState(false);
   const user = useAuthStore((state) => state.user);
@@ -38,6 +53,15 @@ export const AccountModal = ({ open, onClose }: Props) => {
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const validationError = validateImageFile(file);
+      if (validationError) {
+        setError(validationError);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+        return;
+      }
+
       const previousAvatar = user?.avatar || null;
       const previewUrl = URL.createObjectURL(file);
       setAvatarPreview((prev) => {
@@ -59,12 +83,10 @@ export const AccountModal = ({ open, onClose }: Props) => {
         if (res.data?.data && user) {
           const updatedUser = { ...user, avatar: res.data.data.avatar };
           setUser(updatedUser);
-          console.log("updateAvatarApi success:", res.data);
           setError("Cập nhật avatar thành công!");
           setTimeout(() => setError(""), 2000);
         }
       } catch (err: any) {
-        console.error("updateAvatarApi error:", err);
         setAvatarPreview((prev) => {
           if (prev) {
             URL.revokeObjectURL(prev);
@@ -91,6 +113,15 @@ export const AccountModal = ({ open, onClose }: Props) => {
   ) => {
     const file = e.target.files?.[0];
     if (file) {
+      const validationError = validateImageFile(file);
+      if (validationError) {
+        setError(validationError);
+        if (backgroundFileInputRef.current) {
+          backgroundFileInputRef.current.value = "";
+        }
+        return;
+      }
+
       const previewUrl = URL.createObjectURL(file);
       setBackgroundPreview((prev) => {
         if (prev) {
@@ -106,12 +137,10 @@ export const AccountModal = ({ open, onClose }: Props) => {
         if (res.data?.data && user) {
           const updatedUser = { ...user, background: res.data.data.background };
           setUser(updatedUser);
-          console.log("updateBackgroundApi success:", res.data);
           setError("Cập nhật background thành công!");
           setTimeout(() => setError(""), 2000);
         }
       } catch (err: any) {
-        console.error("updateBackgroundApi error:", err);
         setBackgroundPreview((prev) => {
           if (prev) {
             URL.revokeObjectURL(prev);
@@ -252,6 +281,11 @@ export const AccountModal = ({ open, onClose }: Props) => {
                       localStorage.getItem("phone") ||
                       "Chưa cập nhật"}
                   </span>
+                </div>
+
+                <div className={styles.row}>
+                  <span>Bio</span>
+                  <span>{user?.bio || "Chưa cập nhật"}</span>
                 </div>
 
                 <button

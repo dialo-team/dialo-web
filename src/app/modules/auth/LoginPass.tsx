@@ -78,7 +78,7 @@ export const LoginPass = ({
 
       } else {
         if (res.data.status === 500) {
-          setError("Số điện thoại hoặc mật khẩu không đúng");
+          setError("Lỗi server");
         } else {
           setError(res.data.message || "Đăng nhập thất bại");
         }
@@ -88,7 +88,7 @@ export const LoginPass = ({
       const status = err?.response?.status;
 
       if (status === 500) {
-        setError("Số điện thoại hoặc mật khẩu không đúng");
+        setError("Lỗi server");
       } else {
         setError(err?.response?.data?.message || "Đăng nhập thất bại");
       }

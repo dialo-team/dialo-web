@@ -14,6 +14,19 @@ import { FriendInfoModal } from "./FriendInfoModal";
 import { blockUserApi } from "../../../../../../api/social/listFriend/ListFriendApi";
 import { BlockFriendModal } from "./BlockFriendModal";
 
+const FRIEND_ALIAS_STORAGE_KEY = "dialo.friendAliases";
+
+const loadFriendAliases = () => {
+  if (typeof window === "undefined") return {};
+
+  try {
+    const raw = window.localStorage.getItem(FRIEND_ALIAS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+};
+
 export const FriendListPage = () => {
   const navigate = useNavigate();
 
@@ -31,6 +44,18 @@ export const FriendListPage = () => {
   const [openDelete, setOpenDelete] = useState(false);
   const [selectedFriend, setSelectedFriend] = useState<any>(null);
   const [openBlock, setOpenBlock] = useState(false);
+  const [friendAliases, setFriendAliases] = useState<Record<string, string>>(
+    () => loadFriendAliases()
+  );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    window.localStorage.setItem(
+      FRIEND_ALIAS_STORAGE_KEY,
+      JSON.stringify(friendAliases)
+    );
+  }, [friendAliases]);
 
   const handleBack = () => {
     if (isMobile && onBackToSidebar) {
@@ -90,6 +115,17 @@ export const FriendListPage = () => {
     }
   };
 
+  const handleRenameFriend = (friendId: string, nextName: string) => {
+    const trimmedName = nextName.trim();
+
+    if (!trimmedName) return;
+
+    setFriendAliases((prev) => ({
+      ...prev,
+      [friendId]: trimmedName,
+    }));
+  };
+
   // ================= UI =================
   return (
     <>
@@ -139,9 +175,9 @@ export const FriendListPage = () => {
                         f.friendAvatar ||
                         "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa"
                       }
-                      alt={f.friendUserName}
+                      alt={friendAliases[f.friendId] || f.friendUserName}
                     />
-                    <span>{f.friendUserName}</span>
+                    <span>{friendAliases[f.friendId] || f.friendUserName}</span>
                   </div>
 
                   {/* MENU */}
@@ -224,6 +260,13 @@ export const FriendListPage = () => {
         open={openRename}
         onClose={() => setOpenRename(false)}
         friend={selectedFriend}
+        currentName={
+          selectedFriend
+            ? friendAliases[selectedFriend.friendId] ||
+              selectedFriend.friendUserName
+            : ""
+        }
+        onSave={handleRenameFriend}
       />
 
       <DeleteFriendModal

@@ -44,7 +44,7 @@ export const LoginForgotPass = ({
 
     } catch (err: any) {
       if (err?.response?.status === 500) {
-        setError("Số điện thoại không đúng");
+        setError("Lỗi server");
       } else {
         setError(err?.response?.data?.message || "Lỗi hệ thống");
       }

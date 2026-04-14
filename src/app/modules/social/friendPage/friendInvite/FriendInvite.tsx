@@ -102,6 +102,37 @@ export const FriendInvite = () => {
       const receivedData = receivedRes.data || [];
       const sentData = sentRes.data || [];
 
+      const uniqueUserIds = Array.from(
+        new Set([
+          ...receivedData.map((item: any) => item.senderId),
+          ...sentData.map((item: any) => item.receiverId),
+        ].filter(Boolean))
+      );
+
+      const userMap = new Map<string, { name: string; avatar: string }>();
+
+      await Promise.all(
+        uniqueUserIds.map(async (userId) => {
+          try {
+            const userRes = await getUserInfoApi(userId);
+            const user = userRes.data?.data || userRes.data;
+
+            userMap.set(userId, {
+              name: user.userName || userId,
+              avatar:
+                user.avatar ||
+                "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
+            });
+          } catch {
+            userMap.set(userId, {
+              name: userId,
+              avatar:
+                "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
+            });
+          }
+        })
+      );
+
       // ================= RECEIVED =================
       // const mapReceived: ReceivedItem[] = receivedData.map((item: any) => ({
       //   id: item.friendshipId,
@@ -114,64 +145,34 @@ export const FriendInvite = () => {
 
       const mapReceived: ReceivedItem[] = await Promise.all(
         receivedData.map(async (item: any) => {
-          try {
-            const userRes = await getUserInfoApi(item.senderId);
+          const senderInfo = userMap.get(item.senderId);
 
-            const user = userRes.data?.data || userRes.data;
-
-            return {
-              id: item.friendshipId,
-              senderId: item.senderId,
-              name: user.userName, // 🔥 tên thật
-              avatar:
-                user.avatar ||
-                "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
-              date: new Date(item.requestedAt).toLocaleDateString("vi-VN"),
-            };
-          } catch (err) {
-            console.error("Lỗi load sender info:", err);
-
-            return {
-              id: item.friendshipId,
-              senderId: item.senderId,
-              name: item.senderId, // fallback
-              avatar:
-                "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
-              date: new Date(item.requestedAt).toLocaleDateString("vi-VN"),
-            };
-          }
+          return {
+            id: item.friendshipId,
+            senderId: item.senderId,
+            name: senderInfo?.name || item.senderId,
+            avatar:
+              senderInfo?.avatar ||
+              "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
+            date: new Date(item.requestedAt).toLocaleDateString("vi-VN"),
+          };
         })
       );
 
       // ================= SENT =================
       const mapSent: SentItem[] = await Promise.all(
         sentData.map(async (item: any) => {
-          try {
-            const userRes = await getUserInfoApi(item.receiverId);
-            const user = userRes.data?.data || userRes.data;
+          const receiverInfo = userMap.get(item.receiverId);
 
-            return {
-              id: item.friendshipId,
-              targetId: item.receiverId,
-              name: user.userName,
-              avatar:
-                user.avatar ||
-                "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
-              date: new Date(item.requestedAt).toLocaleDateString("vi-VN"),
-            };
-          } catch (err) {
-            console.error("Lỗi load user info:", err);
-
-            // fallback nếu lỗi
-            return {
-              id: item.friendshipId,
-              targetId: item.receiverId,
-              name: item.receiverId,
-              avatar:
-                "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
-              date: new Date(item.requestedAt).toLocaleDateString("vi-VN"),
-            };
-          }
+          return {
+            id: item.friendshipId,
+            targetId: item.receiverId,
+            name: receiverInfo?.name || item.receiverId,
+            avatar:
+              receiverInfo?.avatar ||
+              "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
+            date: new Date(item.requestedAt).toLocaleDateString("vi-VN"),
+          };
         })
       );
 
