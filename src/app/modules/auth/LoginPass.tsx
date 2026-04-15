@@ -4,6 +4,8 @@ import { LockIcon, SmartphoneIcon, Eye, EyeOff } from "lucide-react";
 import { loginPassApi } from "../../../../api/auth/LoginPassApi";
 import { ErrorModal } from "@/app/components/ErrorModal";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../../../store/authStore";
+import { getMeApi } from "../../../../api/social/me/meApi";
 
 export const LoginPass = ({
   onSwitchQR,
@@ -65,12 +67,18 @@ export const LoginPass = ({
         localStorage.setItem("refreshToken", data.refreshToken);
         localStorage.setItem("tokenType", data.tokenType);
         localStorage.setItem("sessId", data.sessId);
+        localStorage.setItem("phone", phone);
+
+         // save user vào store + localStorage
+        const meRes = await getMeApi();
+        const user = meRes.data;
+        useAuthStore.getState().setUser(user);
 
         navigate("/home");
 
       } else {
         if (res.data.status === 500) {
-          setError("Số điện thoại hoặc mật khẩu không đúng");
+          setError("Lỗi server");
         } else {
           setError(res.data.message || "Đăng nhập thất bại");
         }
@@ -80,7 +88,7 @@ export const LoginPass = ({
       const status = err?.response?.status;
 
       if (status === 500) {
-        setError("Số điện thoại hoặc mật khẩu không đúng");
+        setError("Lỗi server");
       } else {
         setError(err?.response?.data?.message || "Đăng nhập thất bại");
       }
@@ -124,7 +132,7 @@ export const LoginPass = ({
               onChange={(e) => {
                 const value = e.target.value.replace(/\D/g, "");
                 setPhone(value);
-                setErrors((prev) => ({ ...prev, phone: "" })); 
+                setErrors((prev) => ({ ...prev, phone: "" }));
               }}
             />
           </div>

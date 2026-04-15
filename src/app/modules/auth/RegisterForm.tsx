@@ -79,10 +79,21 @@ export const RegisterForm = ({
     } catch (err: any) {
       const status = err?.response?.status;
       const path = err?.response?.data?.path;
+      const code = err?.response?.data?.code;
       const message = err?.response?.data?.message;
+      const duplicateByMessage = /t[\u1ed3o]n t[\u1ea1a]i|\u0111[\u00e3a] \u0111[\u0103a]ng k[\u00fdy]|already exists|account exists/i.test(
+        String(message || "")
+      );
+      const isDuplicatePhone =
+        status === 409 ||
+        path === "ACCOUNT_ALREADY_EXISTS" ||
+        code === "ACCOUNT_ALREADY_EXISTS" ||
+        duplicateByMessage;
 
-      if (status === 409 && path === "ACCOUNT_ALREADY_EXISTS") {
-        setError("Tài khoản đã tồn tại");
+      if (status === 500) {
+        setError("Lỗi server");
+      } else if (isDuplicatePhone) {
+        setError("Số điện thoại đã được đăng ký");
       } else {
         setError(message || "Đăng ký thất bại");
       }

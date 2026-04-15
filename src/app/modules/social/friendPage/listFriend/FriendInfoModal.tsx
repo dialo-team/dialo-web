@@ -1,13 +1,13 @@
 import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
+import { getUserInfoApi } from "../../../../../../api/social/searchAndAddFriend/userApi";
 import styles from "../../../../styles/module.myAccount/AccountModal.module.css";
 
 interface Friend {
-  id: number;
-  name: string;
-  avatar: string;
-  gender?: string;
-  birthday?: string;
-  phone?: string;
+  friendId: string;
+  friendUserName: string;
+  friendAvatar?: string | null;
+  bio?: string;
 }
 
 interface Props {
@@ -17,6 +17,40 @@ interface Props {
 }
 
 export const FriendInfoModal = ({ open, onClose, friend }: Props) => {
+  const [loading, setLoading] = useState(false);
+  const [displayFriend, setDisplayFriend] = useState<Friend | null>(friend);
+
+  useEffect(() => {
+    if (!open || !friend?.friendId) {
+      setDisplayFriend(friend);
+      setLoading(false);
+      return;
+    }
+
+    const fetchInfo = async () => {
+      try {
+        setLoading(true);
+
+        const res = await getUserInfoApi(friend.friendId);
+        const data = res.data?.data || res.data || {};
+
+        setDisplayFriend({
+          friendId: data.id || friend.friendId,
+          friendUserName: data.userName || friend.friendUserName,
+          friendAvatar: data.avatar || friend.friendAvatar || null,
+          bio: data.bio,
+        });
+      } catch (error) {
+        console.error("Lỗi load thông tin bạn bè:", error);
+        setDisplayFriend(friend);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInfo();
+  }, [friend, open]);
+
   if (!friend) return null;
 
   return (
@@ -45,28 +79,31 @@ export const FriendInfoModal = ({ open, onClose, friend }: Props) => {
             {/* Avatar + Name */}
             <div className={styles.profileSection}>
               <div className={styles.avatar}>
-                <img src={friend.avatar} alt="avatar" />
+                <img
+                  src={
+                    displayFriend?.friendAvatar ||
+                    "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa"
+                  }
+                  alt="avatar"
+                />
               </div>
-              <div className={styles.name}>{friend.name}</div>
+              <div className={styles.name}>{displayFriend?.friendUserName}</div>
             </div>
 
             {/* Info */}
             <div className={styles.infoSection}>
               <h4>Thông tin cá nhân</h4>
 
-              <div className={styles.row}>
-                <span>Giới tính</span>
-                <span>{friend.gender || "Không có"}</span>
-              </div>
+              {loading ? (
+                <div className={styles.row}>
+                  <span>Đang tải</span>
+                  <span>...</span>
+                </div>
+              ) : null}
 
               <div className={styles.row}>
-                <span>Ngày sinh</span>
-                <span>{friend.birthday || "Không có"}</span>
-              </div>
-
-              <div className={styles.row}>
-                <span>Điện thoại</span>
-                <span>{friend.phone || "Không có"}</span>
+                <span>Bio</span>
+                <span>{displayFriend?.bio || "Không có"}</span>
               </div>
             </div>
           </motion.div>

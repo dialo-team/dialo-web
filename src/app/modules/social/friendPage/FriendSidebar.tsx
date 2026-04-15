@@ -1,4 +1,4 @@
-import { Search, User, UsersRound, UserPlus } from "lucide-react";
+import { Search, User, UsersRound, UserPlus, UserX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import styles from "../../../styles/module.social/FriendsPage/FriendSidebar.module.css";
 import { useState } from "react";
@@ -16,9 +16,15 @@ export const FriendSidebar = ({ onNavigate }: FriendSidebarProps) => {
   const [openAddFriend, setOpenAddFriend] = useState(false);
   const [openCreateGroup, setOpenCreateGroup] = useState(false);
 
+  // xử lý search
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && keyword.trim() !== "") {
-      navigate(`/home/friendHome/search?q=${keyword}`);
+    if (e.key === "Enter") {
+      const keywordTrimmed = keyword.trim();
+      if (!keywordTrimmed) return;
+
+      navigate(`/home/chat?q=${encodeURIComponent(keywordTrimmed)}`);
+
+      setKeyword(""); 
       onNavigate?.();
     }
   };
@@ -30,14 +36,14 @@ export const FriendSidebar = ({ onNavigate }: FriendSidebarProps) => {
         <div className={styles.searchBoxLeft}>
           <Search size={16} />
           <input
-            placeholder="Tìm kiếm..."
+            placeholder="Tìm đoạn hội thoại..."
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             onKeyDown={handleSearch}
           />
         </div>
 
-        {/* icon bên ngoài */}
+        {/* icon */}
         <div className={styles.actions}>
           <UserPlus
             size={20}
@@ -94,12 +100,19 @@ export const FriendSidebar = ({ onNavigate }: FriendSidebarProps) => {
             onNavigate?.();
           }}
         >
-          <img
-            src={addGroupIcon}
-            alt="group-plus"
-            className={styles.icon}
-          />
+          <img src={addGroupIcon} className={styles.icon} />
           <span>Lời mời vào nhóm</span>
+        </div>
+
+        <div
+          className={styles.menuItem}
+          onClick={() => {
+            navigate("/home/friendHome/blockList");
+            onNavigate?.();
+          }}
+        >
+          <UserX size={18} />
+          <span>Danh sách chặn</span>
         </div>
       </div>
 

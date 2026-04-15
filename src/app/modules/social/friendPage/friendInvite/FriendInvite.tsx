@@ -5,9 +5,34 @@ import {
   MessageCircle,
   UserPlus,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import styles from "../../../../styles/module.social/FriendsPage/FrientdInvite.module.css";
+import {
+  getReceivedRequestsApi,
+  getSentRequestsApi,
+  cancelFriendRequestApi,
+  rejectFriendRequestApi,
+  acceptFriendRequestApi,
+} from "../../../../../../api/social/friendInvite/getFriendInviteApi";
+import { getUserInfoApi } from "../../../../../../api/social/searchAndAddFriend/userApi";
+
+// ================= TYPES =================
+interface ReceivedItem {
+  id: string;
+  senderId: string;
+  name: string;
+  avatar: string;
+  date: string;
+}
+
+interface SentItem {
+  id: string;
+  targetId: string;
+  name: string;
+  avatar: string;
+  date: string;
+}
 
 export const FriendInvite = () => {
   const navigate = useNavigate();
@@ -15,142 +40,204 @@ export const FriendInvite = () => {
     isMobile?: boolean;
     onBackToSidebar?: () => void;
   }>();
+
+  const [received, setReceived] = useState<ReceivedItem[]>([]);
+  const [sent, setSent] = useState<SentItem[]>([]);
+  const [loading, setLoading] = useState(false);
+
   const [showAllSent, setShowAllSent] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  const invited = [
-    {
-      id: 1,
-      name: "TKMT",
-      date: "26/02",
-      avatar:
-        "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180",
-      message:
-        "hoansdoajsodajsdoajsdoasjdoasjdoadoajdoasjdoashoansdoajsodajsdoajsdoasjdoasjdoad",
-    },
-    {
-      id: 2,
-      name: "TKMT",
-      date: "26/02",
-      avatar:
-        "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180",
-      message: "xin chao",
-    },
-    {
-      id: 3,
-      name: "TKMT",
-      date: "26/02",
-      avatar:
-        "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180",
-      message: "xin chao",
-    },
-  ];
+  // ================= FETCH DATA =================
+  // const fetchData = useCallback(async () => {
+  //   try {
+  //     setLoading(true);
 
-  const sentInvites = [
-    {
-      id: 1,
-      name: "Trần Hữu Thắng",
-      avatar:
-        "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180",
-    },
-    {
-      id: 2,
-      name: "Công Danh",
-      avatar:
-        "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180",
-    },
-    {
-      id: 3,
-      name: "Thang Nguyen",
-      avatar:
-        "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180",
-    },
-    {
-      id: 1,
-      name: "Trần Hữu Thắng",
-      avatar:
-        "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180",
-    },
-    {
-      id: 2,
-      name: "Công Danh",
-      avatar:
-        "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180",
-    },
-    {
-      id: 3,
-      name: "Thang Nguyen",
-      avatar:
-        "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180",
-    },
-  ];
+  //     const [receivedRes, sentRes] = await Promise.all([
+  //       getReceivedRequestsApi(),
+  //       getSentRequestsApi(),
+  //     ]);
 
-  const suggestions = [
-    {
-      id: 1,
-      name: "Nguyễn Trần Long",
-      mutual: 6,
-      avatar:
-        "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180",
-    },
-    {
-      id: 2,
-      name: "Lê Trần Gia Huy",
-      mutual: 5,
-      avatar:
-        "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180",
-    },
-    {
-      id: 3,
-      name: "Thanh Thảo",
-      mutual: 4,
-      avatar:
-        "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180",
-    },
-    {
-      id: 4,
-      name: "An",
-      mutual: 2,
-      avatar:
-        "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180",
-    },
-    {
-      id: 5,
-      name: "Khánh Duy",
-      mutual: 3,
-      avatar:
-        "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180",
-    },
-    {
-      id: 6,
-      name: "Nguyễn Hoàng Hà",
-      mutual: 3,
-      avatar:
-        "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180",
-    },
-  ];
+  //     const receivedData = receivedRes.data || [];
+  //     const sentData = sentRes.data || [];
 
-  const visibleSent = showAllSent ? sentInvites : sentInvites.slice(0, 3);
+  //     // map RECEIVED
+  //     const mapReceived: ReceivedItem[] = receivedData.map((item: any) => ({
+  //       id: item.friendshipId,
+  //       senderId: item.senderId,
+  //       name: item.senderId,
+  //       avatar:
+  //         "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
+  //       date: new Date(item.requestedAt).toLocaleDateString("vi-VN"),
+  //     }));
+
+  //     // map SENT
+  //     const mapSent: SentItem[] = sentData.map((item: any) => ({
+  //       id: item.friendshipId,
+  //       targetId: item.receiverId,
+  //       name: item.receiverId,
+  //       avatar:
+  //         "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
+  //       date: new Date(item.requestedAt).toLocaleDateString("vi-VN"),
+  //     }));
+
+  //     setReceived(mapReceived);
+  //     setSent(mapSent);
+  //   } catch (err) {
+  //     console.error("Lỗi fetch friend requests:", err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, []);
+
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+
+      const [receivedRes, sentRes] = await Promise.all([
+        getReceivedRequestsApi(),
+        getSentRequestsApi(),
+      ]);
+
+      const receivedData = receivedRes.data || [];
+      const sentData = sentRes.data || [];
+
+      const uniqueUserIds = Array.from(
+        new Set([
+          ...receivedData.map((item: any) => item.senderId),
+          ...sentData.map((item: any) => item.receiverId),
+        ].filter(Boolean))
+      );
+
+      const userMap = new Map<string, { name: string; avatar: string }>();
+
+      await Promise.all(
+        uniqueUserIds.map(async (userId) => {
+          try {
+            const userRes = await getUserInfoApi(userId);
+            const user = userRes.data?.data || userRes.data;
+
+            userMap.set(userId, {
+              name: user.userName || userId,
+              avatar:
+                user.avatar ||
+                "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
+            });
+          } catch {
+            userMap.set(userId, {
+              name: userId,
+              avatar:
+                "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
+            });
+          }
+        })
+      );
+
+      // ================= RECEIVED =================
+      // const mapReceived: ReceivedItem[] = receivedData.map((item: any) => ({
+      //   id: item.friendshipId,
+      //   senderId: item.senderId,
+      //   name: item.senderId, // chưa có API user -> tạm
+      //   avatar:
+      //     "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
+      //   date: new Date(item.requestedAt).toLocaleDateString("vi-VN"),
+      // }));
+
+      const mapReceived: ReceivedItem[] = await Promise.all(
+        receivedData.map(async (item: any) => {
+          const senderInfo = userMap.get(item.senderId);
+
+          return {
+            id: item.friendshipId,
+            senderId: item.senderId,
+            name: senderInfo?.name || item.senderId,
+            avatar:
+              senderInfo?.avatar ||
+              "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
+            date: new Date(item.requestedAt).toLocaleDateString("vi-VN"),
+          };
+        })
+      );
+
+      // ================= SENT =================
+      const mapSent: SentItem[] = await Promise.all(
+        sentData.map(async (item: any) => {
+          const receiverInfo = userMap.get(item.receiverId);
+
+          return {
+            id: item.friendshipId,
+            targetId: item.receiverId,
+            name: receiverInfo?.name || item.receiverId,
+            avatar:
+              receiverInfo?.avatar ||
+              "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa",
+            date: new Date(item.requestedAt).toLocaleDateString("vi-VN"),
+          };
+        })
+      );
+
+      setReceived(mapReceived);
+      setSent(mapSent);
+    } catch (err) {
+      console.error("Lỗi fetch friend requests:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // ================= ACTIONS =================
 
   const handleBack = () => {
     if (isMobile && onBackToSidebar) {
       onBackToSidebar();
       return;
     }
-
     navigate(-1);
   };
 
+  //  Thu hồi lời mời (SENT)
+  const handleCancelRequest = async (targetId: string) => {
+    try {
+      await cancelFriendRequestApi(targetId);
+      await fetchData();
+    } catch (err) {
+      console.error("Thu hồi thất bại:", err);
+    }
+  };
+
+  // Từ chối lời mời (RECEIVED)
+  const handleRejectRequest = async (senderId: string) => {
+    try {
+      await rejectFriendRequestApi(senderId);
+      await fetchData();
+    } catch (err) {
+      console.error("Từ chối thất bại:", err);
+    }
+  };
+
+  // Chấp nhận lời mời
+  const handleAcceptRequest = async (senderId: string) => {
+    try {
+      await acceptFriendRequestApi(senderId);
+      await fetchData(); // reload lại list
+    } catch (err) {
+      console.error("Chấp nhận thất bại:", err);
+    }
+  };
+
+  const visibleSent = showAllSent ? sent : sent.slice(0, 3);
+
+  // ================= UI =================
   return (
     <>
+      {/* HEADER */}
       <div className={styles.header}>
         <div className={styles.headerTop}>
-          <button
-            className={styles.backButton}
-            onClick={handleBack}
-            type="button"
-            aria-label="Quay lại"
-          >
+          <button className={styles.backButton} onClick={handleBack}>
             <ChevronLeft size={24} />
           </button>
 
@@ -161,142 +248,134 @@ export const FriendInvite = () => {
         </div>
       </div>
 
-      {/* <div className={styles.header}>
-        <ArrowLeft size={16} />
-        <UserPlus size={16} />
-        <h2>Lời mời kết bạn</h2>
-      </div> */}
-
       <div className={styles.section}>
-        <p className={styles.sectionTitle}>Lời mời đã nhận được ({invited.length})</p>
-
         <div className={styles.mainInvite}>
-        {/* Lời mời đã nhận */}
-        {invited.length === 0 ? (
-          <p className={styles.emptyText}>Không có lời mời kết bạn</p>
-        ) : (
-          <ul className={styles.invitedList}>
-            {invited.map((item, index) => (
-              <li
-                key={`${item.id}-${index}`}
-                className={styles.invitedCard}
-              >
-                <div className={styles.invitedHeader}>
-                  <img
-                    className={styles.invitedAvatar}
-                    src={item.avatar}
-                    alt={item.name}
-                  />
-                  <div className={styles.infoColumn}>
-                    <span className={styles.invitedName}>{item.name}</span>
-                    <span className={styles.invitedDate}>{item.date}</span>
-                  </div>
-                  <div className={styles.messageIcon}>
-                    <MessageCircle />
-                  </div>
-                </div>
-                <p className={styles.invitedMessage}>{item.message}</p>
-                <div className={styles.cardActions}>
-                  <button className={styles.btn}>Từ chối</button>
-                  <button className={styles.primaryBtn}>Đồng ý</button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+          {/* ================= RECEIVED ================= */}
+          <p className={styles.sectionTitle}>
+            Lời mời đã nhận ({received.length})
+          </p>
 
-        {/* Lời mời đã gửi */}
-        <p className={styles.sectionHeader}>
-          Lời mời đã gửi ({sentInvites.length})
-        </p>
-        {sentInvites.length === 0 ? (
-          <p className={styles.emptyText}>Không có gửi lời mời kết bạn</p>
-        ) : (
-          <>
-            <ul className={styles.inviteList}>
-              {visibleSent.map((item, index) => (
-                <li
-                  key={`${item.id}-${index}`}
-                  className={styles.inviteCard}
-                >
-                  <div className={styles.inviteCardHeader}>
+          {loading ? (
+            <p>Đang tải...</p>
+          ) : received.length === 0 ? (
+            <p>
+              Không có lời mời kết bạn
+            </p>
+          ) : (
+            <ul className={styles.invitedList}>
+              {received.map((item) => (
+                <li key={item.id} className={styles.invitedCard}>
+                  <div className={styles.invitedHeader}>
                     <img
                       className={styles.invitedAvatar}
                       src={item.avatar}
-                      alt={item.name}
                     />
-                    <div className={styles.inviteInfo}>
-                      <span className={styles.invitedName}>{item.name}</span>
-                      <span className={styles.inviteSubText}>
-                        Bạn đã gửi lời mời
+                    <div className={styles.infoColumn}>
+                      <span className={styles.invitedName}>
+                        {item.name}
+                      </span>
+                      <span className={styles.invitedDate}>
+                        {item.date}
                       </span>
                     </div>
-                    <div className={styles.messageIcon}>
-                      <MessageCircle />
-                    </div>
+                    <MessageCircle />
                   </div>
-                  <button className={styles.btn}>Thu hồi lời mời</button>
+
+                  <p className={styles.invitedMessage}>
+                    Đã gửi lời mời kết bạn
+                  </p>
+
+                  <div className={styles.cardActions}>
+                    <button
+                      className={styles.btn}
+                      onClick={() =>
+                        handleRejectRequest(item.senderId)
+                      }
+                    >
+                      Từ chối
+                    </button>
+                    <button
+                      className={styles.primaryBtn}
+                      onClick={() => handleAcceptRequest(item.senderId)}
+                    >
+                      Đồng ý
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>
-
-            {sentInvites.length > 3 && (
-              <button
-                className={styles.viewMore}
-                onClick={() => setShowAllSent(!showAllSent)}
-              >
-                {showAllSent ? "Ẩn bớt" : "Xem thêm"}
-                {showAllSent ? (
-                  <ChevronUp size={16} />
-                ) : (
-                  <ChevronDown size={16} />
-                )}
-              </button>
-            )}
-          </>
-        )}
-
-        {/* Gợi ý kết bạn — toggle */}
-        <p
-          className={`${styles.sectionHeader} ${styles.sectionHeaderToggle}`}
-          onClick={() => setShowSuggestions(!showSuggestions)}
-        >
-          Gợi ý kết bạn ({suggestions.length})
-          {showSuggestions ? (
-            <ChevronUp size={18} />
-          ) : (
-            <ChevronDown size={18} />
           )}
-        </p>
 
-        {showSuggestions && (
-          <ul className={styles.suggestionList}>
-            {suggestions.map((item, index) => (
-              <li
-                key={`${item.id}-${index}`}
-                className={styles.suggestionCard}
-              >
-                <div className={styles.suggestionCardHeader}>
-                  <img
-                    className={styles.invitedAvatar}
-                    src={item.avatar}
-                    alt={item.name}
-                  />
-                  <div className={styles.inviteInfo}>
-                    <span className={styles.invitedName}>{item.name}</span>
-                    <span className={styles.mutualText}>
-                      {item.mutual} nhóm chung
-                    </span>
-                  </div>
-                </div>
-                <div className={styles.suggestionActions}>
-                  <button className={styles.btn}>Bỏ qua</button>
-                  <button className={styles.primaryBtn}>Kết bạn</button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+          {/* ================= SENT ================= */}
+          <p className={styles.sectionTitle}>
+            Lời mời đã gửi ({sent.length})
+          </p>
+
+          {sent.length === 0 ? (
+            <p className={styles.emptyText}>
+              Không có lời mời đã gửi
+            </p>
+          ) : (
+            <>
+              <ul className={styles.inviteList}>
+                {visibleSent.map((item) => (
+                  <li key={item.id} className={styles.inviteCard}>
+                    <div className={styles.inviteCardHeader}>
+                      <img
+                        className={styles.invitedAvatar}
+                        src={item.avatar}
+                      />
+                      <div className={styles.inviteInfo}>
+                        <span className={styles.invitedName}>
+                          {item.name}
+                        </span>
+                        <span className={styles.inviteSubText}>
+                          Bạn đã gửi lời mời
+                        </span>
+                      </div>
+                      <MessageCircle />
+                    </div>
+
+                    <button
+                      className={styles.btn}
+                      onClick={() =>
+                        handleCancelRequest(item.targetId)
+                      }
+                    >
+                      Thu hồi lời mời
+                    </button>
+                  </li>
+                ))}
+              </ul>
+
+              {sent.length > 3 && (
+                <button
+                  className={styles.viewMore}
+                  onClick={() => setShowAllSent(!showAllSent)}
+                >
+                  {showAllSent ? "Ẩn bớt" : "Xem thêm"}
+                  {showAllSent ? (
+                    <ChevronUp size={16} />
+                  ) : (
+                    <ChevronDown size={16} />
+                  )}
+                </button>
+              )}
+            </>
+          )}
+
+          {/* ================= SUGGEST ================= */}
+          <p
+            className={styles.sectionHeader}
+            onClick={() => setShowSuggestions(!showSuggestions)}
+          >
+            Gợi ý kết bạn
+            {showSuggestions ? <ChevronUp /> : <ChevronDown />}
+          </p>
+
+          {showSuggestions && (
+            <p>Chưa có dữ liệu</p>
+          )}
         </div>
       </div>
     </>

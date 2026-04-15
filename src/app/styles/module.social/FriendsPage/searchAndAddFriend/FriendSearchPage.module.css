@@ -1,5 +1,6 @@
 .container {
   min-width: 0;
+  padding: 20px;
 }
 
 .container h2 {
@@ -74,6 +75,15 @@
   cursor: pointer;
 }
 
+.addedBtn {
+  background: #dfe3e8;
+  color: #4b5563;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: not-allowed;
+}
+
 @media (max-width: 768px) {
   .container h2 {
     font-size: 22px;
@@ -90,7 +100,8 @@
   }
 
   .messageBtn,
-  .addBtn {
+  .addBtn,
+  .addedBtn {
     flex: 1;
   }
 }
