@@ -1,16 +1,18 @@
 import { Search, UserPlus } from "lucide-react";
 import styles from "../../styles/message/ChatSidebar.module.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import addGroupIcon from "../../../assets/add_group.jpg";
 import AddFriendModal from "../social/friendPage/searchAndAddFriend/AddFriendModal";
 import CreateGroupModal from "../social/friendPage/searchAndAddFriend/CreateGroupModal";
 import type { Friend } from "../../types/message/Friend";
+import { useSearchParams } from "react-router-dom";
 
 type Props = {
   onSelectUser: (user: Friend) => void;
 };
 
 export const ChatSidebar = ({ onSelectUser }: Props) => {
+  const [params] = useSearchParams();
   const [keyword, setKeyword] = useState("");
   const [openAddFriend, setOpenAddFriend] = useState(false);
   const [openCreateGroup, setOpenCreateGroup] = useState(false);
@@ -42,6 +44,11 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
   const filteredFriends = friends.filter((f) =>
     f.name.toLowerCase().includes(keyword.toLowerCase()),
   );
+
+  useEffect(() => {
+    const q = params.get("q") || "";
+    setKeyword(q);
+  }, [params]);
 
   return (
     <div className={styles.left}>

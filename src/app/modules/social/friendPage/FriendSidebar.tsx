@@ -19,13 +19,10 @@ export const FriendSidebar = ({ onNavigate }: FriendSidebarProps) => {
   // xử lý search
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      const isValid = /^\d{10}$/.test(keyword);
+      const keywordTrimmed = keyword.trim();
+      if (!keywordTrimmed) return;
 
-      if (!isValid) {
-        navigate(`/home/friendHome/search?q=invalid`);
-      } else {
-        navigate(`/home/friendHome/search?q=${keyword}`);
-      }
+      navigate(`/home/chat?q=${encodeURIComponent(keywordTrimmed)}`);
 
       setKeyword(""); 
       onNavigate?.();
@@ -39,13 +36,9 @@ export const FriendSidebar = ({ onNavigate }: FriendSidebarProps) => {
         <div className={styles.searchBoxLeft}>
           <Search size={16} />
           <input
-            placeholder="Nhập số điện thoại..."
+            placeholder="Tìm đoạn hội thoại..."
             value={keyword}
-            onChange={(e) => {
-              // chỉ cho nhập số
-              const value = e.target.value.replace(/\D/g, "");
-              setKeyword(value);
-            }}
+            onChange={(e) => setKeyword(e.target.value)}
             onKeyDown={handleSearch}
           />
         </div>

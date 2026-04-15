@@ -44,9 +44,15 @@ export const FriendListPage = () => {
   const [openDelete, setOpenDelete] = useState(false);
   const [selectedFriend, setSelectedFriend] = useState<any>(null);
   const [openBlock, setOpenBlock] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState("");
   const [friendAliases, setFriendAliases] = useState<Record<string, string>>(
     () => loadFriendAliases()
   );
+
+  const filteredFriends = friends.filter((f) => {
+    const displayName = friendAliases[f.friendId] || f.friendUserName || "";
+    return displayName.toLowerCase().includes(searchKeyword.toLowerCase());
+  });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -153,7 +159,11 @@ export const FriendListPage = () => {
           {/* SEARCH */}
           <div className={styles.searchBoxRight}>
             <Search size={16} />
-            <input placeholder="Tìm bạn bè..." />
+            <input
+              placeholder="Tìm bạn bè..."
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
+            />
           </div>
 
           {/* LOADING */}
@@ -161,9 +171,11 @@ export const FriendListPage = () => {
             <p>Đang tải danh sách bạn bè...</p>
           ) : friends.length === 0 ? (
             <p>Chưa có bạn bè</p>
+          ) : filteredFriends.length === 0 ? (
+            <p>Không tìm thấy bạn bè phù hợp</p>
           ) : (
             <div className={styles.friendList}>
-              {friends.map((f) => (
+              {filteredFriends.map((f) => (
                 <div
                   key={f.friendshipId}
                   className={styles.friendItem}
