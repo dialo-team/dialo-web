@@ -15,3 +15,19 @@ export const getConversationDetailApi = async (
   );
   return res.data;
 };
+
+export const remarkConversationApi = async (
+  conversationId: string,
+  requesterId: string,
+  remarkName: string,
+) => {
+  const res = await axiosClient.put(
+    `/api/v1/conversations/${conversationId}/remark`,
+    {
+      requesterId,
+      remarkName,
+    },
+  );
+
+  return res.data;
+};
