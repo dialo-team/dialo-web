@@ -304,6 +304,12 @@
   font-weight: 500;
 }
 
+.usernameRow {
+  display: flex;
+  align-items: center;
+  gap: 6px; /* khoảng cách tên và icon */
+}
+
 @media (max-width: 768px) {
   .overlay {
     position: absolute;
