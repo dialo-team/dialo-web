@@ -85,3 +85,26 @@
 .btnLogin:hover:not(:disabled) {
   background-color: #006fcf;
 }
+
+@media (max-width: 768px) {
+  .form,
+  .verifyForm {
+    width: min(100%, 92vw);
+    padding: 18px 16px;
+  }
+
+  .verifyForm h1 {
+    font-size: 20px;
+  }
+
+  .otpContainer {
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .otpInput {
+    width: 36px;
+    height: 46px;
+    font-size: 20px;
+  }
+}

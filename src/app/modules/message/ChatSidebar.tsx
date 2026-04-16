@@ -114,13 +114,14 @@
 
 import { Search, UserPlus } from "lucide-react";
 import styles from "../../styles/message/ChatSidebar.module.css";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import addGroupIcon from "../../../assets/add_group.jpg";
 import AddFriendModal from "../social/friendPage/searchAndAddFriend/AddFriendModal";
 import CreateGroupModal from "../social/friendPage/searchAndAddFriend/CreateGroupModal";
 import type { Friend } from "../../types/message/Friend";
 import { useSearchParams } from "react-router-dom";
 import { getConversationsApi } from "../../../../api/message/conversationApi";
+import { subscribeChatTopic } from "./chatSocket";
 
 type Props = {
   onSelectUser: (user: Friend) => void;
@@ -128,6 +129,18 @@ type Props = {
 
 const DEFAULT_AVATAR =
   "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa";
+
+const getCurrentUserId = () => {
+  try {
+    const savedUser = localStorage.getItem("user");
+    if (!savedUser) return null;
+
+    const parsedUser = JSON.parse(savedUser);
+    return typeof parsedUser?.id === "string" ? parsedUser.id : null;
+  } catch {
+    return null;
+  }
+};
 
 export const ChatSidebar = ({ onSelectUser }: Props) => {
   const [params] = useSearchParams();
@@ -138,6 +151,29 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
 
   const [openAddFriend, setOpenAddFriend] = useState(false);
   const [openCreateGroup, setOpenCreateGroup] = useState(false);
+
+  const loadConversations = useCallback(async () => {
+    setLoading(true);
+
+    try {
+      const data = await getConversationsApi();
+
+      const mapped: Friend[] = data.map((item) => ({
+        id: item.conversationId,
+        name: item.counterpartName,
+        avatar: item.counterpartAvatarUrl || DEFAULT_AVATAR,
+        lastMessage: item.lastMessage,
+        unreadCount: item.unreadCount,
+        unreadDisplay: item.unreadDisplay,
+      }));
+
+      setFriends(mapped);
+    } catch (error) {
+      console.error("Load conversations failed:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const onConversationRead = (event: Event) => {
@@ -204,31 +240,36 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
 
   // ===================== FETCH CONVERSATIONS =====================
   useEffect(() => {
-    const loadConversations = async () => {
-      setLoading(true);
+    void loadConversations();
+  }, [loadConversations]);
 
-      try {
-        const data = await getConversationsApi();
+  // ===================== SOCKET: INBOX =====================
+  useEffect(() => {
+    const currentUserId = getCurrentUserId();
+    if (!currentUserId) {
+      return;
+    }
 
-        const mapped: Friend[] = data.map((item) => ({
-          id: item.conversationId,
-          name: item.counterpartName,
-          avatar: item.counterpartAvatarUrl || DEFAULT_AVATAR,
-          lastMessage: item.lastMessage,
-          unreadCount: item.unreadCount,
-          unreadDisplay: item.unreadDisplay,
-        }));
+    const unsubscribe = subscribeChatTopic(
+      `/topic/inbox/${currentUserId}`,
+      () => {
+        void loadConversations();
+      },
+    );
 
-        setFriends(mapped);
-      } catch (error) {
-        console.error("Load conversations failed:", error);
-      } finally {
-        setLoading(false);
+    return unsubscribe;
+  }, [loadConversations]);
+
+  // ===================== FALLBACK POLLING =====================
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      if (!document.hidden) {
+        void loadConversations();
       }
-    };
+    }, 3000);
 
-    loadConversations();
-  }, []);
+    return () => window.clearInterval(interval);
+  }, [loadConversations]);
 
   // ===================== SEARCH PARAM =====================
   useEffect(() => {

@@ -537,12 +537,11 @@
 import { useEffect, useState } from "react";
 import type { Friend } from "../../types/message/Friend";
 import styles from "../../styles/message/ChatInfo.module.css";
-import { ChevronDown, ChevronUp, X, ChevronLeft, Edit3 } from "lucide-react";
+import { ChevronDown, ChevronUp, X, Edit3 } from "lucide-react";
 import {
   clearConversationHistoryApi,
   getConversationMediaApi,
 } from "../../../../api/message/conversationApi";
-import type { MessageDto } from "../../types/message/Message";
 import axiosClient from "../../../../api/axiosClient";
 import { ChatInfoSkeleton } from "./ChatSkeletonLoading";
 import { RemarkFriendModal } from "../../modules/message/RemarkFriendModal";

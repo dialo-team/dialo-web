@@ -114,10 +114,7 @@ export const GroupListPage = () => {
         open={openLeave}
         onClose={() => setOpenLeave(false)}
         group={selectedGroup}
-        onConfirm={() => {
-          console.log("Đã rời nhóm:", selectedGroup.name);
-          setOpenLeave(false);
-        }}
+        onConfirm={() => setOpenLeave(false)}
       />
     </>
   );
