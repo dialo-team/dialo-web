@@ -192,7 +192,7 @@
 import { useOutletContext } from "react-router-dom";
 import type { Friend } from "../../types/message/Friend";
 import styles from "../../styles/message/ChatWindow.module.css";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import {
   ChevronLeft,
   Phone,
@@ -208,6 +208,7 @@ import {
   Trash2,
   Send,
   FileText,
+  Download,
 } from "lucide-react";
 import {
   getConversationDetailApi,
@@ -222,6 +223,7 @@ import { ChatInfo } from "./ChatInfo";
 import { ChatWindowSkeleton } from "./ChatSkeletonLoading";
 import { ChatSearch } from "./ChatSearch";
 import type { MessageDto } from "../../types/message/Message";
+import { subscribeChatTopic } from "./chatSocket";
 
 type PropsContext = {
   selectedUser: Friend | null;
@@ -244,6 +246,28 @@ type MessageUI = {
 
 const MESSAGE_TEXT_TYPE = "TEXT";
 const API_BASE_URL = "http://14.225.254.174:9000";
+const DEFAULT_FILE_DOWNLOAD_BASE_URL = "http://localhost:9000";
+
+const getFileDownloadBaseUrl = () => {
+  const envBaseUrl =
+    import.meta.env.VITE_FILE_BASE_URL?.trim() ||
+    import.meta.env.VITE_API_BASE_URL?.trim();
+
+  if (envBaseUrl) {
+    return envBaseUrl;
+  }
+
+  if (typeof window !== "undefined") {
+    const currentUrl = new URL(window.location.href);
+    currentUrl.port = "9000";
+    currentUrl.pathname = "/";
+    currentUrl.search = "";
+    currentUrl.hash = "";
+    return currentUrl.origin;
+  }
+
+  return DEFAULT_FILE_DOWNLOAD_BASE_URL;
+};
 
 const getCurrentUserId = () => {
   try {
@@ -273,6 +297,29 @@ const toAbsoluteMediaUrl = (url: string) => {
   }
 
   return `${API_BASE_URL}/${url}`;
+};
+
+const toPublicFileDownloadUrl = (url: string) => {
+  if (!url) {
+    return "";
+  }
+
+  if (/^(blob:|data:)/i.test(url)) {
+    return url;
+  }
+
+  try {
+    const resolvedUrl = new URL(url, API_BASE_URL);
+    const publicBaseUrl = new URL(getFileDownloadBaseUrl());
+
+    resolvedUrl.protocol = publicBaseUrl.protocol;
+    resolvedUrl.hostname = publicBaseUrl.hostname;
+    resolvedUrl.port = publicBaseUrl.port;
+
+    return resolvedUrl.toString();
+  } catch {
+    return `${getFileDownloadBaseUrl()}${url.startsWith("/") ? url : `/${url}`}`;
+  }
 };
 
 const normalizeCandidateUrls = (
@@ -466,6 +513,17 @@ const renderMessageContent = (
               <div className={styles.fileType}>{message.mimeType}</div>
             )}
           </div>
+          <button
+            type="button"
+            className={styles.fileDownloadBtn}
+            aria-label={`Tải xuống ${message.fileName || "attachment"}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDownloadFile(message);
+            }}
+          >
+            <Download size={16} />
+          </button>
         </div>
         <div className={styles.time}>{message.time}</div>
       </>
@@ -486,6 +544,7 @@ export const ChatWindow = () => {
   const bodyRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const objectUrlsRef = useRef<string[]>([]);
+  const lastMessageIdRef = useRef<string>("");
   const [messages, setMessages] = useState<MessageUI[]>([]);
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
@@ -524,23 +583,23 @@ export const ChatWindow = () => {
     objectUrlsRef.current = [];
   };
 
-  // fetch messages
-  useEffect(() => {
-    const load = async () => {
-      const conversationId = selectedUser?.id ?? "";
+  const loadConversationDetail = useCallback(
+    async (conversationId: string, silent = false) => {
+      if (!conversationId) {
+        return;
+      }
 
-      if (!conversationId) return;
+      if (!silent) {
+        setLoading(true);
+      }
 
-      setLoading(true);
       try {
         const currentUserId = getCurrentUserId();
         const data = await getConversationDetailApi(conversationId);
 
         clearObjectUrls();
 
-        const mapped = data.messages.map((m) =>
-          mapMessageToUI(m, currentUserId),
-        );
+        const mapped = data.messages.map((m) => mapMessageToUI(m, currentUserId));
         const resolved = await Promise.all(
           mapped.map(async (message) => {
             const resolvedMessage = await resolveAttachmentUrl(message);
@@ -568,15 +627,96 @@ export const ChatWindow = () => {
         }
 
         setMessages(resolved);
-        console.log("conversationId:", conversationId);
-        setMessageText("");
+      } catch (error) {
+        console.error("Load messages failed:", error);
       } finally {
-        setLoading(false);
+        if (!silent) {
+          setLoading(false);
+        }
       }
-    };
+    },
+    [],
+  );
 
-    load();
-  }, [selectedUser?.id]);
+  // only append new messages without scrolling or resetting scroll position
+  const loadNewMessagesOnly = useCallback(
+    async (conversationId: string) => {
+      if (!conversationId) {
+        return;
+      }
+
+      try {
+        const currentUserId = getCurrentUserId();
+        const data = await getConversationDetailApi(conversationId);
+
+        const mapped = data.messages.map((m) => mapMessageToUI(m, currentUserId));
+
+        // only add messages that don't exist yet
+        setMessages((prev) => {
+          const existingIds = new Set(prev.map((m) => m.id));
+          const newMessages = mapped.filter((m) => !existingIds.has(m.id));
+
+          if (newMessages.length === 0) {
+            return prev;
+          }
+
+          // update lastMessageId ref for next polling
+          if (mapped.length > 0) {
+            lastMessageIdRef.current = mapped[mapped.length - 1].id;
+          }
+
+          return [...prev, ...newMessages];
+        });
+      } catch (error) {
+        console.error("Load new messages failed:", error);
+      }
+    },
+    [],
+  );
+
+  // fetch messages
+  useEffect(() => {
+    const conversationId = selectedUser?.id ?? "";
+    if (!conversationId) {
+      return;
+    }
+
+    void loadConversationDetail(conversationId);
+    setMessageText("");
+  }, [selectedUser?.id, loadConversationDetail]);
+
+  // socket realtime messages for the current conversation
+  useEffect(() => {
+    const conversationId = selectedUser?.id ?? "";
+    if (!conversationId) {
+      return;
+    }
+
+    const unsubscribe = subscribeChatTopic(
+      `/topic/conversations/${conversationId}`,
+      () => {
+        void loadNewMessagesOnly(conversationId);
+      },
+    );
+
+    return unsubscribe;
+  }, [selectedUser?.id, loadNewMessagesOnly]);
+
+  // fallback polling when socket is unavailable or misses a push event
+  useEffect(() => {
+    const conversationId = selectedUser?.id ?? "";
+    if (!conversationId) {
+      return;
+    }
+
+    const interval = window.setInterval(() => {
+      if (!document.hidden) {
+        void loadNewMessagesOnly(conversationId);
+      }
+    }, 1500);
+
+    return () => window.clearInterval(interval);
+  }, [selectedUser?.id, loadNewMessagesOnly]);
 
   const handleSendMessage = async () => {
     const conversationId = selectedUser?.id;
@@ -643,19 +783,45 @@ export const ChatWindow = () => {
   };
 
   const handleDownloadFile = (message: MessageUI) => {
-    const downloadUrl = message.sourceFileUrl || message.fileUrl;
+    const downloadUrl = toPublicFileDownloadUrl(
+      message.sourceFileUrl ||
+        (message.fileName ? `/uploads/${message.fileName}` : message.fileUrl || ""),
+    );
 
     if (!downloadUrl) {
       return;
     }
 
-    const link = document.createElement("a");
-    link.href = downloadUrl;
-    link.download = message.fileName || "attachment";
-    link.rel = "noreferrer";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const download = async () => {
+      try {
+        const response = await fetch(downloadUrl, {
+          method: "GET",
+          mode: "cors",
+          credentials: "omit",
+        });
+
+        if (!response.ok) {
+          throw new Error(`Download failed with status ${response.status}`);
+        }
+
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+
+        link.href = blobUrl;
+        link.download = message.fileName || "attachment";
+        link.rel = "noreferrer";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+      } catch (error) {
+        console.error("Download file error:", error);
+        window.open(downloadUrl, "_blank", "noopener,noreferrer");
+      }
+    };
+
+    void download();
   };
 
   const getLastMessageText = (messageList: MessageUI[]): string => {
@@ -669,9 +835,7 @@ export const ChatWindow = () => {
     return "";
   };
 
-  const handleMessageClick = (message: MessageUI) => {
-    console.log("messageId:", message.id);
-  };
+  const handleMessageClick = () => {};
 
   const handleRevokeMessage = async (messageId: string) => {
     const currentUserId = getCurrentUserId();
@@ -724,18 +888,11 @@ export const ChatWindow = () => {
       return;
     }
 
-    console.log("Delete message request:", {
-      messageId,
-      userId: currentUserId,
-    });
-
     try {
       await deleteMessageForMeApi({
         messageId,
         userId: currentUserId,
       });
-
-      console.log("Delete message success:", messageId);
 
       setMessages((prev) => {
         const updated = prev.filter((msg) => msg.id !== messageId);
@@ -775,7 +932,11 @@ export const ChatWindow = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.chat}>
+      <div
+        className={`${styles.chat} ${
+          showInfo || showSearch ? styles.chatWithPanel : ""
+        }`}
+      >
         {/* HEADER */}
         <div className={styles.header}>
           <div className={styles.user}>
@@ -783,7 +944,7 @@ export const ChatWindow = () => {
               <ChevronLeft size={20} />
             </button>
 
-            <img src={selectedUser.avatar} />
+            <img src={selectedUser.avatar} className={styles.avatar} />
 
             <div>
               <div className={styles.name}>{selectedUser.name}</div>
@@ -893,7 +1054,7 @@ export const ChatWindow = () => {
                           ? styles.fileBubble
                           : styles.bubble
                     } ${m.revoked ? styles.revoked : ""}`}
-                    onClick={() => handleMessageClick(m)}
+                    onClick={handleMessageClick}
                   >
                     {renderMessageContent(m, handleDownloadFile)}
                   </div>
