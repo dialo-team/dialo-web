@@ -90,8 +90,99 @@
   font-size: 14px;
 }
 
+.fileBubble {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #dbe2ea;
+  min-width: 200px;
+}
+
+.imageBubble {
+  padding: 4px;
+  border-radius: 12px;
+  background: transparent;
+}
+
 .messageRight .bubble {
   background: #dbeafe;
+}
+
+.messageRight .fileBubble {
+  background: #e9f3ff;
+  border-color: #bfdbfe;
+}
+
+.imageLink {
+  display: block;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #d1d5db;
+  background: #fff;
+}
+
+.imageMessage {
+  display: block;
+  width: 100%;
+  max-width: 260px;
+  max-height: 280px;
+  object-fit: cover;
+}
+
+.fileRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1f2937;
+}
+
+.fileMeta {
+  min-width: 0;
+}
+
+.fileName {
+  font-size: 13px;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.fileType {
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 2px;
+  word-break: break-word;
+}
+
+.fileLink {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #0f62fe;
+  text-decoration: none;
+}
+
+.fileLink:hover {
+  text-decoration: underline;
+}
+
+.fileActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.fileDownloadBtn {
+  font-size: 12px;
+  color: #0f62fe;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.fileDownloadBtn:hover {
+  text-decoration: underline;
 }
 
 /* revoked giữ màu xanh */
@@ -205,6 +296,11 @@
   background: #0284c7;
 }
 
+.sendBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 @media (max-width: 768px) {
   .chatWithPanel {
     width: 100%;
@@ -221,6 +317,11 @@
   .bubble {
     max-width: 78%;
     word-break: break-word;
+  }
+
+  .imageMessage {
+    max-width: 220px;
+    max-height: 240px;
   }
 
   .backButton {

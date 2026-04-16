@@ -1,3 +1,11 @@
+export interface AttachmentDto {
+  fileName?: string;
+  fileUrl?: string;
+  mimeType?: string;
+  size?: number;
+  thumbnailUrl?: string;
+}
+
 export interface MessageDto {
   id: string;
   senderId: string | null;
@@ -9,7 +17,7 @@ export interface MessageDto {
   system: boolean;
   revoked: boolean;
   displayPosition: "LEFT" | "RIGHT" | "CENTER";
-  attachment: any;
+  attachment: AttachmentDto | null;
 }
 
 
