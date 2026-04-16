@@ -124,6 +124,47 @@
   padding: 4px 8px;
 }
 
+.usernameRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.editIcon {
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.editIcon:hover {
+  opacity: 1;
+}
+
+/* INLINE MODAL */
+.inlineModalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inlineModal {
+  background: white;
+  padding: 12px;
+  border-radius: 10px;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inlineActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 @media (max-width: 768px) {
   .overlay {
     position: absolute;
