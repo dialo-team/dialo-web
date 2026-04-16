@@ -1,5 +1,5 @@
 export type Friend = {
-  id: number;
+  id: string;
   name: string;
   avatar: string;
   lastMessage: string;
