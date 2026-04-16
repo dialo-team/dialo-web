@@ -211,6 +211,8 @@ import {
   Send,
 } from "lucide-react";
 import { getConversationDetailApi } from "../../../../api/message/conversationApi";
+import { ChatInfo } from "./ChatInfo";
+import { ChatSearch } from "./ChatSearch";
 
 type PropsContext = {
   selectedUser: Friend | null;
@@ -280,6 +282,7 @@ export const ChatWindow = () => {
     return <div className={styles.empty}>Chọn người để chat</div>;
   }
 
+
   return (
     <div className={styles.container}>
       <div className={styles.chat}>
@@ -308,8 +311,26 @@ export const ChatWindow = () => {
           <div className={styles.actions}>
             <Phone size={18} />
             <Video size={18} />
-            <Search size={18} />
-            <Info size={18} />
+
+            <Search
+              size={18}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowSearch(true);
+                setShowInfo(false);
+              }}
+              style={{ cursor: "pointer" }}
+            />
+
+            <Info
+              size={18}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowInfo((prev) => !prev);
+                setShowSearch(false);
+              }}
+              style={{ cursor: "pointer" }}
+            />
           </div>
         </div>
 
@@ -378,9 +399,8 @@ export const ChatWindow = () => {
                   )}
 
                   <div
-                    className={`${styles.bubble} ${
-                      m.revoked ? styles.revoked : ""
-                    }`}
+                    className={`${styles.bubble} ${m.revoked ? styles.revoked : ""
+                      }`}
                   >
                     {m.content}
                     <div className={styles.time}>
@@ -401,17 +421,21 @@ export const ChatWindow = () => {
         </div>
 
         {/* INPUT */}
-<div className={styles.input}>
-  <input placeholder="Nhập tin nhắn..." />
+        <div className={styles.input}>
+          <input placeholder="Nhập tin nhắn..." />
 
-  <button
-    className={styles.sendBtn}
-    type="button"
-  >
-    <Send size={18} />
-  </button>
-</div>
+          <button className={styles.sendBtn} type="button">
+            <Send size={18} />
+          </button>
+        </div>
       </div>
+
+      {/* RIGHT PANEL */}
+      {showInfo && (
+        <ChatInfo user={selectedUser} onClose={() => setShowInfo(false)} />
+      )}
+
+      {showSearch && <ChatSearch onClose={() => setShowSearch(false)} />}
     </div>
   );
 };
