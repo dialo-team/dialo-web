@@ -112,7 +112,6 @@
 //   );
 // };
 
-
 import { Search, UserPlus } from "lucide-react";
 import styles from "../../styles/message/ChatSidebar.module.css";
 import { useEffect, useState } from "react";
@@ -163,7 +162,44 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
     };
 
     window.addEventListener("conversation-read", onConversationRead);
-    return () => window.removeEventListener("conversation-read", onConversationRead);
+    return () =>
+      window.removeEventListener("conversation-read", onConversationRead);
+  }, []);
+
+  // Update lastMessage when message is revoked/deleted
+  useEffect(() => {
+    const onConversationMessageUpdated = (event: Event) => {
+      const customEvent = event as CustomEvent<{
+        conversationId?: string;
+        lastMessage?: string;
+      }>;
+      const { conversationId, lastMessage } = customEvent.detail;
+
+      if (!conversationId) {
+        return;
+      }
+
+      setFriends((prev) =>
+        prev.map((friend) =>
+          friend.id === conversationId
+            ? {
+                ...friend,
+                lastMessage: lastMessage || "",
+              }
+            : friend,
+        ),
+      );
+    };
+
+    window.addEventListener(
+      "conversation-message-updated",
+      onConversationMessageUpdated,
+    );
+    return () =>
+      window.removeEventListener(
+        "conversation-message-updated",
+        onConversationMessageUpdated,
+      );
   }, []);
 
   // ===================== FETCH CONVERSATIONS =====================
@@ -265,7 +301,10 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
               </div>
 
               {(f.unreadCount || 0) > 0 && (
-                <div className={styles.unreadBadge} title={f.unreadDisplay || String(f.unreadCount)}>
+                <div
+                  className={styles.unreadBadge}
+                  title={f.unreadDisplay || String(f.unreadCount)}
+                >
                   {f.unreadCount}
                 </div>
               )}

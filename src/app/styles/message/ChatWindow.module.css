@@ -134,6 +134,19 @@
   align-items: center;
   gap: 8px;
   color: #1f2937;
+  cursor: pointer;
+  padding: 4px 4px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.fileRow:hover {
+  background-color: rgba(15, 98, 254, 0.1);
+}
+
+.fileRow:focus {
+  outline: 2px solid #0f62fe;
+  outline-offset: 2px;
 }
 
 .fileMeta {
@@ -151,38 +164,6 @@
   color: #6b7280;
   margin-top: 2px;
   word-break: break-word;
-}
-
-.fileLink {
-  display: inline-block;
-  margin-top: 8px;
-  font-size: 12px;
-  color: #0f62fe;
-  text-decoration: none;
-}
-
-.fileLink:hover {
-  text-decoration: underline;
-}
-
-.fileActions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 8px;
-}
-
-.fileDownloadBtn {
-  font-size: 12px;
-  color: #0f62fe;
-  border: none;
-  background: transparent;
-  padding: 0;
-  cursor: pointer;
-}
-
-.fileDownloadBtn:hover {
-  text-decoration: underline;
 }
 
 /* revoked giữ màu xanh */

@@ -22,6 +22,11 @@ export type DeleteMessageForMeRequest = {
   userId: string;
 };
 
+export type ClearConversationHistoryRequest = {
+  conversationId: string;
+  userId: string;
+};
+
 export const sendFileMessageApi = async (
   conversationId: string,
   file: File,
@@ -93,6 +98,42 @@ export const deleteMessageForMeApi = async (
     {
       headers: {
         "messageId": payload.messageId,
+        "X-User-Id": payload.userId,
+      },
+    },
+  );
+};
+
+export const getConversationMediaApi = async (
+  conversationId: string,
+): Promise<MessageDto[]> => {
+  const res = await axiosClient.get(
+    `/api/v1/conversations/${encodeURIComponent(conversationId)}/media?limit=1000`,
+  );
+  return res.data;
+};
+export const remarkConversationApi = async (
+  conversationId: string,
+  requesterId: string,
+  remarkName: string,
+) => {
+  const res = await axiosClient.put(
+    `/api/v1/conversations/${conversationId}/remark`,
+    {
+      requesterId,
+      remarkName,
+    },
+  );
+  return res.data;
+};
+export const clearConversationHistoryApi = async (
+  payload: ClearConversationHistoryRequest,
+): Promise<void> => {
+  await axiosClient.post(
+    `/api/v1/conversations/${encodeURIComponent(payload.conversationId)}/clear-history`,
+    null,
+    {
+      headers: {
         "X-User-Id": payload.userId,
       },
     },

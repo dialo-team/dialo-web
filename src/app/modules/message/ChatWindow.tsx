@@ -1,5 +1,195 @@
+// import { useOutletContext } from "react-router-dom";
+// import type { Friend } from "../../types/message/Friend";
+// import styles from "../../styles/message/ChatWindow.module.css";
+// import { useEffect, useState } from "react";
+// import { ChatInfo } from "./ChatInfo";
+// import { ChatSearch } from "./ChatSearch";
+// import {
+//   ChevronLeft,
+//   Phone,
+//   Video,
+//   Search,
+//   Info,
+//   Smile,
+//   Image,
+//   Paperclip,
+//   Zap,
+//   ThumbsUp,
+// } from "lucide-react";
+// import { getConversationDetailApi } from "../../../../api/message/conversationApi";
+
+// type PropsContext = {
+//   selectedUser: Friend | null;
+//   onBackToSidebar?: () => void;
+// };
+
+// type MessageUI = {
+//   id: string;
+//   sender: "me" | "them";
+//   content: string;
+//   time: string;
+// };
+
+// export const ChatWindow = () => {
+//   const { selectedUser, onBackToSidebar } =
+//     useOutletContext<PropsContext>();
+
+//   const [showInfo, setShowInfo] = useState(false);
+//   const [showSearch, setShowSearch] = useState(false);
+
+//   const [messages, setMessages] = useState<MessageUI[]>([]);
+//   const [loading, setLoading] = useState(false);
+
+//   // ================= FETCH MESSAGES =================
+//   useEffect(() => {
+//     const loadMessages = async () => {
+//       if (!selectedUser?.id) return;
+
+//       setLoading(true);
+
+//       try {
+//         const data = await getConversationDetailApi(selectedUser.id);
+
+//         const mapped: MessageUI[] = data.messages.map((m) => ({
+//           id: m.id,
+//           content: m.content,
+//           sender:
+//             m.displayPosition === "RIGHT"
+//               ? "me"
+//               : m.displayPosition === "LEFT"
+//               ? "them"
+//               : "them",
+//           time: new Date(m.createdAt).toLocaleTimeString("vi-VN", {
+//             hour: "2-digit",
+//             minute: "2-digit",
+//           }),
+//         }));
+
+//         setMessages(mapped);
+//       } catch (err) {
+//         console.error("Load messages error:", err);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     loadMessages();
+//   }, [selectedUser?.id]);
+
+//   if (!selectedUser) {
+//     return <div className={styles.empty}>Chọn người để chat</div>;
+//   }
+
+//   return (
+//     <div className={styles.container}>
+//       <div
+//         className={`${styles.chat} ${
+//           showInfo || showSearch ? styles.chatWithPanel : ""
+//         }`}
+//       >
+//         {/* HEADER */}
+//         <div className={styles.header}>
+//           <div className={styles.user}>
+//             <button
+//               className={styles.backButton}
+//               onClick={onBackToSidebar}
+//             >
+//               <ChevronLeft size={20} />
+//             </button>
+
+//             <img src={selectedUser.avatar} />
+
+//             <div>
+//               <div className={styles.name}>{selectedUser.name}</div>
+//               <div className={styles.status}>Truy cập gần đây</div>
+//             </div>
+//           </div>
+
+//           <div className={styles.actions}>
+//             <Phone size={18} />
+//             <Video size={20} />
+
+//             <Search
+//               size={18}
+//               onClick={(e) => {
+//                 e.stopPropagation();
+//                 setShowSearch(true);
+//                 setShowInfo(false);
+//               }}
+//               style={{ cursor: "pointer" }}
+//             />
+
+//             <div
+//               className={`${styles.infoButton} ${
+//                 showInfo ? styles.active : ""
+//               }`}
+//               onClick={(e) => {
+//                 e.stopPropagation();
+//                 setShowInfo(!showInfo);
+//                 setShowSearch(false);
+//               }}
+//             >
+//               <Info size={18} />
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* BODY */}
+//         <div className={styles.body}>
+//           {loading && <div>Đang tải tin nhắn...</div>}
+
+//           {!loading &&
+//             messages.map((m) => (
+//               <div
+//                 key={m.id}
+//                 className={
+//                   m.sender === "me"
+//                     ? styles.messageRight
+//                     : styles.messageLeft
+//                 }
+//               >
+//                 {m.sender === "them" && (
+//                   <img
+//                     src={selectedUser.avatar}
+//                     className={styles.avatar}
+//                   />
+//                 )}
+
+//                 <div className={styles.bubble}>
+//                   {m.content}
+//                   <div className={styles.time}>{m.time}</div>
+//                 </div>
+//               </div>
+//             ))}
+//         </div>
+
+//         {/* TOOLBAR */}
+//         <div className={styles.toolbar}>
+//           <Smile size={18} />
+//           <Image size={18} />
+//           <Paperclip size={18} />
+//           <Zap size={18} />
+//         </div>
+
+//         {/* INPUT */}
+//         <div className={styles.input}>
+//           <input
+//             placeholder={`Nhập @, tin nhắn tới ${selectedUser.name}`}
+//           />
+//           <ThumbsUp size={18} />
+//         </div>
+//       </div>
+
+//       {/* RIGHT PANEL */}
+//       {showInfo && (
+//         <ChatInfo user={selectedUser} onClose={() => setShowInfo(false)} />
+//       )}
+
+//       {showSearch && <ChatSearch onClose={() => setShowSearch(false)} />}
+//     </div>
+//   );
+// };
 import { useOutletContext } from "react-router-dom";
-import { useCallback, useEffect, useState } from "react";
 import type { Friend } from "../../types/message/Friend";
 import styles from "../../styles/message/ChatWindow.module.css";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -29,6 +219,7 @@ import {
 } from "../../../../api/message/conversationApi";
 import axiosClient from "../../../../api/axiosClient";
 import { ChatInfo } from "./ChatInfo";
+import { ChatWindowSkeleton } from "./ChatSkeletonLoading";
 import { ChatSearch } from "./ChatSearch";
 import type { MessageDto } from "../../types/message/Message";
 
@@ -186,9 +377,7 @@ const mapMessageToUI = (
   revoked: message.revoked,
 });
 
-const resolveAttachmentUrl = async (
-  message: MessageUI,
-): Promise<MessageUI> => {
+const resolveAttachmentUrl = async (message: MessageUI): Promise<MessageUI> => {
   if (message.kind !== "image" && message.kind !== "file") {
     return message;
   }
@@ -256,34 +445,28 @@ const renderMessageContent = (
   if (message.kind === "file") {
     return (
       <>
-        <div className={styles.fileRow}>
+        <div
+          className={styles.fileRow}
+          onClick={() => onDownloadFile(message)}
+          style={{ cursor: "pointer" }}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              onDownloadFile(message);
+            }
+          }}
+        >
           <FileText size={16} />
           <div className={styles.fileMeta}>
-            <div className={styles.fileName}>{message.fileName || message.content}</div>
+            <div className={styles.fileName}>
+              {message.fileName || message.content}
+            </div>
             {message.mimeType && (
               <div className={styles.fileType}>{message.mimeType}</div>
             )}
           </div>
         </div>
-        {displayUrl && (
-          <div className={styles.fileActions}>
-            <a
-              href={displayUrl}
-              target="_blank"
-              rel="noreferrer"
-              className={styles.fileLink}
-            >
-              Xem
-            </a>
-            <button
-              type="button"
-              className={styles.fileDownloadBtn}
-              onClick={() => onDownloadFile(message)}
-            >
-              Tải xuống
-            </button>
-          </div>
-        )}
         <div className={styles.time}>{message.time}</div>
       </>
     );
@@ -297,14 +480,8 @@ const renderMessageContent = (
   );
 };
 
-const logMessageIds = (messages: MessageUI[]) => {
-  const ids = messages.map((message) => message.id);
-  console.log("messageIds:", ids.join(", "));
-};
-
 export const ChatWindow = () => {
-  const { selectedUser, onBackToSidebar } =
-    useOutletContext<PropsContext>();
+  const { selectedUser, onBackToSidebar } = useOutletContext<PropsContext>();
 
   const bodyRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -318,13 +495,15 @@ export const ChatWindow = () => {
   const [showInfo, setShowInfo] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
 
-  const [conversationId, setConversationId] = useState("");
-
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [menuPos, setMenuPos] = useState({ x: 0, y: 0 });
 
-  const loadConversation = useCallback(async () => {
-    if (!selectedUser?.id) return;
+  // click outside
+  useEffect(() => {
+    const close = () => setOpenMenuId(null);
+    window.addEventListener("click", close);
+    return () => window.removeEventListener("click", close);
+  }, []);
 
   useEffect(() => {
     bodyRef.current?.scrollTo({
@@ -359,7 +538,9 @@ export const ChatWindow = () => {
 
         clearObjectUrls();
 
-        const mapped = data.messages.map((m) => mapMessageToUI(m, currentUserId));
+        const mapped = data.messages.map((m) =>
+          mapMessageToUI(m, currentUserId),
+        );
         const resolved = await Promise.all(
           mapped.map(async (message) => {
             const resolvedMessage = await resolveAttachmentUrl(message);
@@ -387,7 +568,7 @@ export const ChatWindow = () => {
         }
 
         setMessages(resolved);
-        logMessageIds(resolved);
+        console.log("conversationId:", conversationId);
         setMessageText("");
       } finally {
         setLoading(false);
@@ -416,10 +597,7 @@ export const ChatWindow = () => {
       });
       const mappedMessage = mapMessageToUI(sentMessage, currentUserId);
 
-      setMessages((prev) => [
-        ...prev,
-        mappedMessage,
-      ]);
+      setMessages((prev) => [...prev, mappedMessage]);
       setMessageText("");
     } catch (error) {
       console.error("Send message error:", error);
@@ -446,14 +624,14 @@ export const ChatWindow = () => {
       const mappedMessage = mapMessageToUI(sentMessage, currentUserId);
       const resolvedMessage = await resolveAttachmentUrl(mappedMessage);
 
-      if (resolvedMessage.fileUrl && resolvedMessage.fileUrl.startsWith("blob:")) {
+      if (
+        resolvedMessage.fileUrl &&
+        resolvedMessage.fileUrl.startsWith("blob:")
+      ) {
         objectUrlsRef.current.push(resolvedMessage.fileUrl);
       }
 
-      setMessages((prev) => [
-        ...prev,
-        resolvedMessage,
-      ]);
+      setMessages((prev) => [...prev, resolvedMessage]);
     } catch (error) {
       console.error("Send file error:", error);
     } finally {
@@ -480,6 +658,17 @@ export const ChatWindow = () => {
     document.body.removeChild(link);
   };
 
+  const getLastMessageText = (messageList: MessageUI[]): string => {
+    // Find last non-revoked message
+    for (let i = messageList.length - 1; i >= 0; i--) {
+      const msg = messageList[i];
+      if (!msg.revoked) {
+        return msg.content;
+      }
+    }
+    return "";
+  };
+
   const handleMessageClick = (message: MessageUI) => {
     console.log("messageId:", message.id);
   };
@@ -497,18 +686,30 @@ export const ChatWindow = () => {
         userId: currentUserId,
       });
 
-      setMessages((prev) =>
-        prev.map((msg) =>
+      setMessages((prev) => {
+        const updated = prev.map((msg) =>
           msg.id === messageId
             ? {
                 ...msg,
                 revoked: true,
-                kind: "text",
+                kind: "text" as const,
                 content: "Tin nhắn đã được thu hồi",
               }
             : msg,
-        ),
-      );
+        );
+
+        // Emit event to update ChatSidebar's lastMessage
+        const lastMessageText = getLastMessageText(updated);
+        const event = new CustomEvent("conversation-message-updated", {
+          detail: {
+            conversationId: selectedUser?.id,
+            lastMessage: lastMessageText,
+          },
+        });
+        window.dispatchEvent(event);
+
+        return updated;
+      });
       setOpenMenuId(null);
     } catch (error) {
       console.error("Revoke message error:", error);
@@ -536,7 +737,21 @@ export const ChatWindow = () => {
 
       console.log("Delete message success:", messageId);
 
-      setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
+      setMessages((prev) => {
+        const updated = prev.filter((msg) => msg.id !== messageId);
+
+        // Emit event to update ChatSidebar's lastMessage
+        const lastMessageText = getLastMessageText(updated);
+        const event = new CustomEvent("conversation-message-updated", {
+          detail: {
+            conversationId: selectedUser?.id,
+            lastMessage: lastMessageText,
+          },
+        });
+        window.dispatchEvent(event);
+
+        return updated;
+      });
       setOpenMenuId(null);
     } catch (error: unknown) {
       console.error("Delete message failed:", error);
@@ -561,23 +776,17 @@ export const ChatWindow = () => {
   return (
     <div className={styles.container}>
       <div className={styles.chat}>
-
         {/* HEADER */}
         <div className={styles.header}>
           <div className={styles.user}>
-            <button
-              className={styles.backButton}
-              onClick={onBackToSidebar}
-            >
+            <button className={styles.backButton} onClick={onBackToSidebar}>
               <ChevronLeft size={20} />
             </button>
 
             <img src={selectedUser.avatar} />
 
             <div>
-              <div className={styles.name}>
-                {selectedUser.name}
-              </div>
+              <div className={styles.name}>{selectedUser.name}</div>
               <div className={styles.status}>Online</div>
             </div>
           </div>
@@ -588,7 +797,8 @@ export const ChatWindow = () => {
 
             <Search
               size={18}
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 setShowSearch(true);
                 setShowInfo(false);
               }}
@@ -597,8 +807,9 @@ export const ChatWindow = () => {
 
             <Info
               size={18}
-              onClick={() => {
-                setShowInfo((p) => !p);
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowInfo((prev) => !prev);
                 setShowSearch(false);
               }}
               style={{ cursor: "pointer" }}
@@ -608,23 +819,18 @@ export const ChatWindow = () => {
 
         {/* BODY */}
         <div className={styles.body} ref={bodyRef}>
-          {loading && <div>Loading...</div>}
-
-          {!loading &&
+          {loading ? (
+            <ChatWindowSkeleton />
+          ) : (
             messages.map((m) => (
               <div
                 key={m.id}
                 className={
-                  m.sender === "me"
-                    ? styles.messageRight
-                    : styles.messageLeft
+                  m.sender === "me" ? styles.messageRight : styles.messageLeft
                 }
               >
                 {m.sender === "them" && (
-                  <img
-                    src={selectedUser.avatar}
-                    className={styles.avatar}
-                  />
+                  <img src={selectedUser.avatar} className={styles.avatar} />
                 )}
 
                 <div className={styles.messageBox}>
@@ -633,17 +839,15 @@ export const ChatWindow = () => {
                       className={styles.moreBtn}
                       onClick={(e) => {
                         e.stopPropagation();
-                        const rect =
-                          e.currentTarget.getBoundingClientRect();
+
+                        const rect = e.currentTarget.getBoundingClientRect();
 
                         setMenuPos({
                           x: rect.left - 190,
                           y: rect.top,
                         });
 
-                        setOpenMenuId(
-                          openMenuId === m.id ? null : m.id
-                        );
+                        setOpenMenuId(openMenuId === m.id ? null : m.id);
                       }}
                     >
                       <MoreVertical size={16} />
@@ -695,7 +899,8 @@ export const ChatWindow = () => {
                   </div>
                 </div>
               </div>
-            ))}
+            ))
+          )}
         </div>
 
         {/* TOOLBAR */}
@@ -751,18 +956,17 @@ export const ChatWindow = () => {
         />
       </div>
 
-      {showInfo && (
+      {/* RIGHT PANEL */}
+      {showInfo && selectedUser && (
         <ChatInfo
           user={selectedUser}
-          conversationId={conversationId}
+          conversationId={selectedUser.id}
+          onConversationCleared={() => setMessages([])}
           onClose={() => setShowInfo(false)}
-          onReload={loadConversation}
         />
       )}
 
-      {showSearch && (
-        <ChatSearch onClose={() => setShowSearch(false)} />
-      )}
+      {showSearch && <ChatSearch onClose={() => setShowSearch(false)} />}
     </div>
   );
 };

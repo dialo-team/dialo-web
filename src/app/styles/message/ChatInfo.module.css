@@ -85,7 +85,53 @@
 }
 
 .item:hover {
-  text-decoration: underline;
+  text-decoration: none;
+}
+
+.imageGridContent {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.mediaItem {
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.mediaImage {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.emptyState {
+  padding: 8px;
+  color: #888;
+  font-size: 12px;
+}
+
+.showMoreButton {
+  width: 100%;
+  padding: 8px;
+  margin-top: 8px;
+  background-color: #e4e6eb;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #000;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.showMoreButton:hover {
+  background-color: #d5d5d5;
 }
 
 /* Xem thêm button */
@@ -124,45 +170,138 @@
   padding: 4px 8px;
 }
 
-.usernameRow {
+/* Back button */
+.backBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  color: #000;
 }
 
-.editIcon {
-  cursor: pointer;
-  opacity: 0.6;
+.backBtn:hover {
+  opacity: 0.7;
 }
 
-.editIcon:hover {
-  opacity: 1;
-}
-
-/* INLINE MODAL */
-.inlineModalOverlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.2);
+.storageTitleRow {
+  position: relative;
   display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+  min-height: 52px;
+}
+
+.storageTitle {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  text-align: center;
+}
+
+.storageTitleRow .backBtn {
+  position: absolute;
+  left: 8px;
+}
+
+.storageCloseBtn {
+  position: absolute;
+  right: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 10px 12px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
-.inlineModal {
-  background: white;
-  padding: 12px;
-  border-radius: 10px;
-  width: 280px;
+/* All Media Tabs */
+.allMediaTabs {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  border-bottom: 1px solid #eee;
+  background-color: #fff;
+  padding: 0;
 }
 
-.inlineActions {
-  display: flex;
-  justify-content: flex-end;
+.allMediaTab {
+  flex: 1;
+  padding: 12px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #65676b;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.allMediaTab:hover {
+  color: #000;
+}
+
+.allMediaTab.active {
+  color: #0a66c2;
+  border-bottom-color: #0a66c2;
+}
+
+/* All Media Content */
+.allMediaContent {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.dateSectionLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: #65676b;
+  margin: 0 0 8px 0;
+  padding: 0 4px;
+}
+
+.allMediaGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
+  margin-bottom: 16px;
+}
+
+.allMediaImage {
+  width: 100%;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.allMediaImage:hover {
+  opacity: 0.8;
+}
+
+.allMediaFile {
+  width: 100%;
+  aspect-ratio: 1/1;
+  background-color: #e8e8e8;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+}
+
+.fileNameInGrid {
+  font-size: 12px;
+  text-align: center;
+  word-break: break-word;
+  color: #444;
+  font-weight: 500;
 }
 
 @media (max-width: 768px) {
@@ -186,5 +325,9 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+  }
+
+  .storageTitle {
+    font-size: 17px;
   }
 }
