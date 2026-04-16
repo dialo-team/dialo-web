@@ -3,4 +3,6 @@ export type Friend = {
   name: string;
   avatar: string;
   lastMessage: string;
+  unreadCount?: number;
+  unreadDisplay?: string;
 };

@@ -9,7 +9,7 @@ export const userApi = {
         `/api/v1/users/phone/${phone}/info`
       );
 
-      return res.data.data; 
+      return res.data.data;
     } catch {
       return null;
     }

@@ -140,6 +140,32 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
   const [openAddFriend, setOpenAddFriend] = useState(false);
   const [openCreateGroup, setOpenCreateGroup] = useState(false);
 
+  useEffect(() => {
+    const onConversationRead = (event: Event) => {
+      const customEvent = event as CustomEvent<{ conversationId?: string }>;
+      const conversationId = customEvent.detail?.conversationId;
+
+      if (!conversationId) {
+        return;
+      }
+
+      setFriends((prev) =>
+        prev.map((friend) =>
+          friend.id === conversationId
+            ? {
+                ...friend,
+                unreadCount: 0,
+                unreadDisplay: "0",
+              }
+            : friend,
+        ),
+      );
+    };
+
+    window.addEventListener("conversation-read", onConversationRead);
+    return () => window.removeEventListener("conversation-read", onConversationRead);
+  }, []);
+
   // ===================== FETCH CONVERSATIONS =====================
   useEffect(() => {
     const loadConversations = async () => {
@@ -153,6 +179,8 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
           name: item.counterpartName,
           avatar: item.counterpartAvatarUrl || DEFAULT_AVATAR,
           lastMessage: item.lastMessage,
+          unreadCount: item.unreadCount,
+          unreadDisplay: item.unreadDisplay,
         }));
 
         setFriends(mapped);
@@ -212,17 +240,35 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
           filteredFriends.map((f) => (
             <div
               key={f.id}
-              className={styles.chatItem}
+              className={`${styles.chatItem} ${
+                (f.unreadCount || 0) > 0 ? styles.chatItemUnread : ""
+              }`}
               onClick={() => onSelectUser(f)}
             >
               <img src={f.avatar} className={styles.avatar} alt={f.name} />
 
               <div className={styles.info}>
-                <div className={styles.name}>{f.name}</div>
-                <div className={styles.lastMessage}>
+                <div
+                  className={`${styles.name} ${
+                    (f.unreadCount || 0) > 0 ? styles.nameUnread : ""
+                  }`}
+                >
+                  {f.name}
+                </div>
+                <div
+                  className={`${styles.lastMessage} ${
+                    (f.unreadCount || 0) > 0 ? styles.lastMessageUnread : ""
+                  }`}
+                >
                   {f.lastMessage}
                 </div>
               </div>
+
+              {(f.unreadCount || 0) > 0 && (
+                <div className={styles.unreadBadge} title={f.unreadDisplay || String(f.unreadCount)}>
+                  {f.unreadCount}
+                </div>
+              )}
             </div>
           ))}
 
