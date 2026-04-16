@@ -19,13 +19,20 @@ export const FriendSidebar = ({ onNavigate }: FriendSidebarProps) => {
   // xử lý search
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      const isValid = /^\d{10}$/.test(keyword);
+// <<<<<<< truc_profile
+//       const isValid = /^\d{10}$/.test(keyword);
 
-      if (!isValid) {
-        navigate(`/home/friendHome/search?q=invalid`);
-      } else {
-        navigate(`/home/friendHome/search?q=${keyword}`);
-      }
+//       if (!isValid) {
+//         navigate(`/home/friendHome/search?q=invalid`);
+//       } else {
+//         navigate(`/home/friendHome/search?q=${keyword}`);
+//       }
+// =======
+      const keywordTrimmed = keyword.trim();
+      if (!keywordTrimmed) return;
+
+      navigate(`/home/chat?q=${encodeURIComponent(keywordTrimmed)}`);
+
 
       setKeyword(""); 
       onNavigate?.();
@@ -39,7 +46,7 @@ export const FriendSidebar = ({ onNavigate }: FriendSidebarProps) => {
         <div className={styles.searchBoxLeft}>
           <Search size={16} />
           <input
-            placeholder="Nhập số điện thoại..."
+            placeholder="Tìm đoạn hội thoại..."
             value={keyword}
             onChange={(e) => {
               // chỉ cho nhập số

@@ -5,20 +5,30 @@ interface Props {
   open: boolean;
   onClose: () => void;
   friend: any;
+  currentName: string;
+  onSave: (friendId: string, nextName: string) => void;
 }
 
-export const RenameFriendModal = ({ open, onClose, friend }: Props) => {
+export const RenameFriendModal = ({
+  open,
+  onClose,
+  friend,
+  currentName,
+  onSave,
+}: Props) => {
   const [name, setName] = useState("");
 
   useEffect(() => {
     if (friend) {
-      setName(friend.name);
+      setName(currentName || friend.friendUserName || "");
     }
-  }, [friend]);
+  }, [friend, currentName, open]);
 
   if (!open || !friend) return null;
 
   const handleConfirm = () => {
+    const nextName = name.trim() || friend.friendUserName;
+    onSave(friend.friendId, nextName);
     onClose();
   };
 
@@ -28,11 +38,16 @@ export const RenameFriendModal = ({ open, onClose, friend }: Props) => {
         <h3 className={styles.title}>Đổi tên gợi ý</h3>
 
         <div className={styles.avatarBox}>
-          <img src={friend.avatar} />
+          <img
+            src={
+              friend.friendAvatar ||
+              "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa"
+            }
+          />
         </div>
 
         <p className={styles.note}>
-          Hãy đặt cho <b>{friend.name}</b> một cái tên dễ nhớ hơn.
+          Hãy đặt cho <b>{friend.friendUserName}</b> một cái tên dễ nhớ hơn.
         </p>
 
         <input

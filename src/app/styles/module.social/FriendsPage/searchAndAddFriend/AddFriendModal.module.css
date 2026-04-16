@@ -113,6 +113,28 @@
   cursor: pointer;
 }
 
+.addedBtn {
+  margin-left: auto;
+  background: #dfe3e8;
+  color: #4b5563;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: not-allowed;
+}
+
+.errorText {
+  margin: 0 16px 8px;
+  color: #d93025;
+  font-size: 13px;
+}
+
+.emptyText {
+  margin: 4px 16px 12px;
+  color: #6b7280;
+  font-size: 13px;
+}
+
 @media (max-width: 768px) {
   .overlay {
     padding: 10px;

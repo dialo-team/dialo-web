@@ -26,6 +26,7 @@ export const InviteFriendModal = ({
   onSuccess,
 }: Props) => {
   const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const me = useAuthStore((state) => state.user);
 
   // auto fill message
@@ -35,35 +36,30 @@ export const InviteFriendModal = ({
         `Xin chào, mình là ${me.userName}. Kết bạn với mình nhé!`
       );
     }
-  }, [user]);
+  }, [user, me]);
 
   if (!open || !user || !me) return null;
 
   // send request API
   const handleSendRequest = async () => {
-  if (!user) return;
+    if (!user || submitting) return;
 
-  // 1. ĐÓNG MODAL TRƯỚC
-  onClose();
+    try {
+      setSubmitting(true);
+      await userApi.sendFriendRequest(user.id, message.trim());
 
-  try {
-    await userApi.sendFriendRequest(user.id, message);
-
-    // 2. báo thành công
-    onSend("Gửi lời mời thành công!");
-
-    // 3. xóa search result
-    onSuccess();
-  } catch (err) {
-    console.error(err);
-
-    // 2. báo lỗi
-    onSend("Gửi lời mời thất bại!");
-  }
-};
+      onSend("Gửi lời mời thành công!");
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      onSend(err?.response?.data?.message || "Gửi lời mời thất bại!");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
+    <div className={styles.overlay} onClick={() => !submitting && onClose()}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <h3 className={styles.title}>Gửi lời mời kết bạn</h3>
 
@@ -84,15 +80,16 @@ export const InviteFriendModal = ({
         />
 
         <div className={styles.actions}>
-          <button className={styles.cancel} onClick={onClose}>
+          <button className={styles.cancel} onClick={onClose} disabled={submitting}>
             Hủy
           </button>
 
           <button
             className={styles.confirm}
             onClick={handleSendRequest}
+            disabled={submitting}
           >
-            Gửi yêu cầu
+            {submitting ? "Đang gửi..." : "Gửi yêu cầu"}
           </button>
         </div>
       </div>

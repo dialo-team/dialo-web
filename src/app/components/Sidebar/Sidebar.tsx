@@ -3,16 +3,21 @@ import { MessageCircle, Users, Settings } from "lucide-react";
 import { SettingsPopup } from "./SettingsPopup";
 import styles from "../../styles/components/Sidebar.module.css";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../../../store/authStore";
 
 export const Sidebar = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
 
   return (
     <div className={styles.sidebar}>
       <div className={styles.sidebarTop}>
         <img
-          src="https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180"
+          src={
+            user?.avatar ||
+            "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa?pid=Api&P=0&h=180"
+          }
           className={styles.avatar}
           alt="avatar"
         />
