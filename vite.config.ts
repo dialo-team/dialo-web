@@ -5,6 +5,15 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  server: {
+    proxy: {
+      "/api-files": {
+        target: "http://14.225.254.174:8085",
+        changeOrigin: true,
+        rewrite: (pathValue) => pathValue.replace(/^\/api-files/, ""),
+      },
+    },
+  },
   define: {
     global: "globalThis",
   },

@@ -164,7 +164,6 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
 
   const loadConversations = useCallback(async () => {
     setLoading(true);
-
     try {
       const data = await getConversationsApi();
 
@@ -199,13 +198,28 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
         })
       );
 
-      setFriends(mapped);
+      // So sánh shallow: id, lastMessage, unreadCount
+      const isSame =
+        mapped.length === friends.length &&
+        mapped.every((f, i) => {
+          const old = friends[i];
+          return (
+            old &&
+            old.id === f.id &&
+            old.lastMessage === f.lastMessage &&
+            old.unreadCount === f.unreadCount
+          );
+        });
+
+      if (!isSame) {
+        setFriends(mapped);
+      }
     } catch (error) {
       console.error("Load conversations failed:", error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [friends]);
 
   useEffect(() => {
     const onConversationRead = (event: Event) => {
@@ -293,15 +307,15 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
   }, [loadConversations]);
 
   // ===================== FALLBACK POLLING =====================
-  useEffect(() => {
-    const interval = window.setInterval(() => {
-      if (!document.hidden) {
-        void loadConversations();
-      }
-    }, 3000);
-
-    return () => window.clearInterval(interval);
-  }, [loadConversations]);
+  // useEffect(() => {
+  //   const interval = window.setInterval(() => {
+  //     if (!document.hidden) {
+  //       void loadConversations();
+  //     }
+  //   }, 3000);
+  //
+  //   return () => window.clearInterval(interval);
+  // }, [loadConversations]);
 
   // ===================== SEARCH PARAM =====================
   useEffect(() => {

@@ -2,7 +2,13 @@
 import { useOutletContext } from "react-router-dom";
 import type { Friend } from "../../types/message/Friend";
 import styles from "../../styles/message/ChatWindow.module.css";
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   ChevronLeft,
   Phone,
@@ -28,7 +34,7 @@ import {
   sendMessageApi,
   sendFileMessageApi,
 } from "../../../../api/message/conversationApi";
-import axiosClient from "../../../../api/axiosClient";
+// import axiosClient from "../../../../api/axiosClient";
 import { ChatInfo } from "./ChatInfo";
 import { ChatWindowSkeleton } from "./ChatSkeletonLoading";
 import { ChatSearch } from "./ChatSearch";
@@ -55,29 +61,9 @@ type MessageUI = {
 };
 
 const MESSAGE_TEXT_TYPE = "TEXT";
-const API_BASE_URL = "http://14.225.254.174:9000";
-const DEFAULT_FILE_DOWNLOAD_BASE_URL = "http://localhost:9000";
-
-const getFileDownloadBaseUrl = () => {
-  const envBaseUrl =
-    import.meta.env.VITE_FILE_BASE_URL?.trim() ||
-    import.meta.env.VITE_API_BASE_URL?.trim();
-
-  if (envBaseUrl) {
-    return envBaseUrl;
-  }
-
-  if (typeof window !== "undefined") {
-    const currentUrl = new URL(window.location.href);
-    currentUrl.port = "9000";
-    currentUrl.pathname = "/";
-    currentUrl.search = "";
-    currentUrl.hash = "";
-    return currentUrl.origin;
-  }
-
-  return DEFAULT_FILE_DOWNLOAD_BASE_URL;
-};
+const FILE_PROXY_PREFIX = "/api-files";
+const POLLING_INTERVAL_MS = 5000;
+const REALTIME_GRACE_PERIOD_MS = 15000;
 
 const getCurrentUserId = () => {
   try {
@@ -107,39 +93,47 @@ const toAbsoluteMediaUrl = (url: string) => {
     return "";
   }
 
-  if (/^https?:\/\//i.test(url)) {
-    return url;
+  const normalizedPath = url.startsWith("/") ? url : `/${url}`;
+
+  if (/^https?:\/\//i.test(normalizedPath)) {
+    try {
+      const absoluteUrl = new URL(normalizedPath);
+      return `${FILE_PROXY_PREFIX}${encodeURI(absoluteUrl.pathname)}${absoluteUrl.search}`;
+    } catch {
+      return encodeURI(normalizedPath);
+    }
   }
 
-  if (url.startsWith("/")) {
-    return `${API_BASE_URL}${url}`;
-  }
+  const proxiedPath = normalizedPath.startsWith("/uploads/")
+    ? normalizedPath.replace(/^\/uploads/, `${FILE_PROXY_PREFIX}/uploads`)
+    : `${FILE_PROXY_PREFIX}${normalizedPath}`;
 
-  return `${API_BASE_URL}/${url}`;
+  return encodeURI(proxiedPath);
 };
 
-const toPublicFileDownloadUrl = (url: string) => {
-  if (!url) {
-    return "";
-  }
-
-  if (/^(blob:|data:)/i.test(url)) {
-    return url;
-  }
-
-  try {
-    const resolvedUrl = new URL(url, API_BASE_URL);
-    const publicBaseUrl = new URL(getFileDownloadBaseUrl());
-
-    resolvedUrl.protocol = publicBaseUrl.protocol;
-    resolvedUrl.hostname = publicBaseUrl.hostname;
-    resolvedUrl.port = publicBaseUrl.port;
-
-    return resolvedUrl.toString();
-  } catch {
-    return `${getFileDownloadBaseUrl()}${url.startsWith("/") ? url : `/${url}`}`;
-  }
-};
+// const toPublicFileDownloadUrl = (url: string) => {
+//   if (!url) {
+//     return "";
+//   }
+//
+//   if (/^(blob:|data:)/i.test(url)) {
+//     return url;
+//   }
+//
+//   try {
+//     if (/^(blob:|data:)/i.test(url)) {
+//       return url;
+//     }
+//
+//     if (url.startsWith(FILE_PROXY_PREFIX)) {
+//       return encodeURI(url);
+//     }
+//
+//     return toAbsoluteMediaUrl(url);
+//   } catch {
+//     return toAbsoluteMediaUrl(url);
+//   }
+// };
 
 const normalizeCandidateUrls = (
   rawUrls: Array<string | undefined>,
@@ -260,18 +254,18 @@ const resolveAttachmentUrl = async (message: MessageUI): Promise<MessageUI> => {
 
   for (const candidateUrl of candidates) {
     try {
-      const res = await axiosClient.get(candidateUrl, {
-        responseType: "blob",
-      });
-      const blobUrl = URL.createObjectURL(res.data);
-
+      // Dùng fetch để relative path đi qua proxy
+      const res = await fetch(candidateUrl);
+      if (!res.ok) continue;
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
       return {
         ...message,
         fileUrl: blobUrl,
         sourceFileUrl: message.sourceFileUrl || candidateUrl,
       };
     } catch {
-      // Try next URL candidate when backend path format is inconsistent.
+      // thử candidate tiếp theo
     }
   }
 
@@ -305,10 +299,12 @@ const renderMessageContent = (
   const displayUrl = message.fileUrl;
 
   if (message.kind === "image" && displayUrl) {
+    // Dùng sourceFileUrl (proxy path) cho href, blob cho src
+    const linkUrl = message.sourceFileUrl || displayUrl;
     return (
       <>
         <a
-          href={displayUrl}
+          href={linkUrl}
           target="_blank"
           rel="noreferrer"
           className={styles.imageLink}
@@ -329,15 +325,8 @@ const renderMessageContent = (
       <>
         <div
           className={styles.fileRow}
-          onClick={() => onDownloadFile(message)}
           style={{ cursor: "pointer" }}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              onDownloadFile(message);
-            }
-          }}
+          onClick={() => onDownloadFile(message)}
         >
           <FileText size={16} />
           <div className={styles.fileMeta}>
@@ -378,8 +367,10 @@ export const ChatWindow = () => {
 
   const bodyRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const messagesRef = useRef<MessageUI[]>([]);
   const objectUrlsRef = useRef<string[]>([]);
   const lastMessageIdRef = useRef<string>("");
+  const lastRealtimeEventAtRef = useRef<number>(0);
   const [messages, setMessages] = useState<MessageUI[]>([]);
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
@@ -400,6 +391,7 @@ export const ChatWindow = () => {
   }, []);
 
   useEffect(() => {
+    messagesRef.current = messages;
     bodyRef.current?.scrollTo({
       top: bodyRef.current.scrollHeight,
       behavior: "smooth",
@@ -434,7 +426,9 @@ export const ChatWindow = () => {
 
         clearObjectUrls();
 
-        const mapped = data.messages.map((m) => mapMessageToUI(m, currentUserId));
+        const mapped = data.messages.map((m) =>
+          mapMessageToUI(m, currentUserId),
+        );
         const resolved = await Promise.all(
           mapped.map(async (message) => {
             const resolvedMessage = await resolveAttachmentUrl(message);
@@ -474,56 +468,56 @@ export const ChatWindow = () => {
   );
 
   // only append new messages without scrolling or resetting scroll position
-  const loadNewMessagesOnly = useCallback(
-    async (conversationId: string) => {
-      if (!conversationId) {
+  const loadNewMessagesOnly = useCallback(async (conversationId: string) => {
+    if (!conversationId) {
+      return;
+    }
+
+    try {
+      const currentUserId = getCurrentUserId();
+      const data = await getConversationDetailApi(conversationId);
+
+      const mapped = data.messages.map((m) => mapMessageToUI(m, currentUserId));
+      const existingIds = new Set(messagesRef.current.map((m) => m.id));
+      const unresolvedNewMessages = uniqueMessagesById(
+        mapped.filter((m) => !existingIds.has(m.id)),
+      );
+
+      if (mapped.length > 0) {
+        lastMessageIdRef.current = mapped[mapped.length - 1].id;
+      }
+
+      if (unresolvedNewMessages.length === 0) {
         return;
       }
 
-      try {
-        const currentUserId = getCurrentUserId();
-        const data = await getConversationDetailApi(conversationId);
+      const resolvedNewMessages = await Promise.all(
+        unresolvedNewMessages.map(async (message) => {
+          const resolvedMessage = await resolveAttachmentUrl(message);
 
-        const mapped = data.messages.map((m) => mapMessageToUI(m, currentUserId));
-        const resolved = await Promise.all(
-          mapped.map(async (message) => {
-            const resolvedMessage = await resolveAttachmentUrl(message);
+          if (
+            resolvedMessage.fileUrl &&
+            resolvedMessage.fileUrl.startsWith("blob:")
+          ) {
+            objectUrlsRef.current.push(resolvedMessage.fileUrl);
+          }
 
-            if (
-              resolvedMessage.fileUrl &&
-              resolvedMessage.fileUrl.startsWith("blob:")
-            ) {
-              objectUrlsRef.current.push(resolvedMessage.fileUrl);
-            }
+          return resolvedMessage;
+        }),
+      );
 
-            return resolvedMessage;
-          }),
+      setMessages((prev) => {
+        const existingInState = new Set(prev.map((m) => m.id));
+        const trulyNew = resolvedNewMessages.filter(
+          (m) => !existingInState.has(m.id),
         );
-
-        // only add messages that don't exist yet
-        setMessages((prev) => {
-          const existingIds = new Set(prev.map((m) => m.id));
-          const newMessages = uniqueMessagesById(
-            resolved.filter((m) => !existingIds.has(m.id)),
-          );
-
-          if (newMessages.length === 0) {
-            return prev;
-          }
-
-          // update lastMessageId ref for next polling
-          if (resolved.length > 0) {
-            lastMessageIdRef.current = resolved[resolved.length - 1].id;
-          }
-
-          return [...prev, ...newMessages];
-        });
-      } catch (error) {
-        console.error("Load new messages failed:", error);
-      }
-    },
-    [],
-  );
+        if (trulyNew.length === 0) return prev;
+        return [...prev, ...trulyNew];
+      });
+    } catch (error) {
+      console.error("Load new messages failed:", error);
+    }
+  }, []);
 
   // fetch messages
   useEffect(() => {
@@ -546,6 +540,7 @@ export const ChatWindow = () => {
     const unsubscribe = subscribeChatTopic(
       `/topic/conversations/${conversationId}`,
       () => {
+        lastRealtimeEventAtRef.current = Date.now();
         void loadNewMessagesOnly(conversationId);
       },
     );
@@ -561,10 +556,20 @@ export const ChatWindow = () => {
     }
 
     const interval = window.setInterval(() => {
-      if (!document.hidden) {
-        void loadNewMessagesOnly(conversationId);
+      if (document.hidden) {
+        return;
       }
-    }, 1500);
+
+      const elapsedSinceRealtimeEvent =
+        Date.now() - lastRealtimeEventAtRef.current;
+
+      // Skip fallback polling shortly after realtime events to avoid duplicate work.
+      if (elapsedSinceRealtimeEvent < REALTIME_GRACE_PERIOD_MS) {
+        return;
+      }
+
+      void loadNewMessagesOnly(conversationId);
+    }, POLLING_INTERVAL_MS);
 
     return () => window.clearInterval(interval);
   }, [selectedUser?.id, loadNewMessagesOnly]);
@@ -587,8 +592,11 @@ export const ChatWindow = () => {
         content,
       });
       const mappedMessage = mapMessageToUI(sentMessage, currentUserId);
-
-      setMessages((prev) => [...prev, mappedMessage]);
+      setMessages((prev) => {
+        // Nếu đã có id này thì không append nữa (tránh double khi socket cũng đẩy về)
+        if (prev.some((msg) => msg.id === mappedMessage.id)) return prev;
+        return [...prev, mappedMessage];
+      });
       setMessageText("");
     } catch (error) {
       console.error("Send message error:", error);
@@ -634,31 +642,34 @@ export const ChatWindow = () => {
   };
 
   const handleDownloadFile = (message: MessageUI) => {
-    const downloadUrl = toPublicFileDownloadUrl(
+    const rawUrl =
       message.sourceFileUrl ||
-        (message.fileName ? `/uploads/${message.fileName}` : message.fileUrl || ""),
-    );
+      (message.fileName
+        ? `/uploads/${message.fileName}`
+        : message.fileUrl || "");
 
-    if (!downloadUrl) {
-      return;
+    if (!rawUrl) return;
+
+    // Decode trước rồi mới build proxy URL, tránh double encode
+    let proxyUrl: string;
+    try {
+      const decoded = decodeURIComponent(
+        rawUrl.replace(/^.*\/uploads\//, "/uploads/"),
+      );
+      proxyUrl = `/api-files${decoded}`;
+    } catch {
+      proxyUrl = rawUrl.startsWith("/api-files")
+        ? rawUrl
+        : `/api-files${rawUrl}`;
     }
 
     const download = async () => {
       try {
-        const response = await fetch(downloadUrl, {
-          method: "GET",
-          mode: "cors",
-          credentials: "omit",
-        });
-
-        if (!response.ok) {
-          throw new Error(`Download failed with status ${response.status}`);
-        }
-
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error(`${response.status}`);
         const blob = await response.blob();
         const blobUrl = URL.createObjectURL(blob);
         const link = document.createElement("a");
-
         link.href = blobUrl;
         link.download = message.fileName || "attachment";
         link.rel = "noreferrer";
@@ -668,7 +679,7 @@ export const ChatWindow = () => {
         window.setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
       } catch (error) {
         console.error("Download file error:", error);
-        window.open(downloadUrl, "_blank", "noopener,noreferrer");
+        window.open(proxyUrl, "_blank", "noopener,noreferrer");
       }
     };
 
