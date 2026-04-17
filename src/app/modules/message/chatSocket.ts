@@ -2,34 +2,36 @@ import { Client, type IMessage, type StompSubscription } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 
 type TopicMessageHandler = (payload: unknown, message: IMessage) => void;
+
 type ManagedSubscription = {
   destination: string;
   onMessage: TopicMessageHandler;
   stompSubscription: StompSubscription | null;
 };
 
+const DEFAULT_SOCKET_BASE_URL = "http://14.225.254.174:8085";
 const SOCKET_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://14.225.254.174:9000";
-const SOCKET_HTTP_ENDPOINT = `${SOCKET_BASE_URL}/ws-chat`;
-const USE_NATIVE_WS = import.meta.env.VITE_CHAT_USE_NATIVE_WS === "true";
+  import.meta.env.VITE_SOCKET_BASE_URL?.trim() || DEFAULT_SOCKET_BASE_URL;
+const SOCKET_HTTP_ENDPOINT = `${SOCKET_BASE_URL.replace(/\/+$/, "")}/ws-chat`;
 const DEBUG_SOCKET = import.meta.env.VITE_CHAT_DEBUG_SOCKET === "true";
-
-const toWebSocketUrl = (httpUrl: string) => {
-  if (httpUrl.startsWith("https://")) {
-    return `wss://${httpUrl.slice("https://".length)}`;
-  }
-  if (httpUrl.startsWith("http://")) {
-    return `ws://${httpUrl.slice("http://".length)}`;
-  }
-  return httpUrl;
-};
-
-const SOCKET_WS_ENDPOINT = toWebSocketUrl(SOCKET_HTTP_ENDPOINT);
 
 let stompClient: Client | null = null;
 let activationPromise: Promise<Client> | null = null;
 const managedSubscriptions = new Map<string, ManagedSubscription>();
 let subscriptionCounter = 0;
+
+const normalizeUserId = (value: unknown): string | null => {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed || null;
+  }
+
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return String(value);
+  }
+
+  return null;
+};
 
 const getConnectHeaders = (): Record<string, string> => {
   const headers: Record<string, string> = {};
@@ -43,33 +45,37 @@ const getConnectHeaders = (): Record<string, string> => {
     const savedUser = localStorage.getItem("user");
     if (savedUser) {
       const parsedUser = JSON.parse(savedUser);
-      if (typeof parsedUser?.id === "string") {
-        headers["X-User-Id"] = parsedUser.id;
+      const userId = normalizeUserId(parsedUser?.id);
+      if (userId) {
+        headers["X-User-Id"] = userId;
       }
     }
   } catch {
-    // ignore invalid localStorage user payload
+    // Ignore malformed persisted user payloads.
   }
 
   return headers;
 };
 
+const tryParseBody = (body: string): unknown => {
+  if (!body) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(body);
+  } catch {
+    return body;
+  }
+};
+
 const createClient = () => {
   const client = new Client({
-    reconnectDelay: 5000,
-    heartbeatIncoming: 10000,
-    heartbeatOutgoing: 10000,
+    reconnectDelay: 3000,
+    heartbeatIncoming: 4000,
+    heartbeatOutgoing: 4000,
     connectHeaders: {},
-    ...(USE_NATIVE_WS
-      ? {
-          brokerURL: SOCKET_WS_ENDPOINT,
-        }
-      : {
-          webSocketFactory: () =>
-            new SockJS(SOCKET_HTTP_ENDPOINT, null, {
-              transports: ["websocket"],
-            }),
-        }),
+    webSocketFactory: () => new SockJS(SOCKET_HTTP_ENDPOINT),
   });
 
   client.beforeConnect = async () => {
@@ -138,7 +144,7 @@ const ensureConnected = async (): Promise<Client> => {
 
     client.onConnect = (frame) => {
       originalConnect(frame);
-      resolve(stompClient as Client);
+      resolve(client);
       activationPromise = null;
       client.onWebSocketError = originalWebSocketError;
     };
@@ -159,18 +165,6 @@ const ensureConnected = async (): Promise<Client> => {
   });
 
   return activationPromise;
-};
-
-const tryParseBody = (body: string): unknown => {
-  if (!body) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(body);
-  } catch {
-    return body;
-  }
 };
 
 export const subscribeChatTopic = (

@@ -136,7 +136,16 @@ const getCurrentUserId = () => {
     if (!savedUser) return null;
 
     const parsedUser = JSON.parse(savedUser);
-    return typeof parsedUser?.id === "string" ? parsedUser.id : null;
+    if (typeof parsedUser?.id === "string") {
+      const trimmed = parsedUser.id.trim();
+      return trimmed || null;
+    }
+
+    if (typeof parsedUser?.id === "number" && Number.isFinite(parsedUser.id)) {
+      return String(parsedUser.id);
+    }
+
+    return null;
   } catch {
     return null;
   }

@@ -275,7 +275,16 @@ const getCurrentUserId = () => {
     if (!savedUser) return null;
 
     const parsedUser = JSON.parse(savedUser);
-    return typeof parsedUser?.id === "string" ? parsedUser.id : null;
+    if (typeof parsedUser?.id === "string") {
+      const trimmed = parsedUser.id.trim();
+      return trimmed || null;
+    }
+
+    if (typeof parsedUser?.id === "number" && Number.isFinite(parsedUser.id)) {
+      return String(parsedUser.id);
+    }
+
+    return null;
   } catch {
     return null;
   }
@@ -463,6 +472,22 @@ const resolveAttachmentUrl = async (message: MessageUI): Promise<MessageUI> => {
   };
 };
 
+const uniqueMessagesById = (messages: MessageUI[]) => {
+  const seen = new Map<string, MessageUI>();
+
+  messages.forEach((message) => {
+    if (!seen.has(message.id)) {
+      seen.set(message.id, message);
+      return;
+    }
+
+    // Keep the latest resolved version when the backend returns the same id twice.
+    seen.set(message.id, message);
+  });
+
+  return Array.from(seen.values());
+};
+
 const renderMessageContent = (
   message: MessageUI,
   onDownloadFile: (message: MessageUI) => void,
@@ -626,7 +651,7 @@ export const ChatWindow = () => {
           console.error("Mark conversation read failed:", error);
         }
 
-        setMessages(resolved);
+        setMessages(uniqueMessagesById(resolved));
       } catch (error) {
         console.error("Load messages failed:", error);
       } finally {
@@ -650,19 +675,35 @@ export const ChatWindow = () => {
         const data = await getConversationDetailApi(conversationId);
 
         const mapped = data.messages.map((m) => mapMessageToUI(m, currentUserId));
+        const resolved = await Promise.all(
+          mapped.map(async (message) => {
+            const resolvedMessage = await resolveAttachmentUrl(message);
+
+            if (
+              resolvedMessage.fileUrl &&
+              resolvedMessage.fileUrl.startsWith("blob:")
+            ) {
+              objectUrlsRef.current.push(resolvedMessage.fileUrl);
+            }
+
+            return resolvedMessage;
+          }),
+        );
 
         // only add messages that don't exist yet
         setMessages((prev) => {
           const existingIds = new Set(prev.map((m) => m.id));
-          const newMessages = mapped.filter((m) => !existingIds.has(m.id));
+          const newMessages = uniqueMessagesById(
+            resolved.filter((m) => !existingIds.has(m.id)),
+          );
 
           if (newMessages.length === 0) {
             return prev;
           }
 
           // update lastMessageId ref for next polling
-          if (mapped.length > 0) {
-            lastMessageIdRef.current = mapped[mapped.length - 1].id;
+          if (resolved.length > 0) {
+            lastMessageIdRef.current = resolved[resolved.length - 1].id;
           }
 
           return [...prev, ...newMessages];
