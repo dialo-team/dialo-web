@@ -122,6 +122,7 @@ import type { Friend } from "../../types/message/Friend";
 import { useSearchParams } from "react-router-dom";
 import { getConversationsApi } from "../../../../api/message/conversationApi";
 import { subscribeChatTopic } from "./chatSocket";
+import { getUserInfoApi } from "../../../../api/social/searchAndAddFriend/userApi";
 
 type Props = {
   onSelectUser: (user: Friend) => void;
@@ -165,14 +166,37 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
     setLoading(true);
     try {
       const data = await getConversationsApi();
-      const mapped: Friend[] = data.map((item) => ({
-        id: item.conversationId,
-        name: item.counterpartName,
-        avatar: item.counterpartAvatarUrl || DEFAULT_AVATAR,
-        lastMessage: item.lastMessage,
-        unreadCount: item.unreadCount,
-        unreadDisplay: item.unreadDisplay,
-      }));
+
+      // const mapped: Friend[] = data.map((item) => ({
+      //   id: item.conversationId,
+      //   name: item.counterpartName,
+      //   avatar: item.counterpartAvatarUrl || DEFAULT_AVATAR,
+      //   lastMessage: item.lastMessage,
+      //   unreadCount: item.unreadCount,
+      //   unreadDisplay: item.unreadDisplay,
+      // }));
+      const mapped: Friend[] = await Promise.all(
+        data.map(async (item) => {
+          let avatar = DEFAULT_AVATAR;
+
+          try {
+            const res = await getUserInfoApi(item.counterpartId);
+
+            avatar = res.data?.data?.avatar || DEFAULT_AVATAR;
+          } catch (error) {
+            console.warn("Không lấy được avatar:", error);
+          }
+
+          return {
+            id: item.conversationId,
+            name: item.counterpartName,
+            avatar,
+            lastMessage: item.lastMessage,
+            unreadCount: item.unreadCount,
+            unreadDisplay: item.unreadDisplay,
+          };
+        })
+      );
 
       // So sánh shallow: id, lastMessage, unreadCount
       const isSame =
@@ -210,10 +234,10 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
         prev.map((friend) =>
           friend.id === conversationId
             ? {
-                ...friend,
-                unreadCount: 0,
-                unreadDisplay: "0",
-              }
+              ...friend,
+              unreadCount: 0,
+              unreadDisplay: "0",
+            }
             : friend,
         ),
       );
@@ -241,9 +265,9 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
         prev.map((friend) =>
           friend.id === conversationId
             ? {
-                ...friend,
-                lastMessage: lastMessage || "",
-              }
+              ...friend,
+              lastMessage: lastMessage || "",
+            }
             : friend,
         ),
       );
@@ -339,25 +363,22 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
           filteredFriends.map((f) => (
             <div
               key={f.id}
-              className={`${styles.chatItem} ${
-                (f.unreadCount || 0) > 0 ? styles.chatItemUnread : ""
-              }`}
+              className={`${styles.chatItem} ${(f.unreadCount || 0) > 0 ? styles.chatItemUnread : ""
+                }`}
               onClick={() => onSelectUser(f)}
             >
               <img src={f.avatar} className={styles.avatar} alt={f.name} />
 
               <div className={styles.info}>
                 <div
-                  className={`${styles.name} ${
-                    (f.unreadCount || 0) > 0 ? styles.nameUnread : ""
-                  }`}
+                  className={`${styles.name} ${(f.unreadCount || 0) > 0 ? styles.nameUnread : ""
+                    }`}
                 >
                   {f.name}
                 </div>
                 <div
-                  className={`${styles.lastMessage} ${
-                    (f.unreadCount || 0) > 0 ? styles.lastMessageUnread : ""
-                  }`}
+                  className={`${styles.lastMessage} ${(f.unreadCount || 0) > 0 ? styles.lastMessageUnread : ""
+                    }`}
                 >
                   {f.lastMessage}
                 </div>
