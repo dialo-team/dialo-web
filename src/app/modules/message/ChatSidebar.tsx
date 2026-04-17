@@ -190,6 +190,7 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
           return {
             id: item.conversationId,
             name: item.counterpartName,
+            counterpartId: item.counterpartId,
             avatar,
             lastMessage: item.lastMessage,
             unreadCount: item.unreadCount,
@@ -365,7 +366,8 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
               key={f.id}
               className={`${styles.chatItem} ${(f.unreadCount || 0) > 0 ? styles.chatItemUnread : ""
                 }`}
-              onClick={() => onSelectUser(f)}
+              // onClick={() => onSelectUser(f)}
+              onClick={() => onSelectUser(f as any)}
             >
               <img src={f.avatar} className={styles.avatar} alt={f.name} />
 
