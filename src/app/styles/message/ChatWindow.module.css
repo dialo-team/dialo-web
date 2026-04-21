@@ -1,54 +1,32 @@
 .container {
   display: flex;
   height: 100%;
-  min-width: 0;
-  min-height: 0;
   overflow: hidden;
 }
 
-/* Khi panel info mở, chat sẽ thu nhỏ lại */
 .chat {
-  flex: 1; /* mặc định chiếm hết */
+  flex: 1;
   display: flex;
   flex-direction: column;
-  background: #e5e7eb;
-  transition: width 0.3s;
   min-width: 0;
-  min-height: 0;
+  background: #f3f4f6;
+
+  position: relative;
 }
 
 .chatWithPanel {
-  width: 70%; /* khi có info, chat chiếm 70% */
+  max-width: 68%;
 }
 
-/* Icon info active */
-.infoButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;        /* khoảng cách khung */
-  border-radius: 6px;  /* bo góc */
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.infoButton:hover {
-  background: #d1eaff; /* hover nhạt */
-}
-
-/* Khi active (panel info mở) */
-.infoButton.active {
-  background: #0ea5e9; /* xanh nổi bật */
-  color: #fff;          /* đổi màu icon nếu muốn */
-}
-/* --------------------- HEADER --------------------- */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   padding: 10px 15px;
   background: #fff;
   border-bottom: 1px solid #ddd;
+  min-width: 0;
 }
 
 .user {
@@ -58,10 +36,27 @@
   min-width: 0;
 }
 
-.user img {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 9999px;
+  background: transparent;
+  color: #374151;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.backButton:hover {
+  background: rgba(17, 24, 39, 0.06);
+}
+
+.backButton:focus-visible {
+  outline: 2px solid #0f62fe;
+  outline-offset: 2px;
 }
 
 .name {
@@ -77,127 +72,316 @@
 }
 
 .actions {
-  display: flex;      
-  flex-direction: row;
-  gap: 12px;         
-  align-items: center;  
-}
-.actions span,
-.actions button {
-  cursor: pointer;
-  display: flex;        
+  display: flex;
+  gap: 10px;
   align-items: center;
-  justify-content: center;
+  color: #374151;
+  flex-shrink: 0;
 }
 
-/* --------------------- BODY --------------------- */
 .body {
   flex: 1;
-  padding: 15px;
   overflow-y: auto;
-  min-height: 0;
+  padding: 15px;
 }
 
-/* --------------------- MESSAGE ROW --------------------- */
 .messageLeft,
 .messageRight {
   display: flex;
   margin-bottom: 10px;
-  align-items: flex-end;
+  align-items: flex-start;
 }
 
 .messageRight {
   justify-content: flex-end;
 }
 
-/* --------------------- AVATAR --------------------- */
 .avatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
   margin-right: 6px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  display: block;
 }
 
-/* --------------------- BUBBLE --------------------- */
-.bubble {
+.messageBox {
+  position: relative;
   max-width: 55%;
+  display: block;
+  min-width: 0;
+}
+
+.bubble {
   padding: 10px 12px;
   border-radius: 16px;
   background: #fff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
   font-size: 14px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.fileBubble {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #dbe2ea;
+  min-width: 200px;
+}
+
+.imageBubble {
+  padding: 4px;
+  border-radius: 12px;
+  background: transparent;
 }
 
 .messageRight .bubble {
-  background: #dbeafe; /* xanh nhẹ giống zalo */
+  background: #dbeafe;
 }
 
-/* --------------------- TIME --------------------- */
+.messageRight .fileBubble {
+  background: #e9f3ff;
+  border-color: #bfdbfe;
+}
+
+.imageLink {
+  display: block;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #d1d5db;
+  background: #fff;
+}
+
+.imageMessage {
+  display: block;
+  width: 100%;
+  max-width: 260px;
+  max-height: 280px;
+  object-fit: cover;
+}
+
+.fileRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1f2937;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.fileDownloadBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
+  border: none;
+  border-radius: 9999px;
+  background: rgba(15, 98, 254, 0.1);
+  color: #0f62fe;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.fileDownloadBtn:hover {
+  background: rgba(15, 98, 254, 0.18);
+}
+
+.fileDownloadBtn:focus-visible {
+  outline: 2px solid #0f62fe;
+  outline-offset: 2px;
+}
+
+.fileRow:hover {
+  background-color: rgba(15, 98, 254, 0.1);
+}
+
+.fileRow:focus {
+  outline: 2px solid #0f62fe;
+  outline-offset: 2px;
+}
+
+.fileMeta {
+  min-width: 0;
+}
+
+.fileName {
+  font-size: 13px;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.fileType {
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 2px;
+  word-break: break-word;
+}
+
+.revoked {
+  background: #dbeafe !important;
+  color: #1f2937 !important;
+  font-style: italic;
+}
+
 .time {
   font-size: 11px;
   margin-top: 4px;
   color: #777;
 }
 
-/* --------------------- TOOLBAR --------------------- */
+.moreBtn {
+  position: absolute;
+  left: -22px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #6b7280;
+}
+
+.menu {
+  position: fixed;
+  width: 180px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  z-index: 99999;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.menuItem:hover {
+  background: #f3f4f6;
+}
+
 .toolbar {
   display: flex;
   gap: 10px;
   padding: 8px 12px;
   background: #fff;
   border-top: 1px solid #ddd;
+  flex-shrink: 0;
 }
 
-/* --------------------- INPUT --------------------- */
 .input {
   display: flex;
   align-items: center;
+  gap: 10px;
   padding: 10px;
   background: #fff;
   border-top: 1px solid #ddd;
+  flex-shrink: 0;
 }
 
 .input input {
   flex: 1;
-  padding: 10px 14px;
-  border-radius: 25px;
+  min-width: 0;
+  padding: 10px;
+  border-radius: 20px;
   border: 1px solid #ddd;
   background: #f0f2f5;
-  outline: none;
-}
-
-.input span {
-  margin-left: 10px;
-  font-size: 18px;
-  cursor: pointer;
-}
-
-.backButton {
-  display: none;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  padding: 4px;
-  align-items: center;
-  justify-content: center;
-  
-}
-.backButton:hover {
-  background: #f0f2f5;
-  border-radius: 50%;
 }
 
 .empty {
   display: flex;
+  justify-content: center;
+  align-items: center;
   height: 100%;
+}
+
+.sendBtn {
+  display: flex;
   align-items: center;
   justify-content: center;
-  color: #6b7280;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: #0ea5e9;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+  flex-shrink: 0;
+}
+
+.sendBtn:hover {
+  background: #0284c7;
+}
+
+.sendBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* block */
+.blockOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+
+  /* khóa click xuyên */
+  pointer-events: all;
+}
+
+.chatBlocked {
+  pointer-events: none;
+  user-select: none;
+}
+
+.blockBox {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  width: 280px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.blockTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.blockDesc {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 12px;
+}
+
+.unblockBtn {
+  background: #0ea5e9;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.unblockBtn:hover {
+  background: #0284c7;
 }
 
 @media (max-width: 768px) {
   .chatWithPanel {
     width: 100%;
+    max-width: 100%;
   }
 
   .header {
@@ -208,9 +392,18 @@
     gap: 8px;
   }
 
-  .bubble {
+  .messageBox {
     max-width: 78%;
+  }
+
+  .bubble {
+    max-width: 100%;
     word-break: break-word;
+  }
+
+  .imageMessage {
+    max-width: 220px;
+    max-height: 240px;
   }
 
   .backButton {

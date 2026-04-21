@@ -3,15 +3,18 @@ import { RouterProvider } from "react-router-dom";
 import { routes } from "./configs/router";
 import { useAuthStore } from "../../store/authStore";
 import { useEffect } from "react";
+
 import { getMeApi } from "../../api/social/me/meApi";
 
 const App = () => {
   const hydrate = useAuthStore((state) => state.hydrate);
   const setUser = useAuthStore((state) => state.setUser);
 
+
   useEffect(() => {
     hydrate();
   }, [hydrate]);
+
 
   // Load user data from API after hydrate
   useEffect(() => {

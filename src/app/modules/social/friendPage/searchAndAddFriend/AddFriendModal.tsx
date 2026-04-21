@@ -149,9 +149,7 @@ export default function AddFriendModal({ onClose }: Props) {
         open={!!selectedUser}
         user={selectedUser}
         onClose={() => setSelectedUser(null)}
-        onSend={(msg) => {
-          console.log("Gửi lời mời:", msg);
-        }}
+        onSend={() => {}}
         onSuccess={() => {
 
           setResults([]);

@@ -3,6 +3,7 @@ import styles from "../../../../styles/module.social/FriendsPage/FriendContentLi
 import { useEffect, useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 
+
 import {
   getBlockedUsersApi,
   unblockUserApi,
@@ -44,8 +45,8 @@ export const BlockedList = () => {
 
       const mapped = data.map((u: any) => ({
         id: u.blockedUserId || u.userId || u.id,
-        userName: u.blockedUserName || u.userName,
-        avatar: u.blockedUserAvatar || u.avatar,
+        userName: u.blockedUserName ,
+        avatar: u.blockedAvatar ,
       }));
 
       setBlockedUsers(mapped);

@@ -85,6 +85,10 @@
   cursor: pointer;
 }
 
+.chatItemUnread {
+  background: #f7f8fa;
+}
+
 .chatItem:hover {
   background: #f0f2f5;
 }
@@ -109,6 +113,19 @@
   margin-bottom: 5px;
 }
 
+.nameUnread {
+  font-weight: 600;
+  color: #111827;
+}
+
+/* conversation id */
+.conversationId {
+  font-size: 12px;
+  color: #1877f2;
+  word-break: break-all;
+  margin-bottom: 4px;
+}
+
 /* tin nhắn */
 .lastMessage {
   font-size: 13px;
@@ -116,6 +133,26 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.lastMessageUnread {
+  color: #111827;
+}
+
+.unreadBadge {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #1877f2;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 /* empty */

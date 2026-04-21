@@ -38,19 +38,3 @@ export const resetPasswordApi = (
     },
   });
 };
-
-
-// export const resetPasswordApi = (data: { password: string }, resetToken: string) => {
-//   console.log(data);
-//   console.log("Reset Token:", resetToken); // kiểm tra token
-//   return axios.post(
-//     "http://14.225.254.174:8082/api/v1/auth/password/reset",
-//     data,
-//     {
-//       headers: {
-//         Authorization: resetToken, // chỉ truyền token trực tiếp
-//         "Content-Type": "application/json",
-//       },
-//     }
-//   );
-// };

@@ -19,10 +19,20 @@ export const FriendSidebar = ({ onNavigate }: FriendSidebarProps) => {
   // xử lý search
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
+// <<<<<<< truc_profile
+//       const isValid = /^\d{10}$/.test(keyword);
+
+//       if (!isValid) {
+//         navigate(`/home/friendHome/search?q=invalid`);
+//       } else {
+//         navigate(`/home/friendHome/search?q=${keyword}`);
+//       }
+// =======
       const keywordTrimmed = keyword.trim();
       if (!keywordTrimmed) return;
 
       navigate(`/home/chat?q=${encodeURIComponent(keywordTrimmed)}`);
+
 
       setKeyword(""); 
       onNavigate?.();
@@ -38,7 +48,11 @@ export const FriendSidebar = ({ onNavigate }: FriendSidebarProps) => {
           <input
             placeholder="Tìm đoạn hội thoại..."
             value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
+            onChange={(e) => {
+              // chỉ cho nhập số
+              const value = e.target.value.replace(/\D/g, "");
+              setKeyword(value);
+            }}
             onKeyDown={handleSearch}
           />
         </div>

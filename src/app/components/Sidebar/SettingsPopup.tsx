@@ -46,29 +46,17 @@ export const SettingsPopup = ({ open, onClose }: Props) => {
   const handleLogout = async () => {
     const refreshToken = localStorage.getItem("refreshToken");
 
-    if (!refreshToken) {
-      console.warn("Missing refreshToken, skip signout API call");
-      return;
-    }
-
     try {
-      // Gọi API signout của BE (Bearer token tự được gắn bởi axios interceptor)
-      // const res = await signoutApi({ refreshToken });
-      // console.log("Signout success:", res.data);
       if (refreshToken) {
-      try {
         await signoutApi({ refreshToken });
-      } catch {}
     }
+    } catch (err) {
+      console.error("Signout API error:", err);
+    } finally {
       useAuthStore.getState().clearUser();
-
-      // Chỉ xóa token và điều hướng khi signout thành công
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
       navigate("/login");
-    } catch (err) {
-      // Nếu signout fail thì giữ nguyên màn hiện tại
-      console.error("Signout API error:", err);
     }
   };
 

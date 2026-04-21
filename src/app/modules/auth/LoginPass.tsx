@@ -69,6 +69,7 @@ export const LoginPass = ({
         localStorage.setItem("sessId", data.sessId);
         localStorage.setItem("phone", phone);
 
+
          // save user vào store + localStorage
         const meRes = await getMeApi();
         const user = meRes.data;
@@ -78,7 +79,7 @@ export const LoginPass = ({
 
       } else {
         if (res.data.status === 500) {
-          setError("Lỗi server");
+          setError("Số điện thoại hoặc mật khẩu không đúng");
         } else {
           setError(res.data.message || "Đăng nhập thất bại");
         }
@@ -88,7 +89,7 @@ export const LoginPass = ({
       const status = err?.response?.status;
 
       if (status === 500) {
-        setError("Lỗi server");
+        setError("Số điện thoại hoặc mật khẩu không đúng");
       } else {
         setError(err?.response?.data?.message || "Đăng nhập thất bại");
       }
