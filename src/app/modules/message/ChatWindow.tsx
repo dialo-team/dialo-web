@@ -41,6 +41,7 @@ import { ChatSearch } from "./ChatSearch";
 import type { MessageDto } from "../../types/message/Message";
 import { subscribeChatTopic } from "./chatSocket";
 import { getBlockedUsersApi, unblockUserApi } from "../../../../api/social/listFriend/ListFriendApi";
+import { getUserInfoApi } from "../../../../api/social/searchAndAddFriend/userApi";
 
 type PropsContext = {
   selectedUser: Friend | null;
@@ -59,6 +60,9 @@ type MessageUI = {
   fileName?: string;
   mimeType?: string;
   revoked?: boolean;
+  type?: string;
+  senderId?: string;
+
 };
 
 const MESSAGE_TEXT_TYPE = "TEXT";
@@ -112,29 +116,6 @@ const toAbsoluteMediaUrl = (url: string) => {
   return encodeURI(proxiedPath);
 };
 
-// const toPublicFileDownloadUrl = (url: string) => {
-//   if (!url) {
-//     return "";
-//   }
-//
-//   if (/^(blob:|data:)/i.test(url)) {
-//     return url;
-//   }
-//
-//   try {
-//     if (/^(blob:|data:)/i.test(url)) {
-//       return url;
-//     }
-//
-//     if (url.startsWith(FILE_PROXY_PREFIX)) {
-//       return encodeURI(url);
-//     }
-//
-//     return toAbsoluteMediaUrl(url);
-//   } catch {
-//     return toAbsoluteMediaUrl(url);
-//   }
-// };
 
 const normalizeCandidateUrls = (
   rawUrls: Array<string | undefined>,
@@ -189,11 +170,14 @@ const mapMessageToUI = (
   currentUserId: string | null,
 ): MessageUI => ({
   id: message.id,
+  senderId: message.senderId || undefined,
+
   sender:
     message.displayPosition === "RIGHT" ||
       (currentUserId ? message.senderId === currentUserId : false)
       ? "me"
       : "them",
+
   kind: message.revoked
     ? "text"
     : isImageMessage(message)
@@ -201,13 +185,16 @@ const mapMessageToUI = (
       : message.attachment?.fileName || message.attachment?.fileUrl
         ? "file"
         : "text",
+
   content: message.revoked
     ? "Tin nhắn đã được thu hồi"
     : message.content || message.attachment?.fileName || "[File]",
+
   time: new Date(message.createdAt).toLocaleTimeString("vi-VN", {
     hour: "2-digit",
     minute: "2-digit",
   }),
+
   fileUrl: (() => {
     const thumbnailAttachmentUrl =
       message.attachment?.thumbnailUrl || message.attachment?.fileUrl;
@@ -216,6 +203,7 @@ const mapMessageToUI = (
       ? toAbsoluteMediaUrl(thumbnailAttachmentUrl)
       : undefined;
   })(),
+
   sourceFileUrl: (() => {
     const originalAttachmentUrl =
       message.attachment?.fileUrl || message.attachment?.thumbnailUrl;
@@ -224,6 +212,7 @@ const mapMessageToUI = (
       ? toAbsoluteMediaUrl(originalAttachmentUrl)
       : undefined;
   })(),
+
   fileUrlCandidates: (() => {
     const thumbnailAttachmentUrl = message.attachment?.thumbnailUrl;
     const originalAttachmentUrl = message.attachment?.fileUrl;
@@ -233,9 +222,12 @@ const mapMessageToUI = (
       message.attachment?.fileName,
     );
   })(),
+
   fileName: message.attachment?.fileName || undefined,
   mimeType: message.attachment?.mimeType || undefined,
   revoked: message.revoked,
+
+  type: message.type,
 });
 
 const resolveAttachmentUrl = async (message: MessageUI): Promise<MessageUI> => {
@@ -365,13 +357,16 @@ const renderMessageContent = (
 
 export const ChatWindow = () => {
   const { selectedUser, onBackToSidebar } = useOutletContext<PropsContext>();
-  const isGroupChat = (() => {
-  if (!selectedUser) return false;
+  const currentUserId = getCurrentUserId();
 
-  const counterpartId = (selectedUser as any).counterpartId;
+  if (!selectedUser) {
+    return <div className={styles.empty}>Chọn người để chat</div>;
+  }
 
-  return selectedUser.id === counterpartId;
-})();
+  const [userCache, setUserCache] = useState<Record<string, any>>({});
+
+  const isGroupChat =
+    selectedUser?.id === (selectedUser as any)?.counterpartId;
 
   const bodyRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -462,7 +457,7 @@ export const ChatWindow = () => {
       }
 
       try {
-        const currentUserId = getCurrentUserId();
+        // const currentUserId = getCurrentUserId();
         const data = await getConversationDetailApi(conversationId);
 
         clearObjectUrls();
@@ -829,9 +824,45 @@ export const ChatWindow = () => {
     }
   };
 
-  if (!selectedUser) {
-    return <div className={styles.empty}>Chọn người để chat</div>;
-  }
+
+
+  // Hàm load user theo senderId
+  const fetchUserInfo = useCallback(async (userId: string) => {
+    if (!userId) return null;
+
+    if (userCache[userId]) return userCache[userId];
+
+    try {
+      const res = await getUserInfoApi(userId);
+      const user = res.data.data;
+
+      setUserCache((prev) => ({
+        ...prev,
+        [userId]: user,
+      }));
+
+      return user;
+    } catch {
+      return null;
+    }
+  }, [userCache]);
+
+  useEffect(() => {
+    if (!isGroupChat) return;
+    if (!messages.length) return;
+
+    const senderIds = [
+      ...new Set(
+        messages
+          .map((m) => m.senderId)
+          .filter((id): id is string => Boolean(id))
+      ),
+    ];
+
+    senderIds.forEach((id) => {
+      fetchUserInfo(id);
+    });
+  }, [messages, isGroupChat, fetchUserInfo]);
 
   return (
     <div className={styles.container}>
@@ -920,83 +951,107 @@ export const ChatWindow = () => {
           {loading ? (
             <ChatWindowSkeleton />
           ) : (
-            messages.map((m) => (
-              <div
-                key={m.id}
-                className={
-                  m.sender === "me" ? styles.messageRight : styles.messageLeft
-                }
-              >
-                {m.sender === "them" && (
-                  <img src={selectedUser.avatar} className={styles.avatar} />
-                )}
+            messages.map((m) => {
+              if (m.type === "SYSTEM") {
+                return (
+                  <div key={m.id} className={styles.systemMessage}>
+                    {m.content}
+                  </div>
+                );
+              }
 
-                <div className={styles.messageBox}>
-                  {m.sender === "me" && (
-                    <div
-                      className={styles.moreBtn}
-                      onClick={(e) => {
-                        e.stopPropagation();
 
-                        const rect = e.currentTarget.getBoundingClientRect();
-
-                        setMenuPos({
-                          x: rect.left - 190,
-                          y: rect.top,
-                        });
-
-                        setOpenMenuId(openMenuId === m.id ? null : m.id);
-                      }}
-                    >
-                      <MoreVertical size={16} />
-                    </div>
+              return (
+                <div
+                  key={m.id}
+                  className={
+                    m.sender === "me" ? styles.messageRight : styles.messageLeft
+                  }
+                >
+                  {m.sender === "them" && (
+                    <img
+                      src={
+                        isGroupChat
+                          ? userCache[m.senderId || ""]?.avatar || selectedUser.avatar
+                          : selectedUser.avatar
+                      }
+                      className={styles.avatar}
+                    />
                   )}
 
-                  {openMenuId === m.id && (
-                    <div
-                      className={styles.menu}
-                      style={{
-                        left: menuPos.x,
-                        top: menuPos.y,
-                      }}
-                    >
-                      <div
-                        className={styles.menuItem}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          void handleRevokeMessage(m.id);
-                        }}
-                      >
-                        <Reply size={14} />
-                        Thu hồi
-                      </div>
-                      <div
-                        className={styles.menuItem}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          void handleDeleteMessageForMe(m.id);
-                        }}
-                      >
-                        <Trash2 size={14} />
-                        Xóa chỉ mình tôi
-                      </div>
-                    </div>
-                  )}
+                  <div className={styles.messageBox}>
 
-                  <div
-                    className={`${m.kind === "image"
-                      ? styles.imageBubble
-                      : m.kind === "file"
-                        ? styles.fileBubble
-                        : styles.bubble
-                      } ${m.revoked ? styles.revoked : ""}`}
-                    onClick={handleMessageClick}
-                  >
-                    {renderMessageContent(m, handleDownloadFile)}
+                    {m.sender === "me" && (
+                      <div
+                        className={styles.moreBtn}
+                        onClick={(e) => {
+                          e.stopPropagation();
+
+                          const rect = e.currentTarget.getBoundingClientRect();
+
+                          setMenuPos({
+                            x: rect.left - 190,
+                            y: rect.top,
+                          });
+
+                          setOpenMenuId(openMenuId === m.id ? null : m.id);
+                        }}
+                      >
+                        <MoreVertical size={16} />
+                      </div>
+                    )}
+
+                    {openMenuId === m.id && (
+                      <div
+                        className={styles.menu}
+                        style={{
+                          left: menuPos.x,
+                          top: menuPos.y,
+                        }}
+                      >
+                        <div
+                          className={styles.menuItem}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void handleRevokeMessage(m.id);
+                          }}
+                        >
+                          <Reply size={14} />
+                          Thu hồi
+                        </div>
+                        <div
+                          className={styles.menuItem}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void handleDeleteMessageForMe(m.id);
+                          }}
+                        >
+                          <Trash2 size={14} />
+                          Xóa chỉ mình tôi
+                        </div>
+                      </div>
+                    )}
+
+                    <div
+                      className={`${m.kind === "image"
+                        ? styles.imageBubble
+                        : m.kind === "file"
+                          ? styles.fileBubble
+                          : styles.bubble
+                        } ${m.revoked ? styles.revoked : ""}`}
+                      onClick={handleMessageClick}
+                    >
+                      {isGroupChat && m.sender === "them" && (
+                        <div className={styles.senderNameInside}>
+                          {userCache[m.senderId || ""]?.userName || "Đang tải..."}
+                        </div>
+                      )}
+                      {renderMessageContent(m, handleDownloadFile)}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              )
+            })
           )}
         </div>
 
@@ -1055,22 +1110,22 @@ export const ChatWindow = () => {
 
       {/* RIGHT PANEL */}
       {showInfo && selectedUser && (
-  isGroupChat ? (
-    <ChatGroupInfo
-      conversationId={selectedUser.id}
-      groupName={selectedUser.name}
-      members={(selectedUser as any).members || []}
-      onClose={() => setShowInfo(false)}
-    />
-  ) : (
-    <ChatInfo
-      user={selectedUser}
-      conversationId={selectedUser.id}
-      onConversationCleared={() => setMessages([])}
-      onClose={() => setShowInfo(false)}
-    />
-  )
-)}
+        isGroupChat ? (
+          <ChatGroupInfo
+            conversationId={selectedUser.id}
+            groupName={selectedUser.name}
+            members={(selectedUser as any).members || []}
+            onClose={() => setShowInfo(false)}
+          />
+        ) : (
+          <ChatInfo
+            user={selectedUser}
+            conversationId={selectedUser.id}
+            onConversationCleared={() => setMessages([])}
+            onClose={() => setShowInfo(false)}
+          />
+        )
+      )}
 
       {showSearch && <ChatSearch onClose={() => setShowSearch(false)} />}
     </div>
