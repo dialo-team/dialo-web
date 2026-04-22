@@ -28,11 +28,17 @@ export const addMembersApi = async (
   memberIds: string[]
 ) => {
   
-  
   return axiosClient.post(
     `/api/v1/conversations/${conversationId}/members`,
     {
       memberIds,
     }
+  );
+};
+
+export const leaveGroupApi = (conversationId: string) => {
+  return axiosClient.post(
+    `/api/v1/conversations/${conversationId}/leave`,
+    {}
   );
 };
