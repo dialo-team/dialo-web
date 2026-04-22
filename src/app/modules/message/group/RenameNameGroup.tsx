@@ -1,14 +1,94 @@
+// import { useEffect, useState } from "react";
+// import { remarkConversationApi } from "../../../../../api/message/conversationApi";
+// import { useAuthStore } from "../../../../../store/authStore";
+// import styles from "../../../styles/module.social/FriendsPage/listFriend/RenameFriendModal.module.css";
+
+// type Props = {
+//   open: boolean;
+//   onClose: () => void;
+//   conversationId: string;
+//   currentName: string;
+//   friend?: any;
+//   onSaved?: (name: string) => void;
+// };
+
+// export const RenameNameGroup = ({
+//   open,
+//   onClose,
+//   conversationId,
+//   currentName,
+//   friend,
+//   onSaved,
+// }: Props) => {
+//   const [name, setName] = useState("");
+//   const user = useAuthStore((s) => s.user);
+
+//   useEffect(() => {
+//     setName(currentName || "");
+//   }, [currentName, open]);
+
+//   if (!open) return null;
+
+//   const handleSave = async () => {
+//     if (!conversationId || !user?.id) return;
+
+//     const nextName = name.trim();
+
+//     await remarkConversationApi(conversationId, user.id, nextName);
+
+//     onSaved?.(nextName);
+//     onClose();
+//   };
+
+//   return (
+//     <div className={styles.overlay} onClick={onClose}>
+//       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+//         <h3 className={styles.title}>Đổi tên gợi ý cho nhóm</h3>
+
+//         {/* avatar giống UI cũ */}
+//         <div className={styles.avatarBox}>
+//           <img
+//             src={
+//               friend?.avatar ||
+//               "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa"
+//             }
+//           />
+//         </div>
+
+//         <p className={styles.note}>
+//           Bạn có chắc muốn đổi tên nhóm, khi xác nhận tên nhóm mới sẽ hiển thị với tất cả thành viên.
+//         </p>
+
+//         <input
+//           className={styles.input}
+//           value={name}
+//           onChange={(e) => setName(e.target.value)}
+//         />
+
+//         <div className={styles.actions}>
+//           <button className={styles.cancel} onClick={onClose}>
+//             Hủy
+//           </button>
+
+//           <button className={styles.confirm} onClick={handleSave}>
+//             Xác nhận
+//           </button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+
 import { useEffect, useState } from "react";
-import { remarkConversationApi } from "../../../../../api/message/conversationApi";
-import { useAuthStore } from "../../../../../store/authStore";
 import styles from "../../../styles/module.social/FriendsPage/listFriend/RenameFriendModal.module.css";
+import { updateGroupNameApi } from "../../../../../api/social/groupFriend/groupApi";
 
 type Props = {
   open: boolean;
   onClose: () => void;
   conversationId: string;
   currentName: string;
-  friend?: any;
   onSaved?: (name: string) => void;
 };
 
@@ -17,61 +97,99 @@ export const RenameNameGroup = ({
   onClose,
   conversationId,
   currentName,
-  friend,
   onSaved,
 }: Props) => {
   const [name, setName] = useState("");
-  const user = useAuthStore((s) => s.user);
+  const [loading, setLoading] = useState(false);
 
+  /* ================= INIT ================= */
   useEffect(() => {
-    setName(currentName || "");
-  }, [currentName, open]);
+    if (open) {
+      setName(currentName || "");
+    }
+  }, [open, currentName]);
 
   if (!open) return null;
 
+  /* ================= HANDLE SAVE ================= */
   const handleSave = async () => {
-    if (!conversationId || !user?.id) return;
-
     const nextName = name.trim();
 
-    await remarkConversationApi(conversationId, user.id, nextName);
+    if (!conversationId) return;
+    if (!nextName) return;
 
-    onSaved?.(nextName);
-    onClose();
+    if (nextName === currentName) {
+      onClose();
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      await updateGroupNameApi(conversationId, nextName);
+
+      // cập nhật UI cha
+      onSaved?.(nextName);
+
+      // (optional) bắn event để sidebar update nếu có
+      window.dispatchEvent(
+        new CustomEvent("conversation-updated", {
+          detail: { conversationId, name: nextName },
+        })
+      );
+
+      onClose();
+    } catch (err) {
+      console.error("Lỗi đổi tên nhóm:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  /* ================= UI ================= */
   return (
     <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <h3 className={styles.title}>Đổi tên gợi ý cho nhóm</h3>
+      <div
+        className={styles.modal}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 className={styles.title}>Đổi tên nhóm</h3>
 
-        {/* avatar giống UI cũ */}
+        {/* Avatar placeholder */}
         <div className={styles.avatarBox}>
           <img
-            src={
-              friend?.avatar ||
-              "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa"
-            }
+            src="https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa"
+            alt="group-avatar"
           />
         </div>
 
         <p className={styles.note}>
-          Bạn có chắc muốn đổi tên nhóm, khi xác nhận tên nhóm mới sẽ hiển thị với tất cả thành viên.
+          Tên mới sẽ hiển thị với tất cả thành viên trong nhóm.
         </p>
 
         <input
           className={styles.input}
           value={name}
+          placeholder="Nhập tên nhóm..."
           onChange={(e) => setName(e.target.value)}
+          disabled={loading}
         />
 
         <div className={styles.actions}>
-          <button className={styles.cancel} onClick={onClose}>
+          <button
+            className={styles.cancel}
+            onClick={onClose}
+            disabled={loading}
+          >
             Hủy
           </button>
 
-          <button className={styles.confirm} onClick={handleSave}>
-            Xác nhận
+          <button
+            className={styles.confirm}
+            onClick={handleSave}
+            disabled={loading || !name.trim()}
+          >
+            {loading ? "Đang lưu..." : "Xác nhận"}
           </button>
         </div>
       </div>

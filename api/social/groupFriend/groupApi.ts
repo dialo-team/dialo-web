@@ -10,3 +10,15 @@ export const createGroupApi = (
     memberIds,
   });
 };
+
+
+// đổi tên group
+export const updateGroupNameApi = (
+  conversationId: string,
+  groupName: string
+) => {
+  return axiosClient.put(
+    `/api/v1/conversations/${conversationId}/group-name`,
+    { groupName }
+  );
+};
