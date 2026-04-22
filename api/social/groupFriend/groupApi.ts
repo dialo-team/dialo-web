@@ -22,3 +22,17 @@ export const updateGroupNameApi = (
     { groupName }
   );
 };
+
+export const addMembersApi = async (
+  conversationId: string,
+  memberIds: string[]
+) => {
+  
+  
+  return axiosClient.post(
+    `/api/v1/conversations/${conversationId}/members`,
+    {
+      memberIds,
+    }
+  );
+};
