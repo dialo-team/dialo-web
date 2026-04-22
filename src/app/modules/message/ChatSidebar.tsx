@@ -189,7 +189,8 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
 
           return {
             id: item.conversationId,
-            name: item.counterpartName,
+            // name: item.counterpartName,
+            name: formatGroupName(item.counterpartName),
             counterpartId: item.counterpartId,
             avatar,
             lastMessage: item.lastMessage,
@@ -327,6 +328,37 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
   const filteredFriends = friends.filter((f) =>
     f.name.toLowerCase().includes(keyword.toLowerCase()),
   );
+
+  // fomat lại tên 
+  const currentUser = (() => {
+  try {
+    const saved = localStorage.getItem("user");
+    return saved ? JSON.parse(saved) : null;
+  } catch {
+    return null;
+  }
+})();
+
+const formatGroupName = (name: string) => {
+  if (!name) return "";
+
+  const myName = currentUser?.userName?.trim();
+  if (!myName) return name;
+
+  // tách theo dấu ,
+  const parts = name
+    .split(",")
+    .map((n) => n.trim())
+    .filter(Boolean);
+
+  // loại bỏ tên của mình
+  const filtered = parts.filter((n) => n !== myName);
+
+  // nếu xoá xong mà rỗng → fallback lại name cũ
+  if (filtered.length === 0) return name;
+
+  return filtered.join(", ");
+};
 
   return (
     <div className={styles.left}>
