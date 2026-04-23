@@ -55,24 +55,20 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
     try {
       const data = await getConversationsApi();
 
-      // const mapped: Friend[] = data.map((item) => ({
-      //   id: item.conversationId,
-      //   name: item.counterpartName,
-      //   avatar: item.counterpartAvatarUrl || DEFAULT_AVATAR,
-      //   lastMessage: item.lastMessage,
-      //   unreadCount: item.unreadCount,
-      //   unreadDisplay: item.unreadDisplay,
-      // }));
       const mapped: Friend[] = await Promise.all(
         data.map(async (item) => {
-          let avatar = DEFAULT_AVATAR;
 
-          try {
-            const res = await getUserInfoApi(item.counterpartId);
 
-            avatar = res.data?.data?.avatar || DEFAULT_AVATAR;
-          } catch (error) {
-            console.warn("Không lấy được avatar:", error);
+          let avatar = item.counterpartAvatarUrl || DEFAULT_AVATAR;
+
+          // nếu là base64 thì dùng luôn
+          if (!avatar.startsWith("data:image")) {
+            try {
+              const res = await getUserInfoApi(item.counterpartId);
+              avatar = res.data?.data?.avatar || avatar || DEFAULT_AVATAR;
+            } catch (error) {
+              console.warn("Không lấy được avatar:", error);
+            }
           }
 
           return {
@@ -219,34 +215,34 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
 
   // fomat lại tên 
   const currentUser = (() => {
-  try {
-    const saved = localStorage.getItem("user");
-    return saved ? JSON.parse(saved) : null;
-  } catch {
-    return null;
-  }
-})();
+    try {
+      const saved = localStorage.getItem("user");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  })();
 
-const formatGroupName = (name: string) => {
-  if (!name) return "";
+  const formatGroupName = (name: string) => {
+    if (!name) return "";
 
-  const myName = currentUser?.userName?.trim();
-  if (!myName) return name;
+    const myName = currentUser?.userName?.trim();
+    if (!myName) return name;
 
-  // tách theo dấu ,
-  const parts = name
-    .split(",")
-    .map((n) => n.trim())
-    .filter(Boolean);
+    // tách theo dấu ,
+    const parts = name
+      .split(",")
+      .map((n) => n.trim())
+      .filter(Boolean);
 
-  // loại bỏ tên của mình
-  const filtered = parts.filter((n) => n !== myName);
+    // loại bỏ tên của mình
+    const filtered = parts.filter((n) => n !== myName);
 
-  // nếu xoá xong mà rỗng → fallback lại name cũ
-  if (filtered.length === 0) return name;
+    // nếu xoá xong mà rỗng → fallback lại name cũ
+    if (filtered.length === 0) return name;
 
-  return filtered.join(", ");
-};
+    return filtered.join(", ");
+  };
 
   return (
     <div className={styles.left}>

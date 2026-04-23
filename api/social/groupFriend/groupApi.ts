@@ -58,3 +58,17 @@ export const leaveGroupApi = (conversationId: string) => {
     {}
   );
 };
+
+
+/// thay đổi avatar nhóm
+export const updateGroupAvatarApi = (
+  conversationId: string,
+  base64Image: string
+) => {
+  return axiosClient.put(
+    `/api/v1/conversations/${conversationId}/group-avatar`,
+    {
+      groupAvatarUrl: base64Image,
+    }
+  );
+};

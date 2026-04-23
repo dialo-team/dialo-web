@@ -10,6 +10,7 @@ type Props = {
   onClose: () => void;
   conversationId: string;
   currentName: string;
+  currentAvatar?: string;
   onSaved?: (name: string) => void;
 };
 
@@ -18,6 +19,7 @@ export const RenameNameGroup = ({
   onClose,
   conversationId,
   currentName,
+  currentAvatar,
   onSaved,
 }: Props) => {
   const [name, setName] = useState("");
@@ -79,7 +81,10 @@ export const RenameNameGroup = ({
         {/* Avatar placeholder */}
         <div className={styles.avatarBox}>
           <img
-            src="https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa"
+            src={
+              currentAvatar ||
+              "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa"
+            }
             alt="group-avatar"
           />
         </div>

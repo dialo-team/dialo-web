@@ -1116,6 +1116,7 @@ export const ChatWindow = () => {
             groupName={selectedUser.name}
             members={(selectedUser as any).members || []}
             onClose={() => setShowInfo(false)}
+            counterpartAvatarUrl={(selectedUser as any)?.avatar}
           />
         ) : (
           <ChatInfo

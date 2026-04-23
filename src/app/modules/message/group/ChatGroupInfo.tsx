@@ -41,6 +41,7 @@ type Props = {
   conversationId: string;
   groupName: string;
   members: Member[];
+  counterpartAvatarUrl?: string;
   onClose?: () => void;
 };
 
@@ -55,8 +56,26 @@ const toAbsoluteUrl = (url: string) => {
   return `${API_BASE_URL}${url.startsWith("/") ? url : "/" + url}`;
 };
 
+// const resolveImageUrl = async (url?: string) => {
+//   if (!url) return "";
+//   try {
+//     const res = await axiosClient.get(toAbsoluteUrl(url), {
+//       responseType: "blob",
+//     });
+//     return URL.createObjectURL(res.data);
+//   } catch {
+//     return toAbsoluteUrl(url);
+//   }
+// };
+
 const resolveImageUrl = async (url?: string) => {
   if (!url) return "";
+
+  // Nếu là base64 hoặc data URL → trả thẳng luôn
+  if (url.startsWith("data:image") || url.startsWith("data:")) {
+    return url;
+  }
+
   try {
     const res = await axiosClient.get(toAbsoluteUrl(url), {
       responseType: "blob",
@@ -66,6 +85,8 @@ const resolveImageUrl = async (url?: string) => {
     return toAbsoluteUrl(url);
   }
 };
+
+
 
 const getDateLabel = (date: string) => {
   const d = new Date(date);
@@ -85,6 +106,7 @@ export const ChatGroupInfo = ({
   conversationId,
   groupName,
   members,
+  counterpartAvatarUrl,
   onClose,
 }: Props) => {
   const [images, setImages] = useState<{ url: string }[]>([]);
@@ -118,9 +140,13 @@ export const ChatGroupInfo = ({
   const isMe = (userId: string) => userId === currentUserId;
 
   const [openInvite, setOpenInvite] = useState(false);
-const [selectedUser, setSelectedUser] = useState<Member | null>(null);
+  const [selectedUser, setSelectedUser] = useState<Member | null>(null);
+
+  const [groupAvatar, setGroupAvatar] = useState(counterpartAvatarUrl || "");
+
 
   /* ================= LOAD MEDIA ================= */
+
 
   useEffect(() => {
     const load = async () => {
@@ -307,16 +333,19 @@ const [selectedUser, setSelectedUser] = useState<Member | null>(null);
   };
 
   // Map Member → User
-const mapToUser = (m: Member): User => {
-  return {
-    id: m.id,
-    userName: m.name,
-    avatar: m.avatar,
-    bio: "",
-    background: "",
-    theme: "LIGHT",
+  const mapToUser = (m: Member): User => {
+    return {
+      id: m.id,
+      userName: m.name,
+      avatar: m.avatar,
+      bio: "",
+      background: "",
+      theme: "LIGHT",
+    };
   };
-};
+
+
+
   /* ================= GROUP MEDIA ================= */
 
   const groupedImages = Object.entries(
@@ -429,8 +458,19 @@ const mapToUser = (m: Member): User => {
 
               {/* TOP */}
               <div className={styles.top}>
-                <img
+                {/* <img
                   src={members[0]?.avatar}
+                  className={styles.avatar}
+                  onClick={() => setOpenAvatarModal(true)}
+                /> */}
+                <img
+                  src={
+                    groupAvatar ||
+                    (counterpartAvatarUrl && counterpartAvatarUrl.startsWith("data:image")
+                      ? counterpartAvatarUrl
+                      : toAbsoluteUrl(counterpartAvatarUrl || "")) ||
+                    "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa"
+                  }
                   className={styles.avatar}
                   onClick={() => setOpenAvatarModal(true)}
                 />
@@ -675,15 +715,15 @@ const mapToUser = (m: Member): User => {
 
 
                       {!isMe(m.id) && !isFriend(m.id) && (
-                       <button
-  className={styles.addFriendBtn}
-  onClick={() => {
-    setSelectedUser(m);
-    setOpenInvite(true);
-  }}
->
-  Kết bạn
-</button>
+                        <button
+                          className={styles.addFriendBtn}
+                          onClick={() => {
+                            setSelectedUser(m);
+                            setOpenInvite(true);
+                          }}
+                        >
+                          Kết bạn
+                        </button>
                       )}
                     </div>
                   ))
@@ -704,6 +744,7 @@ const mapToUser = (m: Member): User => {
           onClose={() => setOpenRename(false)}
           conversationId={conversationId}
           currentName={groupName}
+          currentAvatar={groupAvatar}
         />
       )}
 
@@ -712,7 +753,10 @@ const mapToUser = (m: Member): User => {
           open={openAvatarModal}
           onClose={() => setOpenAvatarModal(false)}
           conversationId={conversationId}
-          currentAvatar={members[0]?.avatar}
+          currentAvatar={groupAvatar}
+          onUpdated={(newAvatar) => {
+            setGroupAvatar(newAvatar); 
+          }}
         />
       )}
 
@@ -731,14 +775,14 @@ const mapToUser = (m: Member): User => {
       />
 
       <InviteFriendModal
-  open={openInvite}
-  onClose={() => setOpenInvite(false)}
-  user={selectedUser ? mapToUser(selectedUser) : null}
-  // onSend={(msg) => alert(msg)} // hoặc toast
-  onSuccess={() => {
-    console.log("Send success");
-  }}
-/>
+        open={openInvite}
+        onClose={() => setOpenInvite(false)}
+        user={selectedUser ? mapToUser(selectedUser) : null}
+        // onSend={(msg) => alert(msg)} // hoặc toast
+        onSuccess={() => {
+          console.log("Send success");
+        }}
+      />
     </>
   );
 };
