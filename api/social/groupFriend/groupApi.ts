@@ -23,6 +23,8 @@ export const updateGroupNameApi = (
   );
 };
 
+
+// thêm thành viên
 export const addMembersApi = async (
   conversationId: string,
   memberIds: string[]
@@ -36,6 +38,20 @@ export const addMembersApi = async (
   );
 };
 
+// lấy danh sách thành viên nhóm
+export const getListMemberApi = async (
+  conversationId: string,
+) => {
+  
+  return axiosClient.get(
+    `/api/v1/conversations/${conversationId}/members`,
+    {
+      
+    }
+  );
+};
+
+// rời nhóm
 export const leaveGroupApi = (conversationId: string) => {
   return axiosClient.post(
     `/api/v1/conversations/${conversationId}/leave`,

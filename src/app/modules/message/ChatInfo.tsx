@@ -9,6 +9,7 @@ import {
   ChevronLeft,
   X,
   Edit3,
+  Trash2,
 } from "lucide-react";
 
 import {
@@ -163,9 +164,9 @@ export const ChatInfo = ({
               {/* HEADER */}
               <div className={styles.titleRow}>
                 <h3 className={styles.title}>Thông tin hội thoại</h3>
-                <button className={styles.closeBtn} onClick={onClose}>
+                {/* <button className={styles.closeBtn} onClick={onClose}>
                   <X size={18} />
-                </button>
+                </button> */}
               </div>
 
               {/* USER */}
@@ -244,6 +245,7 @@ export const ChatInfo = ({
                   className={styles.deleteButton}
                   onClick={handleClear}
                 >
+                   <Trash2 size={16} style={{ marginRight: 6 }} />
                   {clearing ? "Đang xóa..." : "Xóa đoạn hội thoại"}
                 </button>
               </div>
