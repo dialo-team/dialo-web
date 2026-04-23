@@ -1151,6 +1151,7 @@ export const ChatWindow = () => {
             members={(selectedUser as any).members || []}
             onClose={() => setShowInfo(false)}
             counterpartAvatarUrl={(selectedUser as any)?.avatar}
+            onConversationCleared={() => setMessages([])}
           />
         ) : (
           <ChatInfo

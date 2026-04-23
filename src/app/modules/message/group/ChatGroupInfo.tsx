@@ -43,6 +43,7 @@ type Props = {
   members: Member[];
   counterpartAvatarUrl?: string;
   onClose?: () => void;
+  onConversationCleared?: () => void;
 };
 
 /* ================= HELPERS ================= */
@@ -55,18 +56,6 @@ const toAbsoluteUrl = (url: string) => {
   if (url.startsWith("http")) return url;
   return `${API_BASE_URL}${url.startsWith("/") ? url : "/" + url}`;
 };
-
-// const resolveImageUrl = async (url?: string) => {
-//   if (!url) return "";
-//   try {
-//     const res = await axiosClient.get(toAbsoluteUrl(url), {
-//       responseType: "blob",
-//     });
-//     return URL.createObjectURL(res.data);
-//   } catch {
-//     return toAbsoluteUrl(url);
-//   }
-// };
 
 const resolveImageUrl = async (url?: string) => {
   if (!url) return "";
@@ -86,8 +75,6 @@ const resolveImageUrl = async (url?: string) => {
   }
 };
 
-
-
 const getDateLabel = (date: string) => {
   const d = new Date(date);
   const today = new Date();
@@ -100,6 +87,8 @@ const getDateLabel = (date: string) => {
   return dStr;
 };
 
+
+
 /* ================= MAIN ================= */
 
 export const ChatGroupInfo = ({
@@ -107,6 +96,7 @@ export const ChatGroupInfo = ({
   groupName,
   members,
   counterpartAvatarUrl,
+  onConversationCleared,
   onClose,
 }: Props) => {
   const [images, setImages] = useState<{ url: string }[]>([]);
@@ -281,30 +271,37 @@ export const ChatGroupInfo = ({
   }, []);
 
   useEffect(() => {
-  setGroupNameState(groupName);
-}, [groupName]);
+    setGroupNameState(groupName);
+  }, [groupName]);
   /* ================= CLEAR CHAT ================= */
 
   const handleClear = async () => {
-    if (clearing) return;
+  if (clearing) return;
 
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    if (!user?.id) return;
+  const userLocal = JSON.parse(localStorage.getItem("user") || "{}");
+  if (!userLocal?.id) return;
 
-    setClearing(true);
-    try {
-      await clearConversationHistoryApi({
-        conversationId,
-        userId: user.id,
-      });
+  setClearing(true);
+  try {
+    await clearConversationHistoryApi({
+      conversationId,
+      userId: userLocal.id,
+    });
 
-      setImages([]);
-      setFiles([]);
-      setAllMedia([]);
-    } finally {
-      setClearing(false);
-    }
-  };
+    // reset state (giống ChatInfo)
+    setImages([]);
+    setFiles([]);
+    setAllMedia([]);
+    setResolvedMap({});
+
+    // callback parent
+    onConversationCleared?.();
+  } catch (err) {
+    console.error("Clear group conversation error:", err);
+  } finally {
+    setClearing(false);
+  }
+};
 
   // rời nhóm
   const handleLeaveGroup = async () => {
@@ -347,7 +344,6 @@ export const ChatGroupInfo = ({
       theme: "LIGHT",
     };
   };
-
 
 
   /* ================= GROUP MEDIA ================= */
@@ -749,9 +745,9 @@ export const ChatGroupInfo = ({
           conversationId={conversationId}
           currentName={groupName}
           currentAvatar={groupAvatar}
-            onSaved={(newName) => {
-    setGroupNameState(newName);
-  }}
+          onSaved={(newName) => {
+            setGroupNameState(newName);
+          }}
         />
       )}
 
@@ -762,7 +758,7 @@ export const ChatGroupInfo = ({
           conversationId={conversationId}
           currentAvatar={groupAvatar}
           onUpdated={(newAvatar) => {
-            setGroupAvatar(newAvatar); 
+            setGroupAvatar(newAvatar);
           }}
         />
       )}
