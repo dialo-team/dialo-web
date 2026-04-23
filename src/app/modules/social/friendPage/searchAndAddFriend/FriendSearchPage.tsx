@@ -151,7 +151,7 @@ export const FriendSearchPage = () => {
         open={openAdd}
         onClose={() => setOpenAdd(false)}
         user={user}
-        onSend={(msg) => setModalMessage(msg)}
+        // onSend={(msg) => setModalMessage(msg)}
         onSuccess={() => {
           setUser(null);      // 🔥 xóa kết quả search
           setOpenAdd(false);  // đóng modal

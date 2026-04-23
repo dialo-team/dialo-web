@@ -388,6 +388,39 @@ export const ChatWindow = () => {
 
   const [isBlocked, setIsBlocked] = useState(false);
   const [checkingBlock, setCheckingBlock] = useState(false);
+  const [isGroupDissolved, setIsGroupDissolved] = useState(false);
+
+  const [chatUser, setChatUser] = useState<Friend | null>(selectedUser);
+
+  useEffect(() => {
+  setChatUser(selectedUser);
+}, [selectedUser]);
+
+  // truyền từ chatsidebar
+ useEffect(() => {
+  const handler = (e: any) => {
+    const { conversationId, name, avatar } = e.detail;
+
+    if (!chatUser || chatUser.id !== conversationId) return;
+
+    setChatUser((prev) =>
+      prev
+        ? {
+            ...prev,
+            name: name ?? prev.name,
+            avatar: avatar ?? prev.avatar,
+          }
+        : prev
+    );
+  };
+
+  window.addEventListener("conversation-updated", handler);
+
+  return () => {
+    window.removeEventListener("conversation-updated", handler);
+  };
+}, [chatUser]);
+
 
   useEffect(() => {
     const checkBlocked = async () => {
@@ -554,6 +587,33 @@ export const ChatWindow = () => {
       console.error("Load new messages failed:", error);
     }
   }, []);
+
+  // reset dissolved khi đổi conversation
+  useEffect(() => {
+    setIsGroupDissolved(false);
+  }, [selectedUser?.id]);
+
+  // detect dissolution từ SYSTEM message BE gửi — chỉ check message cuối
+  useEffect(() => {
+    if (!isGroupChat || isGroupDissolved || messages.length === 0) return;
+    const last = messages[messages.length - 1];
+    if (last.type === "SYSTEM" && last.content === "Nhóm đã được giải tán") {
+      setIsGroupDissolved(true);
+    }
+  }, [messages, isGroupChat, isGroupDissolved]);
+
+  // lắng nghe group-dissolved từ members khác qua socket
+  useEffect(() => {
+    const conversationId = selectedUser?.id ?? "";
+    const handler = (e: any) => {
+      if (e.detail?.conversationId === conversationId) {
+        setIsGroupDissolved(true);
+        setMessages([]);
+      }
+    };
+    window.addEventListener("group-dissolved", handler);
+    return () => window.removeEventListener("group-dissolved", handler);
+  }, [selectedUser?.id]);
 
   // fetch messages
   useEffect(() => {
@@ -912,10 +972,12 @@ export const ChatWindow = () => {
               <ChevronLeft size={20} />
             </button>
 
-            <img src={selectedUser.avatar} className={styles.avatar} />
+            {/* <img src={selectedUser.avatar} className={styles.avatar} /> */}
+            <img src={chatUser?.avatar} className={styles.avatar} />
 
             <div>
-              <div className={styles.name}>{selectedUser.name}</div>
+              <div className={styles.name}>{chatUser?.name}</div>
+              {/* <div className={styles.name}>{selectedUser.name}</div> */}
               <div className={styles.status}>Online</div>
             </div>
           </div>
@@ -948,7 +1010,20 @@ export const ChatWindow = () => {
 
         {/* BODY */}
         <div className={styles.body} ref={bodyRef}>
-          {loading ? (
+          {isGroupDissolved ? (
+            <div style={{
+              flex: 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#888",
+              fontSize: 15,
+              fontStyle: "italic",
+              padding: "40px 0",
+            }}>
+              Nhóm đã được giải tán
+            </div>
+          ) : loading ? (
             <ChatWindowSkeleton />
           ) : (
             messages.map((m) => {
@@ -1055,6 +1130,8 @@ export const ChatWindow = () => {
           )}
         </div>
 
+        {/* TOOLBAR + INPUT — ẩn khi nhóm đã giải tán */}
+        {isGroupDissolved ? null : (<>
         {/* TOOLBAR */}
         <div className={styles.toolbar}>
           <Smile size={18} />
@@ -1106,6 +1183,7 @@ export const ChatWindow = () => {
             }
           }}
         />
+        </>)}
       </div>
 
       {/* RIGHT PANEL */}
@@ -1116,6 +1194,9 @@ export const ChatWindow = () => {
             groupName={selectedUser.name}
             members={(selectedUser as any).members || []}
             onClose={() => setShowInfo(false)}
+            counterpartAvatarUrl={(selectedUser as any)?.avatar}
+            onConversationCleared={() => setMessages([])}
+            onGroupDissolved={() => { setIsGroupDissolved(true); setMessages([]); setShowInfo(false); }}
           />
         ) : (
           <ChatInfo

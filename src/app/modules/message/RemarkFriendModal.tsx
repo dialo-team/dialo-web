@@ -36,6 +36,16 @@ export const RemarkFriendModal = ({
 
     await remarkConversationApi(conversationId, user.id, nextName);
 
+    window.dispatchEvent(
+      new CustomEvent("conversation-updated", {
+        detail: {
+          conversationId,
+          name: nextName,
+          avatar: friend?.avatar,
+        },
+      })
+    );
+
     onSaved?.(nextName);
     onClose();
   };

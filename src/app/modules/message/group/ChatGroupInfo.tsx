@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import styles from "../../../styles/message/ChatInfo.module.css";
 import {
-  X,
   Users,
   Bell,
   Pin,
@@ -10,6 +9,9 @@ import {
   Trash2,
   Edit3,
   ChevronLeft,
+  HelpCircle,
+  UserMinus,
+  KeyRound
 } from "lucide-react";
 
 import {
@@ -22,8 +24,14 @@ import axiosClient from "../../../../../api/axiosClient";
 import { RenameNameGroup } from "./RenameNameGroup";
 import { ChangeGroupAvatarModal } from "./ChangeGroupAvatarModal";
 import CreateGroupModal from "../../social/friendPage/searchAndAddFriend/CreateGroupModal";
-import { leaveGroupApi } from "../../../../../api/social/groupFriend/groupApi";
+import { leaveGroupApi, getListMemberApi, dissolveGroupApi } from "../../../../../api/social/groupFriend/groupApi";
+import { AssignRoleModal } from "./AssignRoleModal";
+import { ConfirmDissolveModal } from "./ConfirmDissolveModal";
 import { ConfirmLeaveGroupModal } from "./ConfirmLeaveGroupModal";
+import { getUserInfoApi } from "../../../../../api/social/searchAndAddFriend/userApi";
+import { getFriendsApi } from "../../../../../api/social/listFriend/ListFriendApi";
+import { InviteFriendModal } from "../../social/friendPage/searchAndAddFriend/InviteFriendModal";
+import type { User } from "@/app/types/social/User";
 
 /* ================= TYPES ================= */
 
@@ -31,13 +39,17 @@ type Member = {
   id: string;
   name: string;
   avatar: string;
+  role?: string;
 };
 
 type Props = {
   conversationId: string;
   groupName: string;
   members: Member[];
+  counterpartAvatarUrl?: string;
   onClose?: () => void;
+  onConversationCleared?: () => void;
+  onGroupDissolved?: () => void;
 };
 
 /* ================= HELPERS ================= */
@@ -53,6 +65,11 @@ const toAbsoluteUrl = (url: string) => {
 
 const resolveImageUrl = async (url?: string) => {
   if (!url) return "";
+
+  if (url.startsWith("data:image") || url.startsWith("data:")) {
+    return url;
+  }
+
   try {
     const res = await axiosClient.get(toAbsoluteUrl(url), {
       responseType: "blob",
@@ -80,8 +97,10 @@ const getDateLabel = (date: string) => {
 export const ChatGroupInfo = ({
   conversationId,
   groupName,
-  members,
+  counterpartAvatarUrl,
+  onConversationCleared,
   onClose,
+  onGroupDissolved,
 }: Props) => {
   const [images, setImages] = useState<{ url: string }[]>([]);
   const [files, setFiles] = useState<{ name: string }[]>([]);
@@ -101,8 +120,35 @@ export const ChatGroupInfo = ({
   const [leaving, setLeaving] = useState(false);
   const [openLeaveModal, setOpenLeaveModal] = useState(false);
 
-  /* ================= LOAD MEDIA ================= */
+  const [viewMode, setViewMode] = useState<"info" | "manage" | "members" | "leaders">("info");
+  const [memberList, setMemberList] = useState<Member[]>([]);
+  const [loadingMembers, setLoadingMembers] = useState(false);
 
+  const [search, setSearch] = useState("");
+  const [keyword, setKeyword] = useState("");
+
+  const [friends, setFriends] = useState<string[]>([]);
+
+  const currentUserId = JSON.parse(localStorage.getItem("user") || "{}")?.id;
+  const isMe = (userId: string) => userId === currentUserId;
+
+  const currentUserRole = memberList.find((m) => m.id === currentUserId)?.role ?? "MEMBER";
+  const isOwner = currentUserRole === "OWNER";
+
+  const [openInvite, setOpenInvite] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<Member | null>(null);
+
+  const [openAssignModal, setOpenAssignModal] = useState(false);
+  const [assignRoleType, setAssignRoleType] = useState<"ADMIN" | "OWNER">("ADMIN");
+  const [leaveAfterAssign, setLeaveAfterAssign] = useState(false);
+
+  const [openDissolveModal, setOpenDissolveModal] = useState(false);
+  const [dissolving, setDissolving] = useState(false);
+
+  const [groupAvatar, setGroupAvatar] = useState(counterpartAvatarUrl || "");
+  const [groupNameState, setGroupNameState] = useState(groupName);
+
+  /* ================= LOAD MEDIA ================= */
   useEffect(() => {
     const load = async () => {
       if (!conversationId) return;
@@ -139,50 +185,171 @@ export const ChatGroupInfo = ({
     load();
   }, [conversationId]);
 
-  /* ================= CLEAR CHAT ================= */
+  /* ================= LOAD MEMBERS ================= */
+  useEffect(() => {
+    const loadMembers = async () => {
+      if (!conversationId) return;
 
+      setLoadingMembers(true);
+      try {
+        const res = await getListMemberApi(conversationId);
+        const rawList = res.data || res;
+
+        const detailList = await Promise.all(
+          rawList.map(async (m: any) => {
+            try {
+              const userRes = await getUserInfoApi(m.userId);
+              const user = userRes.data?.data;
+
+              return {
+                id: m.userId,
+                name: user?.userName || m.displayName,
+                avatar: user?.avatar || "",
+                role: m.role,
+              };
+            } catch {
+              return {
+                id: m.userId,
+                name: m.displayName,
+                avatar: "",
+                role: m.role,
+              };
+            }
+          })
+        );
+
+        setMemberList(detailList);
+      } catch (err) {
+        console.error("Load members error:", err);
+      } finally {
+        setLoadingMembers(false);
+      }
+    };
+
+    loadMembers();
+  }, [conversationId]);
+
+  /* ================= LOAD FRIENDS ================= */
+  useEffect(() => {
+    const loadFriends = async () => {
+      try {
+        const res = await getFriendsApi();
+        const data = res.data?.friends || [];
+        const friendIds = data.map((f: any) => f.friendId);
+        setFriends(friendIds);
+      } catch (err) {
+        console.error("Load friends error:", err);
+      }
+    };
+
+    loadFriends();
+  }, []);
+
+  useEffect(() => {
+    setGroupNameState(groupName);
+  }, [groupName]);
+
+  /* ================= CLEAR CHAT ================= */
   const handleClear = async () => {
     if (clearing) return;
 
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    if (!user?.id) return;
+    const userLocal = JSON.parse(localStorage.getItem("user") || "{}");
+    if (!userLocal?.id) return;
 
     setClearing(true);
     try {
       await clearConversationHistoryApi({
         conversationId,
-        userId: user.id,
+        userId: userLocal.id,
       });
 
       setImages([]);
       setFiles([]);
       setAllMedia([]);
+      setResolvedMap({});
+      onConversationCleared?.();
+      window.dispatchEvent(
+        new CustomEvent("conversation-cleared", { detail: { conversationId } })
+      );
+    } catch (err) {
+      console.error("Clear group conversation error:", err);
     } finally {
       setClearing(false);
     }
   };
 
-  // rời nhóm
   const handleLeaveGroup = async () => {
-  if (leaving) return;
+    if (leaving) return;
+    setLeaving(true);
+    try {
+      await leaveGroupApi(conversationId);
+      setOpenLeaveModal(false);
+      onClose?.();
+    } catch (err) {
+      console.error("Leave group error:", err);
+    } finally {
+      setLeaving(false);
+    }
+  };
 
-  setLeaving(true);
-  try {
-    await leaveGroupApi(conversationId);
+  const handleLeaveClick = () => {
+    if (isOwner) {
+      setLeaveAfterAssign(true);
+      setAssignRoleType("OWNER");
+      setOpenAssignModal(true);
+    } else {
+      setOpenLeaveModal(true);
+    }
+  };
 
-    // đóng modal
-    setOpenLeaveModal(false);
+  const handleAssignSuccess = async () => {
+    if (leaveAfterAssign) {
+      setLeaveAfterAssign(false);
+      setLeaving(true);
+      try {
+        await leaveGroupApi(conversationId);
+        onClose?.();
+      } catch (err) {
+        console.error("Leave after transfer error:", err);
+      } finally {
+        setLeaving(false);
+      }
+    }
+  };
 
-    // đóng luôn panel chat info (nếu có)
-    onClose?.();
-  } catch (err) {
-    console.error("Leave group error:", err);
-  } finally {
-    setLeaving(false);
-  }
-};
+  const handleDissolve = async () => {
+    if (dissolving) return;
+    setDissolving(true);
+    try {
+      await dissolveGroupApi(conversationId);
 
-  /* ================= GROUP MEDIA ================= */
+      setOpenDissolveModal(false);
+      window.dispatchEvent(
+        new CustomEvent("group-dissolved", { detail: { conversationId } })
+      );
+      onGroupDissolved?.();
+      onClose?.();
+    } catch (err) {
+      console.error("Dissolve group error:", err);
+    } finally {
+      setDissolving(false);
+    }
+  };
+
+  const filteredMembers = memberList.filter((m) =>
+    (m.name || "").toLowerCase().includes(keyword.toLowerCase())
+  );
+
+  const isFriend = (userId: string) => friends.includes(userId);
+
+  const mapToUser = (m: Member): User => ({
+    id: m.id,
+    userName: m.name,
+    avatar: m.avatar,
+    bio: "",
+    background: "",
+    theme: "LIGHT",
+  });
 
   const groupedImages = Object.entries(
     allMedia.reduce((acc: Record<string, any[]>, m) => {
@@ -207,155 +374,21 @@ export const ChatGroupInfo = ({
   );
 
   /* ================= UI ================= */
-
   return (
     <>
       <div className={styles.overlay} onClick={onClose}>
         <div className={styles.panel} onClick={(e) => e.stopPropagation()}>
 
-          {/* ================= MAIN VIEW ================= */}
-          {!viewAll ? (
-            <>
-              {/* HEADER */}
-              <div className={styles.titleRow}>
-                <h3 className={styles.title}>Thông tin nhóm</h3>
-                <button className={styles.closeBtn} onClick={onClose}>
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* TOP */}
-              <div className={styles.top}>
-                <img
-                  src={members[0]?.avatar}
-                  className={styles.avatar}
-                  onClick={() => setOpenAvatarModal(true)}
-                />
-
-                <div className={styles.usernameRow}>
-                  <div className={styles.username}>{groupName}</div>
-
-                  <Edit3 size={14} onClick={() => setOpenRename(true)} />
-                </div>
-              </div>
-
-              {/* ACTIONS */}
-              <div className={styles.actionsRow}>
-                <div className={styles.actionItem}>
-                  <Bell size={20} />
-                  <span>Tắt<br />thông báo</span>
-                </div>
-
-                <div className={styles.actionItem}>
-                  <Pin size={20} />
-                  <span>Ghim<br />hội thoại</span>
-                </div>
-
-                <div
-                  className={styles.actionItem}
-                  onClick={() => setOpenAddMember(true)}
-                >
-                  <Users size={20} />
-                  <span>Thêm<br />thành viên</span>
-                </div>
-
-                <div className={styles.actionItem}>
-                  <Settings size={20} />
-                  <span>Quản lý<br />nhóm</span>
-                </div>
-              </div>
-
-              {/* MEMBERS */}
-              <div className={styles.section}>
-                <div className={styles.sectionHeader}>
-                  Thành viên ({members.length})
-                </div>
-
-                {members.map((m) => (
-                  <div key={m.id} className={styles.item}>
-                    {m.name}
-                  </div>
-                ))}
-              </div>
-
-              {/* MEDIA PREVIEW */}
-              {!loading && (
-                <>
-                  <div className={styles.section}>
-                    <div className={styles.sectionHeader}>Ảnh/Video</div>
-
-                    <div className={styles.imageGridContent}>
-                      {images.slice(0, 8).map((i, idx) => (
-                        <img key={idx} src={i.url} className={styles.mediaImage} />
-                      ))}
-                    </div>
-
-                    <button
-                      className={styles.showMoreButton}
-                      onClick={() => {
-                        setTab("images");
-                        setViewAll(true);
-                      }}
-                    >
-                      Xem tất cả ({images.length})
-                    </button>
-                  </div>
-
-                  <div className={styles.section}>
-                    <div className={styles.sectionHeader}>File</div>
-
-                    {files.slice(0, 3).map((f, i) => (
-                      <div key={i} className={styles.item}>
-                        {f.name}
-                      </div>
-                    ))}
-
-                    <button
-                      className={styles.showMoreButton}
-                      onClick={() => {
-                        setTab("files");
-                        setViewAll(true);
-                      }}
-                    >
-                      Xem tất cả ({files.length})
-                    </button>
-                  </div>
-                </>
-              )}
-
-              {/* BOTTOM */}
-              <div className={styles.deleteBox}>
-                <button
-                  className={styles.deleteButton}
-                  onClick={handleClear}
-                >
-                  {clearing ? "Đang xóa..." : "Xóa đoạn hội thoại"}
-                </button>
-
-                <button
-                  className={styles.deleteButton}
-                  onClick={() => setOpenLeaveModal(true)}
-                >
-                  <LogOut size={14} /> Rời nhóm
-                </button>
-              </div>
-            </>
-          ) : (
-            /* ================= STORAGE VIEW ================= */
+          {/* ============ XEM TẤT CẢ FILE / MEDIA ============ */}
+          {viewAll && (
             <>
               <div className={styles.storageTitleRow}>
-                <button onClick={() => setViewAll(false)}>
+                <button className={styles.pointer} style={{ border: 'none', background: 'none' }} onClick={() => setViewAll(false)}>
                   <ChevronLeft size={24} />
                 </button>
-
                 <h3 className={styles.storageTitle}>Kho lưu trữ</h3>
-
-                <button onClick={onClose}>
-                  <X size={18} />
-                </button>
               </div>
 
-              {/* TAB */}
               <div className={styles.allMediaTabs}>
                 <button
                   className={`${styles.allMediaTab} ${tab === "images" ? styles.active : ""}`}
@@ -363,7 +396,6 @@ export const ChatGroupInfo = ({
                 >
                   Ảnh/Video
                 </button>
-
                 <button
                   className={`${styles.allMediaTab} ${tab === "files" ? styles.active : ""}`}
                   onClick={() => setTab("files")}
@@ -372,37 +404,32 @@ export const ChatGroupInfo = ({
                 </button>
               </div>
 
-              {/* CONTENT */}
               <div className={styles.allMediaContent}>
-
-                {/* IMAGES */}
                 {tab === "images" &&
                   groupedImages.map(([date, list]) => (
                     <div key={date}>
                       <h3 className={styles.dateSectionLabel}>{date}</h3>
-
                       <div className={styles.allMediaGrid}>
                         {list.map((m) => (
                           <img
                             key={m.id}
                             src={resolvedMap[m.id]}
                             className={styles.allMediaImage}
+                            alt="media"
                           />
                         ))}
                       </div>
                     </div>
                   ))}
 
-                {/* FILES */}
                 {tab === "files" &&
                   groupedFiles.map(([date, list]) => (
                     <div key={date}>
                       <h3 className={styles.dateSectionLabel}>{date}</h3>
-
                       <div className={styles.allMediaGrid}>
                         {list.map((m) => (
                           <div key={m.id} className={styles.allMediaFile}>
-                            {m.attachment.fileName || "File"}
+                            <span className={styles.fileNameInGrid}>{m.attachment.fileName || "File"}</span>
                           </div>
                         ))}
                       </div>
@@ -411,30 +438,357 @@ export const ChatGroupInfo = ({
               </div>
             </>
           )}
+
+          {/* ============ INFO VIEW ============ */}
+          {!viewAll && viewMode === "info" && (
+            <>
+              <div className={styles.titleRow}>
+                <h3 className={styles.title}>Thông tin nhóm</h3>
+              </div>
+
+              <div className={styles.top}>
+                <img
+                  src={
+                    groupAvatar ||
+                    (counterpartAvatarUrl && counterpartAvatarUrl.startsWith("data:image")
+                      ? counterpartAvatarUrl
+                      : toAbsoluteUrl(counterpartAvatarUrl || "")) ||
+                    "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa"
+                  }
+                  className={styles.avatar}
+                  onClick={() => setOpenAvatarModal(true)}
+                  alt="Avatar"
+                />
+                <div className={styles.usernameRow}>
+                  <div className={styles.username}>{groupNameState}</div>
+                  <Edit3 size={14} className={styles.pointer} onClick={() => setOpenRename(true)} />
+                </div>
+              </div>
+
+              <div className={styles.actionsRow}>
+                <div className={styles.actionItem}>
+                  <Bell size={20} />
+                  <span>Tắt<br />thông báo</span>
+                </div>
+                <div className={styles.actionItem}>
+                  <Pin size={20} />
+                  <span>Ghim<br />hội thoại</span>
+                </div>
+                <div className={styles.actionItem} onClick={() => setOpenAddMember(true)}>
+                  <Users size={20} />
+                  <span>Thêm<br />thành viên</span>
+                </div>
+                <div className={styles.actionItem} onClick={() => setViewMode("manage")}>
+                  <Settings size={20} />
+                  <span>Quản lý<br />nhóm</span>
+                </div>
+              </div>
+
+              <div className={styles.section}>
+                <div className={styles.sectionHeader}>Thành viên nhóm</div>
+                <div onClick={() => setViewMode("members")} className={styles.pointer}>
+                  Thành viên ({memberList.length})
+                </div>
+              </div>
+
+              {!loading && (
+                <>
+                  <div className={styles.section}>
+                    <div className={styles.sectionHeader}>Ảnh/Video</div>
+                    <div className={styles.imageGridContent}>
+                      {images.slice(0, 8).map((i, idx) => (
+                        <img key={idx} src={i.url} className={styles.mediaImage} alt="media" />
+                      ))}
+                    </div>
+                    {images.length > 0 && (
+                      <button className={styles.showMoreButton} onClick={() => { setTab("images"); setViewAll(true); }}>
+                        Xem tất cả ({images.length})
+                      </button>
+                    )}
+                  </div>
+
+                  <div className={styles.section}>
+                    <div className={styles.sectionHeader}>File</div>
+                    {files.slice(0, 3).map((f, i) => (
+                      <div key={i} className={styles.item}>{f.name}</div>
+                    ))}
+                    {files.length > 0 && (
+                      <button className={styles.showMoreButton} onClick={() => { setTab("files"); setViewAll(true); }}>
+                        Xem tất cả ({files.length})
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
+
+              <div className={styles.deleteBox}>
+                <button className={styles.deleteButton} onClick={handleClear}>
+                  <Trash2 size={16} />
+                  {clearing ? "Đang xóa..." : "Xóa đoạn hội thoại"}
+                </button>
+                <button className={styles.deleteButton} onClick={handleLeaveClick}>
+                  <LogOut size={14} /> {isOwner ? "Chuyển quyền & Rời nhóm" : "Rời nhóm"}
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* ============ MANAGE VIEW (ZALO LAYOUT) ============ */}
+          {!viewAll && viewMode === "manage" && (
+            <div className={styles.manageWrapper}>
+              <div className={styles.manageHeader}>
+                <button className={styles.pointer} style={{ border: 'none', background: 'none' }} onClick={() => setViewMode("info")}>
+                  <ChevronLeft size={22} />
+                </button>
+                <h3 style={{ fontSize: 16, margin: 0 }}>Quản lý nhóm</h3>
+              </div>
+
+              {/* Bọc toàn bộ vào nền xám */}
+              <div className={styles.manageContainer}>
+
+                {!isOwner && (
+                  <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    background: "#f0f2f5",
+                    padding: "10px 16px",
+                    fontSize: 13,
+                    color: "#555",
+                    borderBottom: "1px solid #e0e0e0",
+                  }}>
+                    🔒 Tính năng chỉ dành cho quản trị viên
+                  </div>
+                )}
+
+                {/* Block 1: Checkbox quyền */}
+                <div className={styles.manageBlock} style={!isOwner ? { opacity: 0.5, pointerEvents: "none" } : {}}>
+                  <div className={styles.blockTitle}>
+                    Cho phép các thành viên trong nhóm:
+                  </div>
+                  {[
+                    "Thay đổi tên & ảnh đại diện của nhóm",
+                    "Ghim tin nhắn, ghi chú, bình chọn lên đầu hội thoại",
+                    "Tạo mới ghi chú, nhắc hẹn",
+                    "Tạo mới bình chọn",
+                    "Gửi tin nhắn",
+                  ].map((text, i) => (
+                    <div key={i} className={styles.rowItem}>
+                      <span>{text}</span>
+                      <input type="checkbox" defaultChecked disabled={!isOwner} className={styles.zaloCheckbox} />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Block 2: Toggle switches */}
+                <div className={styles.manageBlock} style={!isOwner ? { opacity: 0.5, pointerEvents: "none" } : {}}>
+                  <div className={styles.rowItem}>
+                    <div className={styles.rowText}>
+                      Chế độ phê duyệt thành viên mới <HelpCircle size={16} className={styles.helpIcon} />
+                    </div>
+                    <input type="checkbox" disabled={!isOwner} className={styles.toggleSwitch} />
+                  </div>
+
+                  <div className={styles.rowItem}>
+                    <div className={styles.rowText}>
+                      Đánh dấu tin nhắn từ trưởng/phó nhóm <HelpCircle size={16} className={styles.helpIcon} />
+                    </div>
+                    <input type="checkbox" defaultChecked disabled={!isOwner} className={styles.toggleSwitch} />
+                  </div>
+
+                  <div className={styles.rowItem}>
+                    <div className={styles.rowText}>
+                      Cho phép thành viên mới đọc tin nhắn gần nhất <HelpCircle size={16} className={styles.helpIcon} />
+                    </div>
+                    <input type="checkbox" defaultChecked disabled={!isOwner} className={styles.toggleSwitch} />
+                  </div>
+
+                  <div className={styles.rowItem}>
+                    <div className={styles.rowText}>
+                      Cho phép dùng link tham gia nhóm <HelpCircle size={16} className={styles.helpIcon} />
+                    </div>
+                    <input type="checkbox" disabled={!isOwner} className={styles.toggleSwitch} />
+                  </div>
+                </div>
+
+                {/* Block 3: Hành động danh sách */}
+                <div className={styles.manageBlock} style={{ padding: '4px 16px', ...(!isOwner ? { opacity: 0.5, pointerEvents: "none" } : {}) }}>
+                  <button className={styles.listActionBtn} disabled={!isOwner}>
+                    <UserMinus size={20} />
+                    Chặn khỏi nhóm
+                  </button>
+                  <button className={styles.listActionBtn} disabled={!isOwner} onClick={() => setViewMode("leaders")}>
+                    <KeyRound size={20} />
+                    Trưởng & phó nhóm
+                  </button>
+                </div>
+
+                {/* Block 4: Giải tán */}
+                <div style={{ padding: "16px" }}>
+                  <button
+                    onClick={() => setOpenDissolveModal(true)}
+                    disabled={!isOwner || dissolving}
+                    style={{
+                      width: "100%",
+                      padding: "12px",
+                      background: isOwner ? "#fff0f0" : "#f5f5f5",
+                      color: isOwner ? "#d32f2f" : "#aaa",
+                      border: `1px solid ${isOwner ? "#ffcdd2" : "#e0e0e0"}`,
+                      borderRadius: 8,
+                      fontWeight: 600,
+                      fontSize: 14,
+                      cursor: isOwner ? "pointer" : "not-allowed",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 8,
+                      transition: "background 0.2s",
+                    }}
+                  >
+                    🗑️ {dissolving ? "Đang giải tán..." : "Giải tán nhóm"}
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          )}
+
+          {/* ============ LEADERS VIEW ============ */}
+          {!viewAll && viewMode === "leaders" && (
+            <div className={styles.manageWrapper}>
+              <div className={styles.manageHeader}>
+                <button className={styles.pointer} style={{ border: 'none', background: 'none' }} onClick={() => setViewMode("manage")}>
+                  <ChevronLeft size={22} />
+                </button>
+                <h3 style={{ fontSize: 16, margin: 0 }}>Trưởng & phó nhóm</h3>
+              </div>
+
+              <div className={styles.manageContainer} style={{ background: '#fff', padding: '0 16px' }}>
+                <div className={styles.leaderProfileRow}>
+                  <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="avatar" className={styles.userAvatarLg} />
+                  <div>
+                    <div className={styles.userNameText}>Nguyễn Phúc</div>
+                    <div className={styles.userRoleText}>Trưởng nhóm</div>
+                  </div>
+                </div>
+
+                <button
+                  className={styles.leaderActionBtn}
+                  onClick={() => { setLeaveAfterAssign(false); setAssignRoleType("ADMIN"); setOpenAssignModal(true); }}
+                >
+                  Thêm phó nhóm
+                </button>
+                <button
+                  className={styles.leaderActionBtn}
+                  onClick={() => { setLeaveAfterAssign(false); setAssignRoleType("OWNER"); setOpenAssignModal(true); }}
+                >
+                  Chuyển quyền trưởng nhóm
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ============ MEMBERS VIEW ============ */}
+          {!viewAll && viewMode === "members" && (
+            <div className={styles.manageWrapper}>
+              <div className={styles.manageHeader}>
+                <button className={styles.pointer} style={{ border: 'none', background: 'none' }} onClick={() => setViewMode("info")}>
+                  <ChevronLeft size={22} />
+                </button>
+                <h3 style={{ fontSize: 16, margin: 0 }}>Thành viên</h3>
+              </div>
+
+              <div className={styles.allMediaContent} style={{ padding: 0 }}>
+                <div className={styles.actionItem} onClick={() => setOpenAddMember(true)} style={{ flexDirection: "row", justifyContent: "center", padding: '16px 0' }}>
+                  <Users size={20} />
+                  <span style={{ fontSize: 14 }}>Thêm thành viên</span>
+                </div>
+
+                <div className={styles.searchBox}>
+                  <input
+                    type="text"
+                    placeholder="Tìm thành viên"
+                    value={search}
+                    className={styles.searchInput}
+                    onChange={(e) => {
+                      setSearch(e.target.value);
+                      setKeyword(e.target.value);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        setKeyword(search);
+                        setSearch("");
+                      }
+                    }}
+                  />
+                </div>
+
+                <div style={{ padding: '0 12px' }}>
+                  {loadingMembers ? (
+                    <div>Đang tải...</div>
+                  ) : (
+                    filteredMembers.map((m) => (
+                      <div key={m.id} className={styles.item} style={{ margin: '0 0 8px 0' }} onClick={() => console.log("conversationId:", conversationId, "memberId:", m.id)}>
+                        <img
+                          src={m.avatar || "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa"}
+                          className={styles.userAvatarMd}
+                          alt="avatar"
+                        />
+                        <div style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
+                          <span className={styles.memberName}>
+                            {isMe(m.id) ? "Bạn" : m.name}
+                          </span>
+                          {m.role && m.role !== "MEMBER" && (
+                            <span style={{ fontSize: 11, color: m.role === "OWNER" ? "#e6a817" : "#0068ff" }}>
+                              {m.role === "OWNER" ? "Trưởng nhóm" : "Phó nhóm"}
+                            </span>
+                          )}
+                        </div>
+
+                        {!isMe(m.id) && !isFriend(m.id) && (
+                          <button
+                            className={styles.addFriendBtn}
+                            onClick={() => {
+                              setSelectedUser(m);
+                              setOpenInvite(true);
+                            }}
+                          >
+                            Kết bạn
+                          </button>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
 
-      {/* MODALS */}
+      {/* ============ MODALS (LUÔN ĐẶT NGOÀI) ============ */}
       {openRename && (
         <RenameNameGroup
           open={openRename}
           onClose={() => setOpenRename(false)}
           conversationId={conversationId}
           currentName={groupName}
+          currentAvatar={groupAvatar}
+          onSaved={(newName) => setGroupNameState(newName)}
         />
       )}
 
-      {/* thay đổi avatar */}
       {openAvatarModal && (
         <ChangeGroupAvatarModal
           open={openAvatarModal}
           onClose={() => setOpenAvatarModal(false)}
           conversationId={conversationId}
-          currentAvatar={members[0]?.avatar}
+          currentAvatar={groupAvatar}
+          onUpdated={(newAvatar) => setGroupAvatar(newAvatar)}
         />
       )}
 
-      {/* thêm thành viên */}
       {openAddMember && (
         <CreateGroupModal
           onClose={() => setOpenAddMember(false)}
@@ -442,12 +796,34 @@ export const ChatGroupInfo = ({
         />
       )}
 
-      {/* xác nhận  */}
       <ConfirmLeaveGroupModal
         open={openLeaveModal}
         onClose={() => setOpenLeaveModal(false)}
         onConfirm={handleLeaveGroup}
         loading={leaving}
+      />
+
+      <InviteFriendModal
+        open={openInvite}
+        onClose={() => setOpenInvite(false)}
+        user={selectedUser ? mapToUser(selectedUser) : null}
+        onSuccess={() => console.log("Send success")}
+      />
+
+      <AssignRoleModal
+        open={openAssignModal}
+        onClose={() => { setOpenAssignModal(false); setLeaveAfterAssign(false); }}
+        conversationId={conversationId}
+        members={memberList}
+        roleType={assignRoleType}
+        onSuccess={handleAssignSuccess}
+      />
+
+      <ConfirmDissolveModal
+        open={openDissolveModal}
+        onClose={() => setOpenDissolveModal(false)}
+        onConfirm={handleDissolve}
+        loading={dissolving}
       />
     </>
   );

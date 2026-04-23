@@ -9,6 +9,7 @@ import {
   ChevronLeft,
   X,
   Edit3,
+  Trash2,
 } from "lucide-react";
 
 import {
@@ -91,8 +92,36 @@ export const ChatInfo = ({
   const [tab, setTab] = useState<"images" | "files">("images");
 
   const [openRemark, setOpenRemark] = useState(false);
+  const [chatUser, setChatUser] = useState(user);
 
   /* ===== LOAD MEDIA ===== */
+  useEffect(() => {
+  setChatUser(user);
+}, [user]);
+
+
+useEffect(() => {
+  const handler = (e: any) => {
+    const { conversationId, name, avatar } = e.detail;
+
+    if (conversationId !== chatUser.id) return;
+
+    setChatUser((prev) =>
+      prev
+        ? {
+            ...prev,
+            name: name ?? prev.name,
+            avatar: avatar ?? prev.avatar,
+          }
+        : prev
+    );
+  };
+
+  window.addEventListener("conversation-updated", handler);
+  return () => window.removeEventListener("conversation-updated", handler);
+}, [chatUser]);
+
+
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -147,6 +176,10 @@ export const ChatInfo = ({
       setFiles([]);
       setAllMedia([]);
       onConversationCleared?.();
+      console.log("[clear] dispatch conversation-cleared:", conversationId);
+      window.dispatchEvent(
+        new CustomEvent("conversation-cleared", { detail: { conversationId } })
+      );
     } finally {
       setClearing(false);
     }
@@ -163,9 +196,9 @@ export const ChatInfo = ({
               {/* HEADER */}
               <div className={styles.titleRow}>
                 <h3 className={styles.title}>Thông tin hội thoại</h3>
-                <button className={styles.closeBtn} onClick={onClose}>
+                {/* <button className={styles.closeBtn} onClick={onClose}>
                   <X size={18} />
-                </button>
+                </button> */}
               </div>
 
               {/* USER */}
@@ -173,7 +206,7 @@ export const ChatInfo = ({
                 <img src={user.avatar} alt={user.name} />
 
                 <div className={styles.usernameRow}>
-                  <div className={styles.username}>{user.name}</div>
+                  <div className={styles.username}>{chatUser.name}</div>
 
                   <Edit3
                     size={14}
@@ -244,6 +277,7 @@ export const ChatInfo = ({
                   className={styles.deleteButton}
                   onClick={handleClear}
                 >
+                   <Trash2 size={16} style={{ marginRight: 6 }} />
                   {clearing ? "Đang xóa..." : "Xóa đoạn hội thoại"}
                 </button>
               </div>

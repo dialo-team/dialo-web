@@ -10,7 +10,14 @@ type Props = {
   onClose: () => void;
   conversationId: string;
   currentName: string;
+  currentAvatar?: string;
   onSaved?: (name: string) => void;
+};
+
+type Conversation = {
+  id: string;
+  name: string;
+  avatar?: string;
 };
 
 export const RenameNameGroup = ({
@@ -18,10 +25,12 @@ export const RenameNameGroup = ({
   onClose,
   conversationId,
   currentName,
+  currentAvatar,
   onSaved,
 }: Props) => {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
 
   /* ================= INIT ================= */
   useEffect(() => {
@@ -30,7 +39,34 @@ export const RenameNameGroup = ({
     }
   }, [open, currentName]);
 
+  useEffect(() => {
+  const handleUpdate = (e: any) => {
+    const { conversationId, name, avatar } = e.detail;
+
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.id === conversationId
+          ? {
+              ...c,
+              name: name ?? c.name,
+              avatar: avatar ?? c.avatar,
+            }
+          : c
+      )
+    );
+  };
+
+  window.addEventListener("conversation-updated", handleUpdate);
+
+  return () => {
+    window.removeEventListener("conversation-updated", handleUpdate);
+  };
+}, []);
+
+
   if (!open) return null;
+
+  
 
   /* ================= HANDLE SAVE ================= */
   const handleSave = async () => {
@@ -79,7 +115,10 @@ export const RenameNameGroup = ({
         {/* Avatar placeholder */}
         <div className={styles.avatarBox}>
           <img
-            src="https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa"
+            src={
+              currentAvatar ||
+              "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa"
+            }
             alt="group-avatar"
           />
         </div>
