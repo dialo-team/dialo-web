@@ -16,7 +16,7 @@ export const ChatPage = () => {
           hasSelectedUser ? styles.mobileHide : styles.mobileShow
         }`}
       >
-        <ChatSidebar onSelectUser={setSelectedUser} />
+        <ChatSidebar onSelectUser={setSelectedUser} selectedConversationId={selectedUser?.id} />
       </div>
 
       <div

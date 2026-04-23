@@ -55,6 +55,23 @@
   transform: scale(0.92);
 }
 
+.btnWrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.friendDot {
+  position: absolute;
+  top: 8px;
+  right: 4px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background-color: #ff3b30;
+  border: 2px solid #0068ff;
+  pointer-events: none;
+}
+
 @media (max-width: 768px) {
   .sidebar {
     width: 72px;

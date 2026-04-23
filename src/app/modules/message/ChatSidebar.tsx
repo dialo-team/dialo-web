@@ -14,10 +14,27 @@ import { getUserInfoApi } from "../../../../api/social/searchAndAddFriend/userAp
 
 type Props = {
   onSelectUser: (user: Friend) => void;
+  selectedConversationId?: string;
 };
 
 const DEFAULT_AVATAR =
   "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa";
+
+const formatGroupName = (name: string) => {
+  if (!name) return "";
+  try {
+    const saved = localStorage.getItem("user");
+    const currentUser = saved ? JSON.parse(saved) : null;
+    const myName = currentUser?.userName?.trim();
+    if (!myName) return name;
+    const parts = name.split(",").map((n: string) => n.trim()).filter(Boolean);
+    const filtered = parts.filter((n: string) => n !== myName);
+    if (filtered.length === 0) return name;
+    return filtered.join(", ");
+  } catch {
+    return name;
+  }
+};
 
 const getCurrentUserId = () => {
   try {
@@ -40,13 +57,20 @@ const getCurrentUserId = () => {
   }
 };
 
-export const ChatSidebar = ({ onSelectUser }: Props) => {
+export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => {
   const [params] = useSearchParams();
 
   const [keyword, setKeyword] = useState("");
   const [friends, setFriends] = useState<Friend[]>([]);
   const [loading, setLoading] = useState(false);
-  const clearedIds = useRef<Set<string>>(new Set());
+  const clearedIds = useRef<Set<string>>(
+    new Set(JSON.parse(localStorage.getItem("clearedConversations") || "[]"))
+  );
+  const selectedIdRef = useRef<string | undefined>(selectedConversationId);
+
+  useEffect(() => {
+    selectedIdRef.current = selectedConversationId;
+  }, [selectedConversationId]);
 
   const [openAddFriend, setOpenAddFriend] = useState(false);
   const [openCreateGroup, setOpenCreateGroup] = useState(false);
@@ -80,6 +104,7 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
       const { conversationId } = e.detail;
       console.log("[sidebar] conversation-cleared received:", conversationId);
       clearedIds.current.add(conversationId);
+      localStorage.setItem("clearedConversations", JSON.stringify([...clearedIds.current]));
       setFriends((prev) => prev.filter((f) => f.id !== conversationId));
     };
 
@@ -94,11 +119,8 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
 
       const mapped: Friend[] = await Promise.all(
         data.map(async (item) => {
-
-
           let avatar = item.counterpartAvatarUrl || DEFAULT_AVATAR;
 
-          // nếu là base64 thì dùng luôn
           if (!avatar.startsWith("data:image")) {
             try {
               const res = await getUserInfoApi(item.counterpartId);
@@ -110,7 +132,6 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
 
           return {
             id: item.conversationId,
-            // name: item.counterpartName,
             name: formatGroupName(item.counterpartName),
             counterpartId: item.counterpartId,
             avatar,
@@ -121,29 +142,34 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
         })
       );
 
-      const filtered = mapped.filter((f) => !clearedIds.current.has(f.id));
-
-      const isSame =
-        filtered.length === friends.length &&
-        filtered.every((f, i) => {
-          const old = friends[i];
-          return (
-            old &&
-            old.id === f.id &&
-            old.lastMessage === f.lastMessage &&
-            old.unreadCount === f.unreadCount
+      setFriends((prev) => {
+        const activeId = selectedIdRef.current;
+        const filtered = mapped
+          .filter((f) => !clearedIds.current.has(f.id))
+          .map((f) =>
+            f.id === activeId ? { ...f, unreadCount: 0, unreadDisplay: "0" } : f
           );
-        });
 
-      if (!isSame) {
-        setFriends(filtered);
-      }
+        const isSame =
+          filtered.length === prev.length &&
+          filtered.every((f, i) => {
+            const old = prev[i];
+            return (
+              old &&
+              old.id === f.id &&
+              old.lastMessage === f.lastMessage &&
+              old.unreadCount === f.unreadCount
+            );
+          });
+
+        return isSame ? prev : filtered;
+      });
     } catch (error) {
       console.error("Load conversations failed:", error);
     } finally {
       setLoading(false);
     }
-  }, [friends]);
+  }, []);
 
   useEffect(() => {
     const onConversationRead = (event: Event) => {
@@ -251,37 +277,6 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
     f.name.toLowerCase().includes(keyword.toLowerCase()),
   );
 
-  // fomat lại tên 
-  const currentUser = (() => {
-    try {
-      const saved = localStorage.getItem("user");
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  })();
-
-  const formatGroupName = (name: string) => {
-    if (!name) return "";
-
-    const myName = currentUser?.userName?.trim();
-    if (!myName) return name;
-
-    // tách theo dấu ,
-    const parts = name
-      .split(",")
-      .map((n) => n.trim())
-      .filter(Boolean);
-
-    // loại bỏ tên của mình
-    const filtered = parts.filter((n) => n !== myName);
-
-    // nếu xoá xong mà rỗng → fallback lại name cũ
-    if (filtered.length === 0) return name;
-
-    return filtered.join(", ");
-  };
-
   return (
     <div className={styles.left}>
       {/* ===================== SEARCH ===================== */}
@@ -315,32 +310,34 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
         {loading && <div className={styles.empty}>Đang tải...</div>}
 
         {!loading &&
-          filteredFriends.map((f) => (
+          filteredFriends.map((f) => {
+            const isActive = f.id === selectedConversationId;
+            const hasUnread = (f.unreadCount || 0) > 0 && !isActive;
+            return (
             <div
               key={f.id}
-              className={`${styles.chatItem} ${(f.unreadCount || 0) > 0 ? styles.chatItemUnread : ""
+              className={`${styles.chatItem} ${hasUnread ? styles.chatItemUnread : ""
                 }`}
-              // onClick={() => onSelectUser(f)}
               onClick={() => onSelectUser(f as any)}
             >
               <img src={f.avatar} className={styles.avatar} alt={f.name} />
 
               <div className={styles.info}>
                 <div
-                  className={`${styles.name} ${(f.unreadCount || 0) > 0 ? styles.nameUnread : ""
+                  className={`${styles.name} ${hasUnread ? styles.nameUnread : ""
                     }`}
                 >
                   {f.name}
                 </div>
                 <div
-                  className={`${styles.lastMessage} ${(f.unreadCount || 0) > 0 ? styles.lastMessageUnread : ""
+                  className={`${styles.lastMessage} ${hasUnread ? styles.lastMessageUnread : ""
                     }`}
                 >
                   {f.lastMessage}
                 </div>
               </div>
 
-              {(f.unreadCount || 0) > 0 && (
+              {hasUnread && (
                 <div
                   className={styles.unreadBadge}
                   title={f.unreadDisplay || String(f.unreadCount)}
@@ -349,8 +346,8 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
                 </div>
               )}
             </div>
-          ))}
-
+          );})
+        }
         {!loading && filteredFriends.length === 0 && (
           <div className={styles.empty}>Không tìm thấy</div>
         )}

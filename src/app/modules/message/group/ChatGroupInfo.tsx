@@ -50,6 +50,7 @@ type Props = {
   onClose?: () => void;
   onConversationCleared?: () => void;
   onGroupDissolved?: () => void;
+  onLeaveGroup?: () => void;
 };
 
 /* ================= HELPERS ================= */
@@ -104,6 +105,7 @@ export const ChatGroupInfo = ({
   onConversationCleared,
   onClose,
   onGroupDissolved,
+  onLeaveGroup,
 }: Props) => {
   const [images, setImages] = useState<{ url: string }[]>([]);
   const [files, setFiles] = useState<{ name: string }[]>([]);
@@ -288,6 +290,17 @@ export const ChatGroupInfo = ({
     setGroupNameState(groupName);
   }, [groupName]);
 
+  useEffect(() => {
+    const handler = (e: any) => {
+      const { userId, avatar } = e.detail;
+      setMemberList((prev) =>
+        prev.map((m) => (m.id === userId ? { ...m, avatar } : m))
+      );
+    };
+    window.addEventListener("user-avatar-updated", handler);
+    return () => window.removeEventListener("user-avatar-updated", handler);
+  }, []);
+
   const userLocal = JSON.parse(localStorage.getItem("user") || "{}");
     if (!userLocal?.id) return;
 
@@ -313,8 +326,10 @@ export const ChatGroupInfo = ({
       setAllMedia([]);
       setResolvedMap({});
 
-      // callback parent
       onConversationCleared?.();
+      window.dispatchEvent(
+        new CustomEvent("conversation-cleared", { detail: { conversationId } })
+      );
     } catch (err) {
       console.error("Clear group conversation error:", err);
     } finally {
@@ -325,42 +340,17 @@ export const ChatGroupInfo = ({
   // rời nhóm
   const handleLeaveGroup = async () => {
     if (leaving) return;
-
     setLeaving(true);
     try {
-      await clearConversationHistoryApi({
-        conversationId,
-        userId: userLocal.id,
-      });
-
-      setImages([]);
-      setFiles([]);
-      setAllMedia([]);
-      setResolvedMap({});
-      onConversationCleared?.();
-      window.dispatchEvent(
-        new CustomEvent("conversation-cleared", { detail: { conversationId } })
-      );
+      await leaveGroupApi(conversationId);
+      setOpenLeaveModal(false);
+      onLeaveGroup?.();
     } catch (err) {
-      console.error("Clear group conversation error:", err);
+      console.error("Leave group error:", err);
     } finally {
       setLeaving(false);
     }
   };
-
-  // const handleLeaveGroup = async () => {
-  //   if (leaving) return;
-  //   setLeaving(true);
-  //   try {
-  //     await leaveGroupApi(conversationId);
-  //     setOpenLeaveModal(false);
-  //     onClose?.();
-  //   } catch (err) {
-  //     console.error("Leave group error:", err);
-  //   } finally {
-  //     setLeaving(false);
-  //   }
-  // };
 
   const handleLeaveClick = () => {
     if (isOwner) {
@@ -378,7 +368,7 @@ export const ChatGroupInfo = ({
       setLeaving(true);
       try {
         await leaveGroupApi(conversationId);
-        onClose?.();
+        onLeaveGroup?.();
       } catch (err) {
         console.error("Leave after transfer error:", err);
       } finally {
@@ -543,11 +533,12 @@ export const ChatGroupInfo = ({
                     "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa"
                   }
                   className={styles.avatar}
-                  onClick={() => setOpenAvatarModal(true)}
+                  onClick={() => isOwner && setOpenAvatarModal(true)}
+                  style={{ cursor: isOwner ? "pointer" : "default" }}
                 />
                 <div className={styles.usernameRow}>
                   <div className={styles.username}>{groupNameState}</div>
-                  <Edit3 size={14} onClick={() => setOpenRename(true)} />
+                  {isOwner && <Edit3 size={14} onClick={() => setOpenRename(true)} />}
                 </div>
               </div>
 
@@ -655,7 +646,7 @@ export const ChatGroupInfo = ({
                     color: "#555",
                     borderBottom: "1px solid #e0e0e0",
                   }}>
-                    🔒 Tính năng chỉ dành cho quản trị viên
+                    Tính năng chỉ dành cho quản trị viên
                   </div>
                 )}
 
@@ -743,7 +734,7 @@ export const ChatGroupInfo = ({
                       transition: "background 0.2s",
                     }}
                   >
-                    🗑️ {dissolving ? "Đang giải tán..." : "Giải tán nhóm"}
+                     {dissolving ? "Đang giải tán..." : "Giải tán nhóm"}
                   </button>
                 </div>
 
@@ -762,13 +753,23 @@ export const ChatGroupInfo = ({
               </div>
 
               <div className={styles.manageContainer} style={{ background: '#fff', padding: '0 16px' }}>
-                <div className={styles.leaderProfileRow}>
-                  <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="avatar" className={styles.userAvatarLg} />
-                  <div>
-                    <div className={styles.userNameText}>Nguyễn Phúc</div>
-                    <div className={styles.userRoleText}>Trưởng nhóm</div>
-                  </div>
-                </div>
+                {(() => {
+                  const owner = memberList.find((m) => m.role === "OWNER");
+                  if (!owner) return null;
+                  return (
+                    <div className={styles.leaderProfileRow}>
+                      <img
+                        src={owner.avatar || "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa"}
+                        alt="avatar"
+                        className={styles.userAvatarLg}
+                      />
+                      <div>
+                        <div className={styles.userNameText}>{owner.name}</div>
+                        <div className={styles.userRoleText}>Trưởng nhóm</div>
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 <button
                   className={styles.leaderActionBtn}
