@@ -288,37 +288,39 @@ export const ChatGroupInfo = ({
     setGroupNameState(groupName);
   }, [groupName]);
 
+  const userLocal = JSON.parse(localStorage.getItem("user") || "{}");
+    if (!userLocal?.id) return;
 
   /* ================= CLEAR CHAT ================= */
   const handleClear = async () => {
-  if (clearing) return;
-
-  const userLocal = JSON.parse(localStorage.getItem("user") || "{}");
-  if (!userLocal?.id) return;
-
-  setClearing(true);
-  try {
-    await clearConversationHistoryApi({
-      conversationId,
-      userId: userLocal.id,
-    });
+    if (clearing) return;
 
     const userLocal = JSON.parse(localStorage.getItem("user") || "{}");
     if (!userLocal?.id) return;
-    // reset state (giống ChatInfo)
-    setImages([]);
-    setFiles([]);
-    setAllMedia([]);
-    setResolvedMap({});
 
-    // callback parent
-    onConversationCleared?.();
-  } catch (err) {
-    console.error("Clear group conversation error:", err);
-  } finally {
-    setClearing(false);
-  }
-};
+    setClearing(true);
+    try {
+      await clearConversationHistoryApi({
+        conversationId,
+        userId: userLocal.id,
+      });
+
+      // const userLocal = JSON.parse(localStorage.getItem("user") || "{}");
+      if (!userLocal?.id) return;
+      // reset state (giống ChatInfo)
+      setImages([]);
+      setFiles([]);
+      setAllMedia([]);
+      setResolvedMap({});
+
+      // callback parent
+      onConversationCleared?.();
+    } catch (err) {
+      console.error("Clear group conversation error:", err);
+    } finally {
+      setClearing(false);
+    }
+  };
 
   // rời nhóm
   const handleLeaveGroup = async () => {
@@ -346,19 +348,19 @@ export const ChatGroupInfo = ({
     }
   };
 
-  const handleLeaveGroup = async () => {
-    if (leaving) return;
-    setLeaving(true);
-    try {
-      await leaveGroupApi(conversationId);
-      setOpenLeaveModal(false);
-      onClose?.();
-    } catch (err) {
-      console.error("Leave group error:", err);
-    } finally {
-      setLeaving(false);
-    }
-  };
+  // const handleLeaveGroup = async () => {
+  //   if (leaving) return;
+  //   setLeaving(true);
+  //   try {
+  //     await leaveGroupApi(conversationId);
+  //     setOpenLeaveModal(false);
+  //     onClose?.();
+  //   } catch (err) {
+  //     console.error("Leave group error:", err);
+  //   } finally {
+  //     setLeaving(false);
+  //   }
+  // };
 
   const handleLeaveClick = () => {
     if (isOwner) {
@@ -551,15 +553,15 @@ export const ChatGroupInfo = ({
 
               <div className={styles.actionsRow}>
                 <div className={styles.actionItem}>
-                  <Bell size={20} />
+                  <Bell size={30} />
                   <span>Tắt<br />thông báo</span>
                 </div>
                 <div className={styles.actionItem}>
-                  <Pin size={20} />
+                  <Pin size={30} />
                   <span>Ghim<br />hội thoại</span>
                 </div>
                 <div className={styles.actionItem} onClick={() => setOpenAddMember(true)}>
-                  <Users size={20} />
+                  <Users size={30} />
                   <span>Thêm<br />thành viên</span>
                 </div>
 
@@ -567,7 +569,7 @@ export const ChatGroupInfo = ({
                   className={styles.actionItem}
                   onClick={() => setViewMode("manage")}
                 >
-                  <Settings size={20} />
+                  <Settings size={30} />
                   <span>Quản lý<br />nhóm</span>
                 </div>
               </div>

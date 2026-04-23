@@ -195,6 +195,17 @@
   margin: 0;
 }
 
+.actionItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #444;
+  transition: all 0.2s ease;
+}
+
 .actionItem:hover {
   background: #f5f5f5;
   border-radius: 6px;
@@ -203,7 +214,8 @@
 .addFriendBtn {
   margin-left: auto;
   background: #e3eafc;
-  color: #1a237e;
+  color: #1a237e;}
+
 .closeBtn {
   margin-left: auto; /* đẩy nút X sang phải */
 }
@@ -505,8 +517,8 @@
 
 /* User avatar Md (Thành viên list) */
 .userAvatarMd {
-  width: 32px;
-  height: 32px;
+  width: 45px;
+  height: 45px;
   border-radius: 50%;
   margin-right: 10px;
   object-fit: cover;

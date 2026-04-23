@@ -422,7 +422,7 @@ export const ChatWindow = () => {
 }, [chatUser]);
 
 
-  const [chatUser, setChatUser] = useState<Friend | null>(selectedUser);
+  // const [chatUser, setChatUser] = useState<Friend | null>(selectedUser);
 
   useEffect(() => {
   setChatUser(selectedUser);
