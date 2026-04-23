@@ -174,6 +174,25 @@
   font-size: 12px;
   color: #444;
   transition: all 0.2s ease;
+  height: 52px;
+  padding: 0 12px;
+  border-bottom: 1px solid #ddd;
+  background: #fff;
+}
+
+/* icon trái */
+.storageTitleRow button:first-child {
+  margin-right: auto;
+}
+
+/* title nằm giữa tuyệt đối */
+.storageTitle {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
 }
 
 .actionItem:hover {
@@ -185,6 +204,13 @@
   margin-left: auto;
   background: #e3eafc;
   color: #1a237e;
+.closeBtn {
+  margin-left: auto; /* đẩy nút X sang phải */
+}
+
+.storageCloseBtn {
+  position: absolute;
+  right: 8px;
   border: none;
   padding: 4px 12px;
   border-radius: 16px;
@@ -486,6 +512,118 @@
   object-fit: cover;
 }
 
+/* trang quản ký nhóm */
+.manageWrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #fff;
+}
+
+.manageHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.manageContent {
+  padding: 12px;
+  overflow-y: auto;
+
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.manageRow,
+.manageToggleRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  font-size: 14px;
+}
+
+.manageDangerBox {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.leaveGroupBtn {
+  margin-top: 20px;
+  margin-left: auto;
+  margin-right: auto;
+
+  background: #ffe5e5;
+  color: red;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+
+  display: block;
+}
+
+.deleteBox {
+  margin-top: auto;
+  padding: 12px;
+  background: #fff;
+  text-align: left;
+}
+
+/* trang member */
+.item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 8px; /* cho mềm UI */
+  cursor: pointer;
+  transition: background 0.2s ease;
+  margin: 5px;
+}
+
+/* hover xám */
+.item:hover {
+  background: #f2f2f2;
+}
+
+.memberName {
+  font-size: 14px;
+}
+
+/* đẩy nút sang phải */
+.addFriendBtn {
+  margin-left: auto;
+
+  background: #0a66c2;
+  color: #fff;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* thanh tìm kiếm */
+.searchBox {
+  padding: 10px 12px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  outline: none;
+  font-size: 14px;
+}
+
+.searchInput:focus {
+  border-color: #1877f2;
+}
+
 @media (max-width: 768px) {
   .overlay {
     position: absolute;
@@ -505,5 +643,9 @@
 
   .closeBtn {
     margin-left: auto;
+  }
+
+  .storageTitle {
+    font-size: 17px;
   }
 }

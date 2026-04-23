@@ -92,11 +92,14 @@ const getDateLabel = (date: string) => {
   return dStr;
 };
 
+
+
 /* ================= MAIN ================= */
 
 export const ChatGroupInfo = ({
   conversationId,
   groupName,
+  members,
   counterpartAvatarUrl,
   onConversationCleared,
   onClose,
@@ -186,15 +189,19 @@ export const ChatGroupInfo = ({
   }, [conversationId]);
 
   /* ================= LOAD MEMBERS ================= */
+
+  // lòa thông tin chi tiết của từng member
   useEffect(() => {
     const loadMembers = async () => {
       if (!conversationId) return;
 
       setLoadingMembers(true);
       try {
+        // 1. lấy danh sách member (chỉ có userId)
         const res = await getListMemberApi(conversationId);
         const rawList = res.data || res;
 
+        // 2. gọi API chi tiết song song
         const detailList = await Promise.all(
           rawList.map(async (m: any) => {
             try {
@@ -230,6 +237,38 @@ export const ChatGroupInfo = ({
   }, [conversationId]);
 
   /* ================= LOAD FRIENDS ================= */
+
+  // load danh sách thành viên
+  useEffect(() => {
+    const loadMembers = async () => {
+      if (!conversationId) return;
+
+      setLoadingMembers(true);
+      try {
+        const res = await getListMemberApi(conversationId);
+
+        // tùy backend trả về structure
+        const data = res.data || res;
+
+        const mapped = data.map((m: any) => ({
+          id: m.id,
+          name: m.userName,
+          avatar: toAbsoluteUrl(m.avatar),
+        }));
+
+        setMemberList(mapped);
+      } catch (err) {
+        console.error("Load members error:", err);
+      } finally {
+        setLoadingMembers(false);
+      }
+    };
+
+    loadMembers();
+  }, [conversationId]);
+
+
+  // load danh scahs bạn bè
   useEffect(() => {
     const loadFriends = async () => {
       try {
@@ -249,14 +288,43 @@ export const ChatGroupInfo = ({
     setGroupNameState(groupName);
   }, [groupName]);
 
+
   /* ================= CLEAR CHAT ================= */
   const handleClear = async () => {
-    if (clearing) return;
+  if (clearing) return;
+
+  const userLocal = JSON.parse(localStorage.getItem("user") || "{}");
+  if (!userLocal?.id) return;
+
+  setClearing(true);
+  try {
+    await clearConversationHistoryApi({
+      conversationId,
+      userId: userLocal.id,
+    });
 
     const userLocal = JSON.parse(localStorage.getItem("user") || "{}");
     if (!userLocal?.id) return;
+    // reset state (giống ChatInfo)
+    setImages([]);
+    setFiles([]);
+    setAllMedia([]);
+    setResolvedMap({});
 
-    setClearing(true);
+    // callback parent
+    onConversationCleared?.();
+  } catch (err) {
+    console.error("Clear group conversation error:", err);
+  } finally {
+    setClearing(false);
+  }
+};
+
+  // rời nhóm
+  const handleLeaveGroup = async () => {
+    if (leaving) return;
+
+    setLeaving(true);
     try {
       await clearConversationHistoryApi({
         conversationId,
@@ -274,7 +342,7 @@ export const ChatGroupInfo = ({
     } catch (err) {
       console.error("Clear group conversation error:", err);
     } finally {
-      setClearing(false);
+      setLeaving(false);
     }
   };
 
@@ -379,16 +447,22 @@ export const ChatGroupInfo = ({
       <div className={styles.overlay} onClick={onClose}>
         <div className={styles.panel} onClick={(e) => e.stopPropagation()}>
 
-          {/* ============ XEM TẤT CẢ FILE / MEDIA ============ */}
+          {/* Xem tát cả cho ảnh và file */}
           {viewAll && (
             <>
               <div className={styles.storageTitleRow}>
-                <button className={styles.pointer} style={{ border: 'none', background: 'none' }} onClick={() => setViewAll(false)}>
+                <button onClick={() => setViewAll(false)}>
                   <ChevronLeft size={24} />
                 </button>
+
                 <h3 className={styles.storageTitle}>Kho lưu trữ</h3>
+
+                {/* <button onClick={onClose}>
+                  <X size={18} />
+                </button> */}
               </div>
 
+              {/* TAB */}
               <div className={styles.allMediaTabs}>
                 <button
                   className={`${styles.allMediaTab} ${tab === "images" ? styles.active : ""}`}
@@ -396,6 +470,7 @@ export const ChatGroupInfo = ({
                 >
                   Ảnh/Video
                 </button>
+
                 <button
                   className={`${styles.allMediaTab} ${tab === "files" ? styles.active : ""}`}
                   onClick={() => setTab("files")}
@@ -404,11 +479,13 @@ export const ChatGroupInfo = ({
                 </button>
               </div>
 
+              {/* CONTENT */}
               <div className={styles.allMediaContent}>
                 {tab === "images" &&
                   groupedImages.map(([date, list]) => (
                     <div key={date}>
                       <h3 className={styles.dateSectionLabel}>{date}</h3>
+
                       <div className={styles.allMediaGrid}>
                         {list.map((m) => (
                           <img
@@ -444,9 +521,17 @@ export const ChatGroupInfo = ({
             <>
               <div className={styles.titleRow}>
                 <h3 className={styles.title}>Thông tin nhóm</h3>
+                {/* <button className={styles.closeBtn} onClick={onClose}>
+                <X size={18} />
+              </button> */}
               </div>
 
               <div className={styles.top}>
+                {/* <img
+                  src={members[0]?.avatar}
+                  className={styles.avatar}
+                  onClick={() => setOpenAvatarModal(true)}
+                /> */}
                 <img
                   src={
                     groupAvatar ||
@@ -457,11 +542,10 @@ export const ChatGroupInfo = ({
                   }
                   className={styles.avatar}
                   onClick={() => setOpenAvatarModal(true)}
-                  alt="Avatar"
                 />
                 <div className={styles.usernameRow}>
                   <div className={styles.username}>{groupNameState}</div>
-                  <Edit3 size={14} className={styles.pointer} onClick={() => setOpenRename(true)} />
+                  <Edit3 size={14} onClick={() => setOpenRename(true)} />
                 </div>
               </div>
 
@@ -478,17 +562,28 @@ export const ChatGroupInfo = ({
                   <Users size={20} />
                   <span>Thêm<br />thành viên</span>
                 </div>
-                <div className={styles.actionItem} onClick={() => setViewMode("manage")}>
+
+                <div
+                  className={styles.actionItem}
+                  onClick={() => setViewMode("manage")}
+                >
                   <Settings size={20} />
                   <span>Quản lý<br />nhóm</span>
                 </div>
               </div>
 
               <div className={styles.section}>
-                <div className={styles.sectionHeader}>Thành viên nhóm</div>
-                <div onClick={() => setViewMode("members")} className={styles.pointer}>
+                <div className={styles.sectionHeader}>
+                  Thành viên nhóm
+                </div>
+
+                <div
+                  onClick={() => setViewMode("members")}
+                  style={{ cursor: "pointer" }}
+                >
                   Thành viên ({memberList.length})
                 </div>
+
               </div>
 
               {!loading && (
@@ -521,9 +616,10 @@ export const ChatGroupInfo = ({
                 </>
               )}
 
+              {/* DELETE */}
               <div className={styles.deleteBox}>
                 <button className={styles.deleteButton} onClick={handleClear}>
-                  <Trash2 size={16} />
+                  <Trash2 size={16} style={{ marginRight: 6 }} />
                   {clearing ? "Đang xóa..." : "Xóa đoạn hội thoại"}
                 </button>
                 <button className={styles.deleteButton} onClick={handleLeaveClick}>

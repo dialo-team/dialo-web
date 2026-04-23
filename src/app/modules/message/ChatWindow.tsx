@@ -422,6 +422,38 @@ export const ChatWindow = () => {
 }, [chatUser]);
 
 
+  const [chatUser, setChatUser] = useState<Friend | null>(selectedUser);
+
+  useEffect(() => {
+  setChatUser(selectedUser);
+}, [selectedUser]);
+
+  // truyền từ chatsidebar
+ useEffect(() => {
+  const handler = (e: any) => {
+    const { conversationId, name, avatar } = e.detail;
+
+    if (!chatUser || chatUser.id !== conversationId) return;
+
+    setChatUser((prev) =>
+      prev
+        ? {
+            ...prev,
+            name: name ?? prev.name,
+            avatar: avatar ?? prev.avatar,
+          }
+        : prev
+    );
+  };
+
+  window.addEventListener("conversation-updated", handler);
+
+  return () => {
+    window.removeEventListener("conversation-updated", handler);
+  };
+}, [chatUser]);
+
+
   useEffect(() => {
     const checkBlocked = async () => {
       const userId = (selectedUser as any)?.counterpartId;
