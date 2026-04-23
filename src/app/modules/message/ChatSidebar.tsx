@@ -11,6 +11,8 @@ import { useSearchParams } from "react-router-dom";
 import { getConversationsApi } from "../../../../api/message/conversationApi";
 import { subscribeChatTopic } from "./chatSocket";
 import { getUserInfoApi } from "../../../../api/social/searchAndAddFriend/userApi";
+import { GroupAvatar } from "@/app/components/GroupAvatar";
+import { getListMemberApi } from "../../../../api/social/groupFriend/groupApi";
 
 type Props = {
   onSelectUser: (user: Friend) => void;
@@ -52,33 +54,32 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
   const [openCreateGroup, setOpenCreateGroup] = useState(false);
 
   useEffect(() => {
-  const handler = (e: any) => {
-    const { conversationId, name, avatar } = e.detail;
+    const handler = (e: any) => {
+      const { conversationId, name, avatar } = e.detail;
 
-    setFriends((prev) =>
-      prev.map((f) =>
-        f.id === conversationId
-          ? {
+      setFriends((prev) =>
+        prev.map((f) =>
+          f.id === conversationId
+            ? {
               ...f,
               name: name ?? f.name,
               avatar: avatar ?? f.avatar,
             }
-          : f
-      )
-    );
-  };
+            : f
+        )
+      );
+    };
 
-  window.addEventListener("conversation-updated", handler);
+    window.addEventListener("conversation-updated", handler);
 
-  return () => {
-    window.removeEventListener("conversation-updated", handler);
-  };
-}, []);
+    return () => {
+      window.removeEventListener("conversation-updated", handler);
+    };
+  }, []);
 
   useEffect(() => {
     const handler = (e: any) => {
       const { conversationId } = e.detail;
-      console.log("[sidebar] conversation-cleared received:", conversationId);
       clearedIds.current.add(conversationId);
       setFriends((prev) => prev.filter((f) => f.id !== conversationId));
     };
@@ -95,25 +96,48 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
       const mapped: Friend[] = await Promise.all(
         data.map(async (item) => {
 
-
           let avatar = item.counterpartAvatarUrl || DEFAULT_AVATAR;
 
-          // nếu là base64 thì dùng luôn
-          if (!avatar.startsWith("data:image")) {
+          let memberAvatars: string[] = [];
+
+          // CHECK GROUP 
+          const isGroup =
+            item.conversationId === item.counterpartId &&
+            (!item.counterpartAvatarUrl ||
+              item.counterpartAvatarUrl.trim() === "");
+
+          if (isGroup) {
             try {
-              const res = await getUserInfoApi(item.counterpartId);
-              avatar = res.data?.data?.avatar || avatar || DEFAULT_AVATAR;
-            } catch (error) {
-              console.warn("Không lấy được avatar:", error);
+              const res = await getListMemberApi(item.conversationId);
+
+              const members = res.data || [];
+
+              memberAvatars = await Promise.all(
+                members.slice(0, 4).map(async (m: any) => {
+                  try {
+                    const userRes = await getUserInfoApi(m.userId);
+                    return userRes.data?.data?.avatar || userRes.data?.avatar || DEFAULT_AVATAR;
+                  } catch {
+                    return DEFAULT_AVATAR;
+                  }
+                })
+              );
+            } catch (e) {
+              console.warn("load group members failed", e);
             }
+          }
+
+          // nếu không phải group → fallback 1 avatar
+          if (!isGroup) {
+            memberAvatars = [avatar];
           }
 
           return {
             id: item.conversationId,
-            // name: item.counterpartName,
             name: formatGroupName(item.counterpartName),
             counterpartId: item.counterpartId,
             avatar,
+            memberAvatars, // 👈 QUAN TRỌNG
             lastMessage: item.lastMessage,
             unreadCount: item.unreadCount,
             unreadDisplay: item.unreadDisplay,
@@ -323,7 +347,8 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
               // onClick={() => onSelectUser(f)}
               onClick={() => onSelectUser(f as any)}
             >
-              <img src={f.avatar} className={styles.avatar} alt={f.name} />
+              {/* <img src={f.avatar} className={styles.avatar} alt={f.name} /> */}
+              <GroupAvatar avatars={f.memberAvatars?.length ? f.memberAvatars : [f.avatar]} />
 
               <div className={styles.info}>
                 <div
