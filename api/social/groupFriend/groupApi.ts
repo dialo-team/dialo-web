@@ -51,12 +51,46 @@ export const getListMemberApi = async (
   );
 };
 
+// đổi role thành viên nhóm
+export const updateMemberRoleApi = (
+  conversationId: string,
+  memberId: string,
+  role: string
+) => {
+  return axiosClient.put(
+    `/api/v1/conversations/${conversationId}/members/${memberId}/role`,
+    { role }
+  );
+};
+
 // rời nhóm
 export const leaveGroupApi = (conversationId: string) => {
   return axiosClient.post(
     `/api/v1/conversations/${conversationId}/leave`,
     {}
   );
+};
+
+// giải tán nhóm
+export const dissolveGroupApi = (conversationId: string) => {
+  return axiosClient.delete(
+    `/api/v1/conversations/${conversationId}/dissolve`
+  );
+};
+
+const DISSOLVED_KEY = "dissolvedGroups";
+
+export const markGroupDissolved = (conversationId: string) => {
+  const list: string[] = JSON.parse(localStorage.getItem(DISSOLVED_KEY) || "[]");
+  if (!list.includes(conversationId)) {
+    list.push(conversationId);
+    localStorage.setItem(DISSOLVED_KEY, JSON.stringify(list));
+  }
+};
+
+export const isGroupDissolvedLocally = (conversationId: string): boolean => {
+  const list: string[] = JSON.parse(localStorage.getItem(DISSOLVED_KEY) || "[]");
+  return list.includes(conversationId);
 };
 
 

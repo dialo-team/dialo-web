@@ -2,7 +2,7 @@
 
 import { Search, UserPlus } from "lucide-react";
 import styles from "../../styles/message/ChatSidebar.module.css";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import addGroupIcon from "../../../assets/add_group.jpg";
 import AddFriendModal from "../social/friendPage/searchAndAddFriend/AddFriendModal";
 import CreateGroupModal from "../social/friendPage/searchAndAddFriend/CreateGroupModal";
@@ -46,6 +46,7 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
   const [keyword, setKeyword] = useState("");
   const [friends, setFriends] = useState<Friend[]>([]);
   const [loading, setLoading] = useState(false);
+  const clearedIds = useRef<Set<string>>(new Set());
 
   const [openAddFriend, setOpenAddFriend] = useState(false);
   const [openCreateGroup, setOpenCreateGroup] = useState(false);
@@ -73,6 +74,18 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
     window.removeEventListener("conversation-updated", handler);
   };
 }, []);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      const { conversationId } = e.detail;
+      console.log("[sidebar] conversation-cleared received:", conversationId);
+      clearedIds.current.add(conversationId);
+      setFriends((prev) => prev.filter((f) => f.id !== conversationId));
+    };
+
+    window.addEventListener("conversation-cleared", handler);
+    return () => window.removeEventListener("conversation-cleared", handler);
+  }, []);
 
   const loadConversations = useCallback(async () => {
     setLoading(true);
@@ -108,10 +121,11 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
         })
       );
 
-      // So sánh shallow: id, lastMessage, unreadCount
+      const filtered = mapped.filter((f) => !clearedIds.current.has(f.id));
+
       const isSame =
-        mapped.length === friends.length &&
-        mapped.every((f, i) => {
+        filtered.length === friends.length &&
+        filtered.every((f, i) => {
           const old = friends[i];
           return (
             old &&
@@ -122,7 +136,7 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
         });
 
       if (!isSame) {
-        setFriends(mapped);
+        setFriends(filtered);
       }
     } catch (error) {
       console.error("Load conversations failed:", error);

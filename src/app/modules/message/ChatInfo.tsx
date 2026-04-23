@@ -176,6 +176,10 @@ useEffect(() => {
       setFiles([]);
       setAllMedia([]);
       onConversationCleared?.();
+      console.log("[clear] dispatch conversation-cleared:", conversationId);
+      window.dispatchEvent(
+        new CustomEvent("conversation-cleared", { detail: { conversationId } })
+      );
     } finally {
       setClearing(false);
     }
