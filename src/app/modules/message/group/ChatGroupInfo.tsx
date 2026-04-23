@@ -143,6 +143,7 @@ export const ChatGroupInfo = ({
   const [selectedUser, setSelectedUser] = useState<Member | null>(null);
 
   const [groupAvatar, setGroupAvatar] = useState(counterpartAvatarUrl || "");
+  const [groupNameState, setGroupNameState] = useState(groupName);
 
 
   /* ================= LOAD MEDIA ================= */
@@ -279,6 +280,9 @@ export const ChatGroupInfo = ({
     loadFriends();
   }, []);
 
+  useEffect(() => {
+  setGroupNameState(groupName);
+}, [groupName]);
   /* ================= CLEAR CHAT ================= */
 
   const handleClear = async () => {
@@ -476,7 +480,7 @@ export const ChatGroupInfo = ({
                 />
 
                 <div className={styles.usernameRow}>
-                  <div className={styles.username}>{groupName}</div>
+                  <div className={styles.username}>{groupNameState}</div>
                   <Edit3 size={14} onClick={() => setOpenRename(true)} />
                 </div>
               </div>
@@ -745,6 +749,9 @@ export const ChatGroupInfo = ({
           conversationId={conversationId}
           currentName={groupName}
           currentAvatar={groupAvatar}
+            onSaved={(newName) => {
+    setGroupNameState(newName);
+  }}
         />
       )}
 

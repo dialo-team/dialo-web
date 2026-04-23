@@ -92,8 +92,36 @@ export const ChatInfo = ({
   const [tab, setTab] = useState<"images" | "files">("images");
 
   const [openRemark, setOpenRemark] = useState(false);
+  const [chatUser, setChatUser] = useState(user);
 
   /* ===== LOAD MEDIA ===== */
+  useEffect(() => {
+  setChatUser(user);
+}, [user]);
+
+
+useEffect(() => {
+  const handler = (e: any) => {
+    const { conversationId, name, avatar } = e.detail;
+
+    if (conversationId !== chatUser.id) return;
+
+    setChatUser((prev) =>
+      prev
+        ? {
+            ...prev,
+            name: name ?? prev.name,
+            avatar: avatar ?? prev.avatar,
+          }
+        : prev
+    );
+  };
+
+  window.addEventListener("conversation-updated", handler);
+  return () => window.removeEventListener("conversation-updated", handler);
+}, [chatUser]);
+
+
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -174,7 +202,7 @@ export const ChatInfo = ({
                 <img src={user.avatar} alt={user.name} />
 
                 <div className={styles.usernameRow}>
-                  <div className={styles.username}>{user.name}</div>
+                  <div className={styles.username}>{chatUser.name}</div>
 
                   <Edit3
                     size={14}

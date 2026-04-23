@@ -50,6 +50,30 @@ export const ChatSidebar = ({ onSelectUser }: Props) => {
   const [openAddFriend, setOpenAddFriend] = useState(false);
   const [openCreateGroup, setOpenCreateGroup] = useState(false);
 
+  useEffect(() => {
+  const handler = (e: any) => {
+    const { conversationId, name, avatar } = e.detail;
+
+    setFriends((prev) =>
+      prev.map((f) =>
+        f.id === conversationId
+          ? {
+              ...f,
+              name: name ?? f.name,
+              avatar: avatar ?? f.avatar,
+            }
+          : f
+      )
+    );
+  };
+
+  window.addEventListener("conversation-updated", handler);
+
+  return () => {
+    window.removeEventListener("conversation-updated", handler);
+  };
+}, []);
+
   const loadConversations = useCallback(async () => {
     setLoading(true);
     try {

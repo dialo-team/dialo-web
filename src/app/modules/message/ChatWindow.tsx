@@ -389,6 +389,38 @@ export const ChatWindow = () => {
   const [isBlocked, setIsBlocked] = useState(false);
   const [checkingBlock, setCheckingBlock] = useState(false);
 
+  const [chatUser, setChatUser] = useState<Friend | null>(selectedUser);
+
+  useEffect(() => {
+  setChatUser(selectedUser);
+}, [selectedUser]);
+
+  // truyền từ chatsidebar
+ useEffect(() => {
+  const handler = (e: any) => {
+    const { conversationId, name, avatar } = e.detail;
+
+    if (!chatUser || chatUser.id !== conversationId) return;
+
+    setChatUser((prev) =>
+      prev
+        ? {
+            ...prev,
+            name: name ?? prev.name,
+            avatar: avatar ?? prev.avatar,
+          }
+        : prev
+    );
+  };
+
+  window.addEventListener("conversation-updated", handler);
+
+  return () => {
+    window.removeEventListener("conversation-updated", handler);
+  };
+}, [chatUser]);
+
+
   useEffect(() => {
     const checkBlocked = async () => {
       const userId = (selectedUser as any)?.counterpartId;
@@ -912,10 +944,12 @@ export const ChatWindow = () => {
               <ChevronLeft size={20} />
             </button>
 
-            <img src={selectedUser.avatar} className={styles.avatar} />
+            {/* <img src={selectedUser.avatar} className={styles.avatar} /> */}
+            <img src={chatUser?.avatar} className={styles.avatar} />
 
             <div>
-              <div className={styles.name}>{selectedUser.name}</div>
+              <div className={styles.name}>{chatUser?.name}</div>
+              {/* <div className={styles.name}>{selectedUser.name}</div> */}
               <div className={styles.status}>Online</div>
             </div>
           </div>

@@ -14,6 +14,12 @@ type Props = {
   onSaved?: (name: string) => void;
 };
 
+type Conversation = {
+  id: string;
+  name: string;
+  avatar?: string;
+};
+
 export const RenameNameGroup = ({
   open,
   onClose,
@@ -24,6 +30,7 @@ export const RenameNameGroup = ({
 }: Props) => {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
 
   /* ================= INIT ================= */
   useEffect(() => {
@@ -32,7 +39,34 @@ export const RenameNameGroup = ({
     }
   }, [open, currentName]);
 
+  useEffect(() => {
+  const handleUpdate = (e: any) => {
+    const { conversationId, name, avatar } = e.detail;
+
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.id === conversationId
+          ? {
+              ...c,
+              name: name ?? c.name,
+              avatar: avatar ?? c.avatar,
+            }
+          : c
+      )
+    );
+  };
+
+  window.addEventListener("conversation-updated", handleUpdate);
+
+  return () => {
+    window.removeEventListener("conversation-updated", handleUpdate);
+  };
+}, []);
+
+
   if (!open) return null;
+
+  
 
   /* ================= HANDLE SAVE ================= */
   const handleSave = async () => {
