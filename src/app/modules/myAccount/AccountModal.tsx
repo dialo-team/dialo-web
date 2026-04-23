@@ -83,6 +83,11 @@ export const AccountModal = ({ open, onClose }: Props) => {
         if (res.data?.data && user) {
           const updatedUser = { ...user, avatar: res.data.data.avatar };
           setUser(updatedUser);
+          window.dispatchEvent(
+            new CustomEvent("user-avatar-updated", {
+              detail: { userId: user.id, avatar: res.data.data.avatar },
+            })
+          );
           setError("Cập nhật avatar thành công!");
           setTimeout(() => setError(""), 2000);
         }

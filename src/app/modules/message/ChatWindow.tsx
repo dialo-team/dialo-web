@@ -1229,6 +1229,7 @@ export const ChatWindow = () => {
             counterpartAvatarUrl={(selectedUser as any)?.avatar}
             onConversationCleared={() => setMessages([])}
             onGroupDissolved={() => { setIsGroupDissolved(true); setMessages([]); setShowInfo(false); }}
+            onLeaveGroup={() => { setShowInfo(false); onBackToSidebar?.(); }}
           />
         ) : (
           <ChatInfo
