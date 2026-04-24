@@ -1467,7 +1467,7 @@ export const ChatWindow = () => {
                           top: menuPos.y,
                         }}
                       >
-                        {m.sender === "me" && (
+                        {/* {m.sender === "me" && (
                           <div
                             className={styles.menuItem}
                             onClick={(e) => {
@@ -1478,7 +1478,7 @@ export const ChatWindow = () => {
                             <Reply size={14} />
                             Thu hồi
                           </div>
-                        )}
+                        )} */}
 
                         {/* Ghim / Bỏ ghim (cả 2 bên) */}
                         <div
