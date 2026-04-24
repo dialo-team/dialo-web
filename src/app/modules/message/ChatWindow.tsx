@@ -1573,7 +1573,7 @@ export const ChatWindow = () => {
               size={18}
               style={{ cursor: "pointer" }}
               onClick={() => setShowPollModal(true)}
-              title="Tạo bình chọn"
+              // title="Tạo bình chọn"
             />
           )}
         </div>
@@ -1708,7 +1708,8 @@ export const ChatWindow = () => {
         sourceMessageId={forwardMsgId ?? ""}
         onClose={() => setForwardMsgId(null)}
         onForwarded={() => setForwardMsgId(null)}
-
+      />
+      
       <AlertModal
         open={alert.open}
         message={alert.message}
