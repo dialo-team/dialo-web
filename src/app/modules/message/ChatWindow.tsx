@@ -410,14 +410,12 @@ export const ChatWindow = () => {
   const [chatUser, setChatUser] = useState<Friend | null>(selectedUser);
 
   const [pinnedMessages, setPinnedMessages] = useState<PinnedMessage[]>([]);
-  const [showPinnedList, setShowPinnedList] = useState(false);
   const [alert, setAlert] = useState({ open: false, message: "" });
 
   const [pinnedExpanded, setPinnedExpanded] = useState(false);
-  const [activePinMenu, setActivePinMenu] = useState<string | null>(null);
-  const [pinMenuOpen, setPinMenuOpen] = useState(false);
 
-  
+  const [highlightMessageId, setHighlightMessageId] = useState<string | null>(null);
+  const messageRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const [pinMenu, setPinMenu] = useState<{
     messageId: string | null;
@@ -1076,6 +1074,40 @@ export const ChatWindow = () => {
     return pinnedMessages.some((p) => p.messageId === messageId);
   };
 
+  // hàm highlight tin nhắn
+  const scrollToMessage = (messageId: string) => {
+  const el = messageRefs.current[messageId];
+
+  if (!el) return;
+
+  el.scrollIntoView({
+    behavior: "smooth",
+    block: "center",
+  });
+
+  setHighlightMessageId(messageId);
+
+  // tự tắt highlight sau 2.5s
+  setTimeout(() => {
+    setHighlightMessageId((prev) =>
+      prev === messageId ? null : prev
+    );
+  }, 2500);
+};
+
+useEffect(() => {
+  const el = bodyRef.current;
+  if (!el) return;
+
+  const handleClick = () => setHighlightMessageId(null);
+
+  el.addEventListener("click", handleClick);
+
+  return () => el.removeEventListener("click", handleClick);
+}, []);
+
+
+
   //================================
 
   return (
@@ -1171,7 +1203,8 @@ export const ChatWindow = () => {
 
               <div
                 className={styles.pinnedContent}
-                onClick={() => setPinnedExpanded(true)}
+                // onClick={() => setPinnedExpanded(true)}
+                onClick={() => scrollToMessage(pinnedMessages[0]?.messageId)}
               >
                 <div className={styles.pinnedText}>
                   {pinnedMessages[0].message.content}
@@ -1293,9 +1326,16 @@ export const ChatWindow = () => {
               return (
                 <div
                   key={m.id}
-                  className={
-                    m.sender === "me" ? styles.messageRight : styles.messageLeft
-                  }
+                   ref={(el) => {
+    messageRefs.current[m.id] = el;
+  }}
+                  // className={
+                  //   m.sender === "me" ? styles.messageRight : styles.messageLeft
+                  // }
+                  className={`
+  ${m.sender === "me" ? styles.messageRight : styles.messageLeft}
+  ${highlightMessageId === m.id ? styles.highlight : ""}
+`}
                 >
                   {m.sender === "them" && (
                     <img
