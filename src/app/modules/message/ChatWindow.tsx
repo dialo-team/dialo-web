@@ -73,6 +73,9 @@ type PinnedMessage = {
   message: {
     id: string;
     content: string;
+    attachment: {
+      fileUrl: string,
+    }
   };
   messageId: string;
   pinnedAt: string;
@@ -1070,41 +1073,48 @@ export const ChatWindow = () => {
   }, []);
 
 
-    const isMessagePinned = (messageId: string) => {
+  const isMessagePinned = (messageId: string) => {
     return pinnedMessages.some((p) => p.messageId === messageId);
+  };
+
+  const isPinnedImage = (m: any) => {
+    return (
+      m.message?.type === "IMAGE" &&
+      m.message?.attachment?.fileUrl
+    );
   };
 
   // hàm highlight tin nhắn
   const scrollToMessage = (messageId: string) => {
-  const el = messageRefs.current[messageId];
+    const el = messageRefs.current[messageId];
 
-  if (!el) return;
+    if (!el) return;
 
-  el.scrollIntoView({
-    behavior: "smooth",
-    block: "center",
-  });
+    el.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
 
-  setHighlightMessageId(messageId);
+    setHighlightMessageId(messageId);
 
-  // tự tắt highlight sau 2.5s
-  setTimeout(() => {
-    setHighlightMessageId((prev) =>
-      prev === messageId ? null : prev
-    );
-  }, 2500);
-};
+    // tự tắt highlight sau 2.5s
+    setTimeout(() => {
+      setHighlightMessageId((prev) =>
+        prev === messageId ? null : prev
+      );
+    }, 2500);
+  };
 
-useEffect(() => {
-  const el = bodyRef.current;
-  if (!el) return;
+  useEffect(() => {
+    const el = bodyRef.current;
+    if (!el) return;
 
-  const handleClick = () => setHighlightMessageId(null);
+    const handleClick = () => setHighlightMessageId(null);
 
-  el.addEventListener("click", handleClick);
+    el.addEventListener("click", handleClick);
 
-  return () => el.removeEventListener("click", handleClick);
-}, []);
+    return () => el.removeEventListener("click", handleClick);
+  }, []);
 
 
 
@@ -1206,8 +1216,23 @@ useEffect(() => {
                 // onClick={() => setPinnedExpanded(true)}
                 onClick={() => scrollToMessage(pinnedMessages[0]?.messageId)}
               >
+
                 <div className={styles.pinnedText}>
-                  {pinnedMessages[0].message.content}
+                  {isPinnedImage(pinnedMessages[0]) ? (
+                    <img
+                      src={toAbsoluteMediaUrl(
+                        pinnedMessages[0].message.attachment.fileUrl
+                      )}
+                      style={{
+                        maxWidth: 60,
+                        maxHeight: 60,
+                        borderRadius: 6,
+                        objectFit: "cover",
+                      }}
+                    />
+                  ) : (
+                    pinnedMessages[0].message.content
+                  )}
                 </div>
               </div>
 
@@ -1255,15 +1280,36 @@ useEffect(() => {
               </div>
 
               {pinnedMessages.map((p) => (
-                <div key={p.messageId} className={styles.pinnedItem}>
+                <div key={p.messageId} className={styles.pinnedItem} onClick={() => {
+                  setPinnedExpanded(false);
+
+                  setTimeout(() => {
+                    scrollToMessage(p.messageId);
+                  }, 100);
+                }}>
                   <div className={styles.pinnedMain}>
                     <div className={styles.pinnedContentText}>
                       <div className={styles.sender}>
                         {p.pinnedByName}
                       </div>
 
-                      <div className={styles.text}>
+                      {/* <div className={styles.text}>
                         {p.message.content}
+                      </div> */}
+                      <div className={styles.text}>
+                        {isPinnedImage(p) ? (
+                          <img
+                            src={toAbsoluteMediaUrl(p.message.attachment.fileUrl)}
+                            style={{
+                              maxWidth: 120,
+                              maxHeight: 120,
+                              borderRadius: 8,
+                              objectFit: "cover",
+                            }}
+                          />
+                        ) : (
+                          p.message.content
+                        )}
                       </div>
                     </div>
 
@@ -1326,16 +1372,14 @@ useEffect(() => {
               return (
                 <div
                   key={m.id}
-                   ref={(el) => {
-    messageRefs.current[m.id] = el;
-  }}
+                  ref={(el) => {
+                    messageRefs.current[m.id] = el;
+                  }}
                   // className={
                   //   m.sender === "me" ? styles.messageRight : styles.messageLeft
                   // }
-                  className={`
-  ${m.sender === "me" ? styles.messageRight : styles.messageLeft}
-  ${highlightMessageId === m.id ? styles.highlight : ""}
-`}
+                  className={` ${m.sender === "me" ? styles.messageRight : styles.messageLeft}
+                               ${highlightMessageId === m.id ? styles.highlight : ""}`}
                 >
                   {m.sender === "them" && (
                     <img
@@ -1349,26 +1393,26 @@ useEffect(() => {
                   )}
 
                   <div className={styles.messageBox}>
+                    <div
+                      className={`${styles.moreBtn} ${m.sender === "me"
+                        ? styles.moreBtnMe
+                        : styles.moreBtnThem
+                        }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
 
-                    {m.sender === "me" && (
-                      <div
-                        className={styles.moreBtn}
-                        onClick={(e) => {
-                          e.stopPropagation();
+                        const rect = e.currentTarget.getBoundingClientRect();
 
-                          const rect = e.currentTarget.getBoundingClientRect();
+                        setMenuPos({
+                          x: rect.left - 190,
+                          y: rect.top,
+                        });
 
-                          setMenuPos({
-                            x: rect.left - 190,
-                            y: rect.top,
-                          });
-
-                          setOpenMenuId(openMenuId === m.id ? null : m.id);
-                        }}
-                      >
-                        <MoreVertical size={16} />
-                      </div>
-                    )}
+                        setOpenMenuId(openMenuId === m.id ? null : m.id);
+                      }}
+                    >
+                      <MoreVertical size={16} />
+                    </div>
 
                     {openMenuId === m.id && (
                       <div
@@ -1378,51 +1422,48 @@ useEffect(() => {
                           top: menuPos.y,
                         }}
                       >
-                        {/* <div
-                          className={styles.menuItem}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            void handlePinMessage(m.id);
-                          }}
-                        >
-                          <Pin size={14} />
-                          Ghim tin nhắn
-                        </div> */}
-                        <div
-  className={styles.menuItem}
-  onClick={(e) => {
-    e.stopPropagation();
 
-    if (isMessagePinned(m.id)) {
-      void handleUnpinMessage(m.id);
-    } else {
-      void handlePinMessage(m.id);
-    }
-  }}
->
-  {isMessagePinned(m.id) ? (
-    <PinOff size={14} />
-  ) : (
-    <Pin size={14} />
-  )}
-
-  {isMessagePinned(m.id) ? "Bỏ ghim" : "Ghim tin nhắn"}
-</div>
+                        {/* Ghim / Bỏ ghim (cả 2 bên) */}
                         <div
                           className={styles.menuItem}
                           onClick={(e) => {
                             e.stopPropagation();
-                            void handleRevokeMessage(m.id);
+
+                            if (isMessagePinned(m.id)) {
+                              void handleUnpinMessage(m.id);
+                            } else {
+                              void handlePinMessage(m.id);
+                            }
+
+                            setOpenMenuId(null);
                           }}
                         >
-                          <Reply size={14} />
-                          Thu hồi
+                          {isMessagePinned(m.id) ? <PinOff size={14} /> : <Pin size={14} />}
+                          {isMessagePinned(m.id) ? "Bỏ ghim" : "Ghim tin nhắn"}
                         </div>
+
+                        {/* CHỈ me mới có thu hồi */}
+                        {m.sender === "me" && (
+                          <div
+                            className={styles.menuItem}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              void handleRevokeMessage(m.id);
+                              setOpenMenuId(null);
+                            }}
+                          >
+                            <Reply size={14} />
+                            Thu hồi
+                          </div>
+                        )}
+
+                        {/* Xóa chỉ mình tôi (cả 2 bên nếu bạn muốn) */}
                         <div
                           className={styles.menuItem}
                           onClick={(e) => {
                             e.stopPropagation();
                             void handleDeleteMessageForMe(m.id);
+                            setOpenMenuId(null);
                           }}
                         >
                           <Trash2 size={14} />
@@ -1430,7 +1471,6 @@ useEffect(() => {
                         </div>
                       </div>
                     )}
-
                     <div
                       className={`${m.kind === "image"
                         ? styles.imageBubble
@@ -1532,26 +1572,6 @@ useEffect(() => {
           />
         )
       )}
-
-      {/* {showPinnedList && (
-        <div className={styles.pinnedModal} onClick={() => setShowPinnedList(false)}>
-          <div className={styles.pinnedModalBox} onClick={(e) => e.stopPropagation()}>
-            <h3>Danh sách ghim</h3>
-
-            {pinnedMessages.map((p) => (
-              <div key={p.messageId} className={styles.pinnedItem}>
-                <div className={styles.text}>
-                  {p.message.content}
-                </div>
-
-                <div className={styles.by}>
-                  {p.pinnedByName || "Loading..."}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )} */}
 
       {pinMenu && (
         <div

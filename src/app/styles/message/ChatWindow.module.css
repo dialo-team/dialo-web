@@ -234,13 +234,37 @@
   color: #777;
 }
 
-.moreBtn {
+/* .moreBtn {
   position: absolute;
   left: -22px;
   top: 50%;
   transform: translateY(-50%);
   cursor: pointer;
   color: #6b7280;
+} */
+
+.moreBtn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+/* hover mới hiện */
+.messageBox:hover .moreBtn {
+  opacity: 1;
+}
+
+/* me → bên trái bubble */
+.moreBtnMe {
+  left: -24px;
+}
+
+/* them → bên phải bubble */
+.moreBtnThem {
+  right: -24px;
 }
 
 .menu {
