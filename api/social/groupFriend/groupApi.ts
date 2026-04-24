@@ -78,6 +78,34 @@ export const dissolveGroupApi = (conversationId: string) => {
   );
 };
 
+// ghim tin nhắn
+export const pinMessageApi = (
+  conversationId: string,
+  messageId: string
+) => {
+  return axiosClient.post(
+    `/api/v1/conversations/${conversationId}/pin/${messageId}`
+  );
+};
+
+// bỏ ghim tin nhắn 
+export const unpinMessageApi = (
+  conversationId: string,
+  messageId: string
+) => {
+  return axiosClient.delete(
+    `/api/v1/conversations/${conversationId}/pin/${messageId}`
+  );
+};
+
+
+// lấy danh sách tin nhắn
+export const getPinnedMessagesApi = (conversationId: string) => {
+  return axiosClient.get(
+    `/api/v1/conversations/${conversationId}/pins`
+  );
+};
+
 const DISSOLVED_KEY = "dissolvedGroups";
 
 export const markGroupDissolved = (conversationId: string) => {
