@@ -32,6 +32,8 @@ import {
   SmilePlus,
   X,
   Check,
+  Pin,
+  PinOff,
 } from "lucide-react";
 import {
   getConversationDetailApi,
@@ -83,6 +85,20 @@ type MessageUI = {
   poll?: PollResponse;
   reactions?: { emoji: string; count: number }[];
   durationSeconds?: number;
+};
+
+type PinnedMessage = {
+  message: {
+    id: string;
+    content: string;
+    attachment: {
+      fileUrl: string,
+    }
+  };
+  messageId: string;
+  pinnedAt: string;
+  pinnedByUserId: string;
+  pinnedByName?: string;
 };
 
 const MESSAGE_TEXT_TYPE = "TEXT";
@@ -452,6 +468,8 @@ export const ChatWindow = () => {
   const [voteTarget, setVoteTarget] = useState<{ messageId: string; poll: PollResponse; senderName: string; createdAt: string; settings?: PollSettings } | null>(null);
   const [forwardMsgId, setForwardMsgId] = useState<string | null>(null);
   const pollSettingsRef = useRef<Map<string, PollSettings>>(new Map());
+
+  const [chatUser, setChatUser] = useState<Friend | null>(selectedUser);
 
   // ── Voice recording ──
   const [isRecording, setIsRecording] = useState(false);
@@ -1299,7 +1317,7 @@ export const ChatWindow = () => {
                     />
                   )}
 
-                  <div className={styles.messageBox}>
+<!--                   <div className={styles.messageBox}>
 
                     {/* ── Hover action bar (hiện khi rờ vào tin nhắn) ── */}
                     {!m.revoked && (
@@ -1318,6 +1336,50 @@ export const ChatWindow = () => {
                         <button
                           className={styles.hoverMoreBtn}
                           title="Thêm tùy chọn"
+=======
+
+                    {!m.revoked && (
+                      <div
+                        className={m.sender === "me" ? styles.moreBtn : styles.moreBtnForThem}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          setMenuPos({
+                            x: rect.left - 180,
+                            y: rect.top,
+                          });
+                          setOpenMenuId(openMenuId === m.id ? null : m.id);
+                        }}
+                      >
+                        <MoreVertical size={16} />
+                      </div>
+                    )}
+
+                    {openMenuId === m.id && (
+                      <div
+                        className={styles.menu}
+                        style={{
+                          left: menuPos.x,
+                          top: menuPos.y,
+                        }}
+                      >
+                        {m.sender === "me" && (
+                          <div
+                            className={styles.menuItem}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              void handleRevokeMessage(m.id);
+                            }}
+                          >
+                            <Reply size={14} />
+                            Thu hồi
+                          </div>
+                        )}
+
+                        {/* Ghim / Bỏ ghim (cả 2 bên) */}
+                        <div
+                          className={styles.menuItem}
+
                           onClick={(e) => {
                             e.stopPropagation();
                             const rect = e.currentTarget.getBoundingClientRect();
@@ -1328,7 +1390,93 @@ export const ChatWindow = () => {
                           <MoreVertical size={14} />
                         </button>
                       </div>
-                    )}
+                    )} -->
+                          
+                          <div className={styles.messageBox}>
+  {/* Hover action bar */}
+  {!m.revoked && (
+    <div
+      className={`${styles.hoverActions} ${
+        m.sender === "me"
+          ? styles.hoverActionsRight
+          : styles.hoverActionsLeft
+      }`}
+    >
+      {/* QUICK REACTIONS */}
+      {QUICK_REACTIONS.map((emoji) => (
+        <button
+          key={emoji}
+          className={styles.hoverReactBtn}
+          onClick={(e) => {
+            e.stopPropagation();
+            void handleReact(m.id, emoji);
+          }}
+          title={emoji}
+        >
+          {emoji}
+        </button>
+      ))}
+
+      <span className={styles.hoverDivider} />
+
+      {/* MORE BUTTON */}
+      <button
+        className={styles.hoverMoreBtn}
+        title="Thêm tùy chọn"
+        onClick={(e) => {
+          e.stopPropagation();
+          const rect = e.currentTarget.getBoundingClientRect();
+
+          setMenuPos({
+            x: rect.left - 180,
+            y: rect.bottom + 4,
+          });
+
+          setOpenMenuId(openMenuId === m.id ? null : m.id);
+        }}
+      >
+        <MoreVertical size={14} />
+      </button>
+    </div>
+  )}
+
+  {/* MENU */}
+  {openMenuId === m.id && (
+    <div
+      className={styles.menu}
+      style={{
+        left: menuPos.x,
+        top: menuPos.y,
+      }}
+    >
+      {/* Thu hồi (chỉ mình) */}
+      {m.sender === "me" && (
+        <div
+          className={styles.menuItem}
+          onClick={(e) => {
+            e.stopPropagation();
+            void handleRevokeMessage(m.id);
+          }}
+        >
+          <Reply size={14} />
+          Thu hồi
+        </div>
+      )}
+
+      {/* Ghim / Bỏ ghim */}
+      <div
+        className={styles.menuItem}
+        onClick={(e) => {
+          e.stopPropagation();
+          void handleTogglePin(m.id);
+        }}
+      >
+        <Pin size={14} />
+        {m.pinned ? "Bỏ ghim" : "Ghim"}
+      </div>
+    </div>
+  )}
+</div>
 
                     {/* ── Dropdown menu (chỉnh sửa / thu hồi / xóa / chuyển tiếp) ── */}
                     {openMenuId === m.id && (
@@ -1342,7 +1490,8 @@ export const ChatWindow = () => {
                             <Pencil size={14} /> Chỉnh sửa
                           </div>
                         )}
-                        {m.sender === 'me' && (
+
+<!--                         {m.sender === 'me' && (
                           <div className={styles.menuItem} onClick={(e) => { e.stopPropagation(); void handleRevokeMessage(m.id); }}>
                             <Reply size={14} /> Thu hồi
                           </div>
@@ -1351,7 +1500,21 @@ export const ChatWindow = () => {
                           <Trash2 size={14} /> Xóa chỉ mình tôi
                         </div>
                         <div className={styles.menuItem} onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); setForwardMsgId(m.id); }}>
+                          <Share2 size={14} /> Chuyển tiếp -->
+
+
+                        {/* Xóa chỉ mình tôi (cả 2 bên nếu bạn muốn) */}
+                        <div
+                          className={styles.menuItem}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void handleDeleteMessageForMe(m.id);
+                            setOpenMenuId(null);
+                          }}
+                        >
+                            <div className={styles.menuItem} onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); setForwardMsgId(m.id); }}>
                           <Share2 size={14} /> Chuyển tiếp
+
                         </div>
                       </div>
                     )}
@@ -1419,6 +1582,7 @@ export const ChatWindow = () => {
           )}
         </div>
 
+        {/* TOOLBAR + INPUT — ẩn khi nhóm đã giải tán */}
         {/* TOOLBAR + INPUT — ẩn khi nhóm đã giải tán */}
         {isGroupDissolved ? null : (<>
           {/* TOOLBAR */}
@@ -1536,28 +1700,44 @@ export const ChatWindow = () => {
                 }
               }}
             />
+          )}
+        </div>
 
-            <button
-              className={styles.sendBtn}
-              type="button"
-              onClick={() => void handleSendMessage()}
-              disabled={sending || !messageText.trim()}
-            >
-              <Send size={18} />
-            </button>
-          </div>
-
+        {/* INPUT */}
+        <div className={styles.input}>
           <input
-            ref={fileInputRef}
-            type="file"
-            hidden
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                void handleSendFile(file);
+            placeholder="Nhập tin nhắn..."
+            value={messageText}
+            onChange={(e) => setMessageText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                void handleSendMessage();
               }
             }}
           />
+
+          <button
+            className={styles.sendBtn}
+            type="button"
+            onClick={() => void handleSendMessage()}
+            disabled={sending || !messageText.trim()}
+          >
+            <Send size={18} />
+          </button>
+        </div>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          hidden
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              void handleSendFile(file);
+            }
+          }}
+        />
         </>)}
       </div>
 
@@ -1595,6 +1775,34 @@ export const ChatWindow = () => {
           setShowPollModal(false);
           void loadConversationDetail(selectedUser.id, true);
         }}
+      />
+
+      {voteTarget && (
+        <PollVoteModal
+          open={true}
+          messageId={voteTarget.messageId}
+          poll={voteTarget.poll}
+          senderName={voteTarget.senderName}
+          createdAt={voteTarget.createdAt}
+          settings={voteTarget.settings}
+          onClose={() => setVoteTarget(null)}
+          onVoted={() => {
+            setVoteTarget(null);
+            void loadConversationDetail(selectedUser.id, true);
+          }}
+        />
+      )}
+
+      <ForwardModal
+        open={forwardMsgId !== null}
+        sourceMessageId={forwardMsgId ?? ""}
+        onClose={() => setForwardMsgId(null)}
+        onForwarded={() => setForwardMsgId(null)}
+
+      <AlertModal
+        open={alert.open}
+        message={alert.message}
+        onClose={() => setAlert({ open: false, message: "" })}
       />
 
       {voteTarget && (
