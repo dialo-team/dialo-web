@@ -25,6 +25,7 @@ import {
   FileText,
   Download,
   Pin,
+  PinOff,
 } from "lucide-react";
 import {
   getConversationDetailApi,
@@ -382,6 +383,8 @@ export const ChatWindow = () => {
   const isGroupChat =
     selectedUser?.id === (selectedUser as any)?.counterpartId;
 
+
+
   const bodyRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const messagesRef = useRef<MessageUI[]>([]);
@@ -413,6 +416,8 @@ export const ChatWindow = () => {
   const [pinnedExpanded, setPinnedExpanded] = useState(false);
   const [activePinMenu, setActivePinMenu] = useState<string | null>(null);
   const [pinMenuOpen, setPinMenuOpen] = useState(false);
+
+  
 
   const [pinMenu, setPinMenu] = useState<{
     messageId: string | null;
@@ -1067,10 +1072,9 @@ export const ChatWindow = () => {
   }, []);
 
 
-
-
-
-
+    const isMessagePinned = (messageId: string) => {
+    return pinnedMessages.some((p) => p.messageId === messageId);
+  };
 
   //================================
 
@@ -1197,7 +1201,7 @@ export const ChatWindow = () => {
                   const rect = e.currentTarget.getBoundingClientRect();
 
                   setPinMenu({
-                    messageId:  pinnedMessages[0]?.messageId,
+                    messageId: pinnedMessages[0]?.messageId,
                     type: "item",
                     x: rect.right,
                     y: rect.bottom,
@@ -1334,7 +1338,7 @@ export const ChatWindow = () => {
                           top: menuPos.y,
                         }}
                       >
-                        <div
+                        {/* <div
                           className={styles.menuItem}
                           onClick={(e) => {
                             e.stopPropagation();
@@ -1343,7 +1347,27 @@ export const ChatWindow = () => {
                         >
                           <Pin size={14} />
                           Ghim tin nhắn
-                        </div>
+                        </div> */}
+                        <div
+  className={styles.menuItem}
+  onClick={(e) => {
+    e.stopPropagation();
+
+    if (isMessagePinned(m.id)) {
+      void handleUnpinMessage(m.id);
+    } else {
+      void handlePinMessage(m.id);
+    }
+  }}
+>
+  {isMessagePinned(m.id) ? (
+    <PinOff size={14} />
+  ) : (
+    <Pin size={14} />
+  )}
+
+  {isMessagePinned(m.id) ? "Bỏ ghim" : "Ghim tin nhắn"}
+</div>
                         <div
                           className={styles.menuItem}
                           onClick={(e) => {
