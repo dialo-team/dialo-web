@@ -267,6 +267,15 @@
   right: -24px;
 }
 
+.moreBtnForThem {
+  position: absolute;
+  right: -22px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #6b7280;
+}
+
 .menu {
   position: fixed;
   width: 180px;

@@ -69,6 +69,8 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
     new Set(JSON.parse(localStorage.getItem("clearedConversations") || "[]"))
   );
   const selectedIdRef = useRef<string | undefined>(selectedConversationId);
+  const hasLoadedRef = useRef(false);
+  const socketDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     selectedIdRef.current = selectedConversationId;
@@ -114,7 +116,7 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
   }, []);
 
   const loadConversations = useCallback(async () => {
-    setLoading(true);
+    if (!hasLoadedRef.current) setLoading(true);
     try {
       const data = await getConversationsApi();
 
@@ -195,6 +197,7 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
     } catch (error) {
       console.error("Load conversations failed:", error);
     } finally {
+      hasLoadedRef.current = true;
       setLoading(false);
     }
   }, []);
@@ -277,11 +280,35 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
     const unsubscribe = subscribeChatTopic(
       `/topic/inbox/${currentUserId}`,
       () => {
-        void loadConversations();
+        if (socketDebounceRef.current) clearTimeout(socketDebounceRef.current);
+        socketDebounceRef.current = setTimeout(() => {
+          void loadConversations();
+        }, 300);
       },
     );
 
     return unsubscribe;
+  }, [loadConversations]);
+
+  // ===================== FRIEND REMOVED =====================
+  useEffect(() => {
+    const handler = (e: any) => {
+      const { friendId } = e.detail as { friendId: string };
+      setFriends((prev) => {
+        const conv = prev.find((f) => f.counterpartId === friendId);
+        if (conv) {
+          clearedIds.current.delete(conv.id);
+          localStorage.setItem(
+            "clearedConversations",
+            JSON.stringify([...clearedIds.current])
+          );
+        }
+        return prev;
+      });
+      void loadConversations();
+    };
+    window.addEventListener("friend-removed", handler);
+    return () => window.removeEventListener("friend-removed", handler);
   }, [loadConversations]);
 
   // ===================== FALLBACK POLLING =====================
