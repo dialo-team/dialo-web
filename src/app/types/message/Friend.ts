@@ -5,5 +5,6 @@ export type Friend = {
   lastMessage: string;
   unreadCount?: number;
   unreadDisplay?: string;
-  memberAvatars: string[]
+  memberAvatars: string[];
+  counterpartId?: string;
 };

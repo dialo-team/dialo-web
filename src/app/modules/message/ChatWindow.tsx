@@ -24,6 +24,8 @@ import {
   Send,
   FileText,
   Download,
+  BarChart2,
+  Share2,
 } from "lucide-react";
 import {
   getConversationDetailApi,
@@ -38,7 +40,11 @@ import { ChatInfo } from "./ChatInfo";
 import { ChatGroupInfo } from "./group/ChatGroupInfo";
 import { ChatWindowSkeleton } from "./ChatSkeletonLoading";
 import { ChatSearch } from "./ChatSearch";
-import type { MessageDto } from "../../types/message/Message";
+import { CreatePollModal } from "./CreatePollModal";
+import { PollBubble } from "./PollBubble";
+import { PollVoteModal } from "./PollVoteModal";
+import { ForwardModal } from "./ForwardModal";
+import type { MessageDto, PollResponse, PollSettings } from "../../types/message/Message";
 import { subscribeChatTopic } from "./chatSocket";
 import { getBlockedUsersApi, unblockUserApi } from "../../../../api/social/listFriend/ListFriendApi";
 import { getUserInfoApi } from "../../../../api/social/searchAndAddFriend/userApi";
@@ -62,7 +68,9 @@ type MessageUI = {
   revoked?: boolean;
   type?: string;
   senderId?: string;
-
+  senderName?: string;
+  createdAt?: string;
+  poll?: PollResponse;
 };
 
 const MESSAGE_TEXT_TYPE = "TEXT";
@@ -226,8 +234,10 @@ const mapMessageToUI = (
   fileName: message.attachment?.fileName || undefined,
   mimeType: message.attachment?.mimeType || undefined,
   revoked: message.revoked,
-
   type: message.type,
+  senderName: message.senderName,
+  createdAt: message.createdAt,
+  poll: message.poll,
 });
 
 const resolveAttachmentUrl = async (message: MessageUI): Promise<MessageUI> => {
@@ -389,6 +399,11 @@ export const ChatWindow = () => {
   const [isBlocked, setIsBlocked] = useState(false);
   const [checkingBlock, setCheckingBlock] = useState(false);
   const [isGroupDissolved, setIsGroupDissolved] = useState(false);
+
+  const [showPollModal, setShowPollModal] = useState(false);
+  const [voteTarget, setVoteTarget] = useState<{ messageId: string; poll: PollResponse; senderName: string; createdAt: string; settings?: PollSettings } | null>(null);
+  const [forwardMsgId, setForwardMsgId] = useState<string | null>(null);
+  const pollSettingsRef = useRef<Map<string, PollSettings>>(new Map());
 
   const [chatUser, setChatUser] = useState<Friend | null>(selectedUser);
 
@@ -1068,6 +1083,39 @@ export const ChatWindow = () => {
               }
 
 
+              if (m.type === "POLL" && m.poll) {
+                return (
+                  <div
+                    key={m.id}
+                    className={m.sender === "me" ? styles.messageRight : styles.messageLeft}
+                  >
+                    {m.sender === "them" && (
+                      <img
+                        src={isGroupChat ? userCache[m.senderId || ""]?.avatar || selectedUser.avatar : selectedUser.avatar}
+                        className={styles.avatar}
+                      />
+                    )}
+                    <div className={styles.messageBox}>
+                      <PollBubble
+                        messageId={m.id}
+                        poll={m.poll}
+                        time={m.time}
+                        settings={pollSettingsRef.current.get(m.id)}
+                        onVoteClick={(msgId) =>
+                          setVoteTarget({
+                            messageId: msgId,
+                            poll: m.poll!,
+                            senderName: m.senderName || "Người dùng",
+                            createdAt: m.createdAt || new Date().toISOString(),
+                            settings: pollSettingsRef.current.get(msgId),
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                );
+              }
+
               return (
                 <div
                   key={m.id}
@@ -1088,19 +1136,16 @@ export const ChatWindow = () => {
 
                   <div className={styles.messageBox}>
 
-                    {m.sender === "me" && (
+                    {!m.revoked && (
                       <div
-                        className={styles.moreBtn}
+                        className={m.sender === "me" ? styles.moreBtn : styles.moreBtnForThem}
                         onClick={(e) => {
                           e.stopPropagation();
-
                           const rect = e.currentTarget.getBoundingClientRect();
-
                           setMenuPos({
-                            x: rect.left - 190,
+                            x: rect.left - 180,
                             y: rect.top,
                           });
-
                           setOpenMenuId(openMenuId === m.id ? null : m.id);
                         }}
                       >
@@ -1116,16 +1161,18 @@ export const ChatWindow = () => {
                           top: menuPos.y,
                         }}
                       >
-                        <div
-                          className={styles.menuItem}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            void handleRevokeMessage(m.id);
-                          }}
-                        >
-                          <Reply size={14} />
-                          Thu hồi
-                        </div>
+                        {m.sender === "me" && (
+                          <div
+                            className={styles.menuItem}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              void handleRevokeMessage(m.id);
+                            }}
+                          >
+                            <Reply size={14} />
+                            Thu hồi
+                          </div>
+                        )}
                         <div
                           className={styles.menuItem}
                           onClick={(e) => {
@@ -1135,6 +1182,17 @@ export const ChatWindow = () => {
                         >
                           <Trash2 size={14} />
                           Xóa chỉ mình tôi
+                        </div>
+                        <div
+                          className={styles.menuItem}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenMenuId(null);
+                            setForwardMsgId(m.id);
+                          }}
+                        >
+                          <Share2 size={14} />
+                          Chuyển tiếp
                         </div>
                       </div>
                     )}
@@ -1178,6 +1236,14 @@ export const ChatWindow = () => {
             style={{ cursor: "pointer", opacity: sendingFile ? 0.6 : 1 }}
           />
           <Zap size={18} />
+          {isGroupChat && (
+            <BarChart2
+              size={18}
+              style={{ cursor: "pointer" }}
+              onClick={() => setShowPollModal(true)}
+              title="Tạo bình chọn"
+            />
+          )}
         </div>
 
         {/* INPUT */}
@@ -1242,6 +1308,40 @@ export const ChatWindow = () => {
       )}
 
       {showSearch && <ChatSearch onClose={() => setShowSearch(false)} />}
+
+      <CreatePollModal
+        open={showPollModal}
+        conversationId={selectedUser.id}
+        onClose={() => setShowPollModal(false)}
+        onCreated={(msg, settings) => {
+          if (msg?.id) pollSettingsRef.current.set(msg.id, settings);
+          setShowPollModal(false);
+          void loadConversationDetail(selectedUser.id, true);
+        }}
+      />
+
+      {voteTarget && (
+        <PollVoteModal
+          open={true}
+          messageId={voteTarget.messageId}
+          poll={voteTarget.poll}
+          senderName={voteTarget.senderName}
+          createdAt={voteTarget.createdAt}
+          settings={voteTarget.settings}
+          onClose={() => setVoteTarget(null)}
+          onVoted={() => {
+            setVoteTarget(null);
+            void loadConversationDetail(selectedUser.id, true);
+          }}
+        />
+      )}
+
+      <ForwardModal
+        open={forwardMsgId !== null}
+        sourceMessageId={forwardMsgId ?? ""}
+        onClose={() => setForwardMsgId(null)}
+        onForwarded={() => setForwardMsgId(null)}
+      />
     </div>
   );
 };
