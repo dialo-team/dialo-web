@@ -1,0 +1,131 @@
+/* ── Voice message bubble ── */
+.wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  min-width: 220px;
+  max-width: 280px;
+  position: relative;
+  user-select: none;
+}
+
+/* Tin của mình — khớp .messageRight .bubble (#dbeafe) */
+.mine {
+  background: #dbeafe;
+  color: #1f2937;
+}
+
+/* Tin của người khác — khớp .bubble (#fff) */
+.theirs {
+  background: #fff;
+  color: #1f2937;
+}
+
+/* ── Play button ── */
+.playBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: #0ea5e9;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.playBtn:hover {
+  background: #0284c7;
+  transform: scale(1.06);
+}
+
+.playBtn:active {
+  transform: scale(0.95);
+}
+
+/* ── Middle: waveform + time ── */
+.middle {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* ── Waveform ── */
+.waveform {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 30px;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.bar {
+  width: 3px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* Bars đã phát: accent xanh */
+.barFilled {
+  background: #0ea5e9;
+}
+
+/* Bars chưa phát — mine dùng xanh nhạt hơn, theirs dùng xám */
+.mine .barEmpty {
+  background: #93c5fd;
+}
+
+.theirs .barEmpty {
+  background: #d1d5db;
+}
+
+/* ── Thumb dot ── */
+.thumb {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #0ea5e9;
+  box-shadow: 0 1px 4px rgba(14, 165, 233, 0.45);
+  pointer-events: none;
+  transition: left 0.05s linear;
+}
+
+/* ── Time row ── */
+.timeRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.duration {
+  font-size: 11px;
+  font-weight: 600;
+  color: #374151;
+  font-variant-numeric: tabular-nums;
+}
+
+.msgTime {
+  font-size: 11px;
+  color: #777;
+}
+
+/* ── Mic icon ── */
+.micIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #9ca3af;
+}
