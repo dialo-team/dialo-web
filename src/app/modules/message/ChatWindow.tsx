@@ -43,7 +43,7 @@ import type { MessageDto } from "../../types/message/Message";
 import { subscribeChatTopic } from "./chatSocket";
 import { getBlockedUsersApi, unblockUserApi } from "../../../../api/social/listFriend/ListFriendApi";
 import { getUserInfoApi } from "../../../../api/social/searchAndAddFriend/userApi";
-import { getPinnedMessagesApi, pinMessageApi } from "../../../../api/social/groupFriend/groupApi";
+import { getPinnedMessagesApi, pinMessageApi, unpinMessageApi } from "../../../../api/social/groupFriend/groupApi";
 import { AlertModal } from "@/app/components/AlertModal";
 
 type PropsContext = {
@@ -1039,6 +1039,22 @@ export const ChatWindow = () => {
     }
   }, [selectedUser?.id]);
 
+  const handleUnpinMessage = async (messageId?: string | null) => {
+    const conversationId = selectedUser?.id;
+    if (!conversationId || !messageId) return;
+
+    try {
+      await unpinMessageApi(conversationId, messageId);
+      //   setPinnedMessages((prev) =>
+      //   prev.filter((p) => p.messageId !== messageId)
+      // );
+      // reload lại danh sách ghim
+      await loadPinnedMessages();
+    } catch (err) {
+      console.error("Unpin message error:", err);
+    }
+  };
+
   useEffect(() => {
     void loadPinnedMessages();
   }, [selectedUser?.id, loadPinnedMessages]);
@@ -1181,7 +1197,7 @@ export const ChatWindow = () => {
                   const rect = e.currentTarget.getBoundingClientRect();
 
                   setPinMenu({
-                    messageId: null,
+                    messageId:  pinnedMessages[0]?.messageId,
                     type: "item",
                     x: rect.right,
                     y: rect.bottom,
@@ -1498,14 +1514,7 @@ export const ChatWindow = () => {
           <div
             className={styles.pinDropdownItem}
             onClick={() => {
-              if (pinMenu.messageId) {
-                setPinnedMessages((prev) =>
-                  prev.filter((p) => p.messageId !== pinMenu.messageId)
-                );
-              } else {
-                setPinnedMessages([]);
-              }
-
+              void handleUnpinMessage(pinMenu.messageId);
               setPinMenu(null);
             }}
           >
