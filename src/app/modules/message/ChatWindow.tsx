@@ -24,6 +24,7 @@ import {
   Send,
   FileText,
   Download,
+  Pin,
 } from "lucide-react";
 import {
   getConversationDetailApi,
@@ -42,6 +43,8 @@ import type { MessageDto } from "../../types/message/Message";
 import { subscribeChatTopic } from "./chatSocket";
 import { getBlockedUsersApi, unblockUserApi } from "../../../../api/social/listFriend/ListFriendApi";
 import { getUserInfoApi } from "../../../../api/social/searchAndAddFriend/userApi";
+import { getPinnedMessagesApi, pinMessageApi } from "../../../../api/social/groupFriend/groupApi";
+import { AlertModal } from "@/app/components/AlertModal";
 
 type PropsContext = {
   selectedUser: Friend | null;
@@ -63,6 +66,17 @@ type MessageUI = {
   type?: string;
   senderId?: string;
 
+};
+
+type PinnedMessage = {
+  message: {
+    id: string;
+    content: string;
+  };
+  messageId: string;
+  pinnedAt: string;
+  pinnedByUserId: string;
+  pinnedByName?: string;
 };
 
 const MESSAGE_TEXT_TYPE = "TEXT";
@@ -392,66 +406,81 @@ export const ChatWindow = () => {
 
   const [chatUser, setChatUser] = useState<Friend | null>(selectedUser);
 
+  const [pinnedMessages, setPinnedMessages] = useState<PinnedMessage[]>([]);
+  const [showPinnedList, setShowPinnedList] = useState(false);
+  const [alert, setAlert] = useState({ open: false, message: "" });
+
+  const [pinnedExpanded, setPinnedExpanded] = useState(false);
+  const [activePinMenu, setActivePinMenu] = useState<string | null>(null);
+  const [pinMenuOpen, setPinMenuOpen] = useState(false);
+
+  const [pinMenu, setPinMenu] = useState<{
+    messageId: string | null;
+    type: "bar" | "item" | null;
+    x: number;
+    y: number;
+  } | null>(null);
+
   useEffect(() => {
-  setChatUser(selectedUser);
-}, [selectedUser]);
+    setChatUser(selectedUser);
+  }, [selectedUser]);
 
   // truyền từ chatsidebar
- useEffect(() => {
-  const handler = (e: any) => {
-    const { conversationId, name, avatar } = e.detail;
+  useEffect(() => {
+    const handler = (e: any) => {
+      const { conversationId, name, avatar } = e.detail;
 
-    if (!chatUser || chatUser.id !== conversationId) return;
+      if (!chatUser || chatUser.id !== conversationId) return;
 
-    setChatUser((prev) =>
-      prev
-        ? {
+      setChatUser((prev) =>
+        prev
+          ? {
             ...prev,
             name: name ?? prev.name,
             avatar: avatar ?? prev.avatar,
           }
-        : prev
-    );
-  };
+          : prev
+      );
+    };
 
-  window.addEventListener("conversation-updated", handler);
+    window.addEventListener("conversation-updated", handler);
 
-  return () => {
-    window.removeEventListener("conversation-updated", handler);
-  };
-}, [chatUser]);
+    return () => {
+      window.removeEventListener("conversation-updated", handler);
+    };
+  }, [chatUser]);
 
 
   // const [chatUser, setChatUser] = useState<Friend | null>(selectedUser);
 
   useEffect(() => {
-  setChatUser(selectedUser);
-}, [selectedUser]);
+    setChatUser(selectedUser);
+  }, [selectedUser]);
 
   // truyền từ chatsidebar
- useEffect(() => {
-  const handler = (e: any) => {
-    const { conversationId, name, avatar } = e.detail;
+  useEffect(() => {
+    const handler = (e: any) => {
+      const { conversationId, name, avatar } = e.detail;
 
-    if (!chatUser || chatUser.id !== conversationId) return;
+      if (!chatUser || chatUser.id !== conversationId) return;
 
-    setChatUser((prev) =>
-      prev
-        ? {
+      setChatUser((prev) =>
+        prev
+          ? {
             ...prev,
             name: name ?? prev.name,
             avatar: avatar ?? prev.avatar,
           }
-        : prev
-    );
-  };
+          : prev
+      );
+    };
 
-  window.addEventListener("conversation-updated", handler);
+    window.addEventListener("conversation-updated", handler);
 
-  return () => {
-    window.removeEventListener("conversation-updated", handler);
-  };
-}, [chatUser]);
+    return () => {
+      window.removeEventListener("conversation-updated", handler);
+    };
+  }, [chatUser]);
 
 
   useEffect(() => {
@@ -956,6 +985,79 @@ export const ChatWindow = () => {
     });
   }, [messages, isGroupChat, fetchUserInfo]);
 
+  // ghim tin nhắn
+  const handlePinMessage = async (messageId: string) => {
+    const conversationId = selectedUser?.id;
+    if (!conversationId) return;
+
+    if (pinnedMessages.length >= 5) {
+      setAlert({
+        open: true,
+        message: "Không thể ghim quá 5 tin nhắn",
+      });
+      return;
+    }
+
+    try {
+      await pinMessageApi(conversationId, messageId);
+      await loadPinnedMessages();
+
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const loadPinnedMessages = useCallback(async () => {
+    const conversationId = selectedUser?.id;
+    if (!conversationId) return;
+
+    try {
+      const res = await getPinnedMessagesApi(conversationId);
+      let data: PinnedMessage[] = res.data || [];
+
+      // limit 5
+      data = data.slice(0, 5);
+
+      // enrich username
+      const enriched = await Promise.all(
+        data.map(async (p) => {
+          try {
+            const user = await getUserInfoApi(p.pinnedByUserId);
+            return {
+              ...p,
+              pinnedByName: user.data.data.userName,
+            };
+          } catch {
+            return p;
+          }
+        })
+      );
+
+      setPinnedMessages(enriched);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [selectedUser?.id]);
+
+  useEffect(() => {
+    void loadPinnedMessages();
+  }, [selectedUser?.id, loadPinnedMessages]);
+
+
+  useEffect(() => {
+    const handleClick = () => setPinMenu(null);
+    window.addEventListener("click", handleClick);
+    return () => window.removeEventListener("click", handleClick);
+  }, []);
+
+
+
+
+
+
+
+  //================================
+
   return (
     <div className={styles.container}>
       {/* <div
@@ -999,6 +1101,7 @@ export const ChatWindow = () => {
 
         {/* HEADER */}
         <div className={styles.header}>
+
           <div className={styles.user}>
             <button className={styles.backButton} onClick={onBackToSidebar}>
               <ChevronLeft size={20} />
@@ -1042,6 +1145,105 @@ export const ChatWindow = () => {
 
         {/* BODY */}
         <div className={styles.body} ref={bodyRef}>
+          {/* PINNED BAR - ĐẶT Ở ĐÂY */}
+          {pinnedMessages.length > 0 && !pinnedExpanded && (
+            <div className={styles.pinnedBar}>
+
+              <div
+                className={styles.pinnedContent}
+                onClick={() => setPinnedExpanded(true)}
+              >
+                <div className={styles.pinnedText}>
+                  {pinnedMessages[0].message.content}
+                </div>
+              </div>
+
+              {/* +n nằm bên phải */}
+              {pinnedMessages.length > 1 && (
+                <span
+                  className={styles.more}
+                  onClick={() => setPinnedExpanded(true)}
+                >
+                  +{pinnedMessages.length - 1} ghim
+                </span>
+              )}
+
+              <div
+                className={styles.menuWrapper}
+                onClick={(e) => {
+                  e.stopPropagation();
+
+                  if (pinMenu) {
+                    setPinMenu(null);
+                    return;
+                  }
+
+                  const rect = e.currentTarget.getBoundingClientRect();
+
+                  setPinMenu({
+                    messageId: null,
+                    type: "item",
+                    x: rect.right,
+                    y: rect.bottom,
+                  });
+                }}
+              >
+                ⋯
+              </div>
+            </div>
+          )}
+
+
+          {pinnedMessages.length > 0 && pinnedExpanded && (
+            <div className={styles.pinnedExpanded}>
+              <div className={styles.pinnedHeader}>
+                <span>Tin nhắn đã ghim</span>
+                <button onClick={() => setPinnedExpanded(false)}>✕</button>
+              </div>
+
+              {pinnedMessages.map((p) => (
+                <div key={p.messageId} className={styles.pinnedItem}>
+                  <div className={styles.pinnedMain}>
+                    <div className={styles.pinnedContentText}>
+                      <div className={styles.sender}>
+                        {p.pinnedByName}
+                      </div>
+
+                      <div className={styles.text}>
+                        {p.message.content}
+                      </div>
+                    </div>
+
+                    {/* MENU 3 CHẤM */}
+                    <div
+                      className={styles.menuWrapper}
+                      onClick={(e) => {
+                        e.stopPropagation();
+
+                        if (pinMenu) {
+                          setPinMenu(null);
+                          return;
+                        }
+
+                        const rect = e.currentTarget.getBoundingClientRect();
+
+                        setPinMenu({
+                          messageId: p.messageId,
+                          type: "item",
+                          x: rect.right,
+                          y: rect.bottom,
+                        });
+                      }}
+                    >
+                      ⋯
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+
           {isGroupDissolved ? (
             <div style={{
               flex: 1,
@@ -1120,6 +1322,16 @@ export const ChatWindow = () => {
                           className={styles.menuItem}
                           onClick={(e) => {
                             e.stopPropagation();
+                            void handlePinMessage(m.id);
+                          }}
+                        >
+                          <Pin size={14} />
+                          Ghim tin nhắn
+                        </div>
+                        <div
+                          className={styles.menuItem}
+                          onClick={(e) => {
+                            e.stopPropagation();
                             void handleRevokeMessage(m.id);
                           }}
                         >
@@ -1164,57 +1376,57 @@ export const ChatWindow = () => {
 
         {/* TOOLBAR + INPUT — ẩn khi nhóm đã giải tán */}
         {isGroupDissolved ? null : (<>
-        {/* TOOLBAR */}
-        <div className={styles.toolbar}>
-          <Smile size={18} />
-          <Image
-            size={18}
-            onClick={handlePickFile}
-            style={{ cursor: "pointer", opacity: sendingFile ? 0.6 : 1 }}
-          />
-          <Paperclip
-            size={18}
-            onClick={handlePickFile}
-            style={{ cursor: "pointer", opacity: sendingFile ? 0.6 : 1 }}
-          />
-          <Zap size={18} />
-        </div>
+          {/* TOOLBAR */}
+          <div className={styles.toolbar}>
+            <Smile size={18} />
+            <Image
+              size={18}
+              onClick={handlePickFile}
+              style={{ cursor: "pointer", opacity: sendingFile ? 0.6 : 1 }}
+            />
+            <Paperclip
+              size={18}
+              onClick={handlePickFile}
+              style={{ cursor: "pointer", opacity: sendingFile ? 0.6 : 1 }}
+            />
+            <Zap size={18} />
+          </div>
 
-        {/* INPUT */}
-        <div className={styles.input}>
+          {/* INPUT */}
+          <div className={styles.input}>
+            <input
+              placeholder="Nhập tin nhắn..."
+              value={messageText}
+              onChange={(e) => setMessageText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  void handleSendMessage();
+                }
+              }}
+            />
+
+            <button
+              className={styles.sendBtn}
+              type="button"
+              onClick={() => void handleSendMessage()}
+              disabled={sending || !messageText.trim()}
+            >
+              <Send size={18} />
+            </button>
+          </div>
+
           <input
-            placeholder="Nhập tin nhắn..."
-            value={messageText}
-            onChange={(e) => setMessageText(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                void handleSendMessage();
+            ref={fileInputRef}
+            type="file"
+            hidden
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                void handleSendFile(file);
               }
             }}
           />
-
-          <button
-            className={styles.sendBtn}
-            type="button"
-            onClick={() => void handleSendMessage()}
-            disabled={sending || !messageText.trim()}
-          >
-            <Send size={18} />
-          </button>
-        </div>
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          hidden
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) {
-              void handleSendFile(file);
-            }
-          }}
-        />
         </>)}
       </div>
 
@@ -1241,8 +1453,79 @@ export const ChatWindow = () => {
         )
       )}
 
+      {/* {showPinnedList && (
+        <div className={styles.pinnedModal} onClick={() => setShowPinnedList(false)}>
+          <div className={styles.pinnedModalBox} onClick={(e) => e.stopPropagation()}>
+            <h3>Danh sách ghim</h3>
+
+            {pinnedMessages.map((p) => (
+              <div key={p.messageId} className={styles.pinnedItem}>
+                <div className={styles.text}>
+                  {p.message.content}
+                </div>
+
+                <div className={styles.by}>
+                  {p.pinnedByName || "Loading..."}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )} */}
+
+      {pinMenu && (
+        <div
+          className={styles.pinDropdown}
+          style={{
+            position: "fixed",
+            top: pinMenu.y,
+            left: pinMenu.x,
+            zIndex: 9999,
+          }}
+        >
+          {/* MỞ BẢNG GHIM */}
+          <div
+            className={styles.pinDropdownItem}
+            onClick={() => {
+              setPinnedExpanded(true);
+              setPinMenu(null);
+            }}
+          >
+            Mở bảng ghim
+          </div>
+
+          {/* BỎ GHIM */}
+          <div
+            className={styles.pinDropdownItem}
+            onClick={() => {
+              if (pinMenu.messageId) {
+                setPinnedMessages((prev) =>
+                  prev.filter((p) => p.messageId !== pinMenu.messageId)
+                );
+              } else {
+                setPinnedMessages([]);
+              }
+
+              setPinMenu(null);
+            }}
+          >
+            Bỏ ghim
+          </div>
+        </div>
+      )}
+
+
       {showSearch && <ChatSearch onClose={() => setShowSearch(false)} />}
+
+
+      <AlertModal
+        open={alert.open}
+        message={alert.message}
+        onClose={() => setAlert({ open: false, message: "" })}
+      />
     </div>
+
+
   );
 };
 
