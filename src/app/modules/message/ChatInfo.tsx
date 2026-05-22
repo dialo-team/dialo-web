@@ -29,11 +29,6 @@ const MEDIA_BASE_URL = "http://14.225.192.37:8085";
 
 /* ================= HELPERS ================= */
 
-// const toAbsoluteUrl = (url: string) => {
-//   if (!url) return "";
-//   if (url.startsWith("http")) return url;
-//   return `${API_BASE_URL}${url.startsWith("/") ? url : "/" + url}`;
-// };
 const toAbsoluteUrl = (url: string) => {
   if (!url) return "";
 
@@ -51,17 +46,6 @@ const resolveImageUrl = async (url?: string) => {
   return toAbsoluteUrl(url);
 };
 
-// const resolveImageUrl = async (url?: string) => {
-//   if (!url) return "";
-//   try {
-//     const res = await axiosClient.get(toAbsoluteUrl(url), {
-//       responseType: "blob",
-//     });
-//     return URL.createObjectURL(res.data);
-//   } catch {
-//     return toAbsoluteUrl(url);
-//   }
-// };
 
 const getDateLabel = (date: string) => {
   const d = new Date(date);
@@ -151,19 +135,19 @@ export const ChatInfo = ({
 
         const media = await getConversationMediaApi(conversationId);
 
-const sortedMedia = [...media].sort(
-  (a, b) =>
-    new Date(b.createdAt).getTime() -
-    new Date(a.createdAt).getTime()
-);
+        const sortedMedia = [...media].sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() -
+            new Date(a.createdAt).getTime()
+        );
 
-setAllMedia(sortedMedia);
+        setAllMedia(sortedMedia);
 
         const imgs: ImageItem[] = [];
         const fls: FileItem[] = [];
         const resolved: Record<string, string> = {};
 
-        for (const m of sortedMedia){
+        for (const m of sortedMedia) {
           if (m.attachment?.thumbnailUrl) {
             const url = await resolveImageUrl(
               m.attachment.thumbnailUrl
