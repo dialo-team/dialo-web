@@ -86,7 +86,8 @@ type MessageUI = {
 };
 
 const MESSAGE_TEXT_TYPE = "TEXT";
-const FILE_PROXY_PREFIX = "/api-files";
+// const FILE_PROXY_PREFIX = "/api-files";
+const FILE_BASE_URL = "http://14.225.192.37:8085";
 const POLLING_INTERVAL_MS = 5000;
 const REALTIME_GRACE_PERIOD_MS = 15000;
 const COMMON_EMOJIS = [
@@ -119,28 +120,23 @@ const getCurrentUserId = () => {
 };
 
 const IMAGE_EXT_REGEX = /\.(png|jpe?g|gif|bmp|webp|svg)$/i;
+const MEDIA_BASE_URL = "http://14.225.192.37:8085";
 
 const toAbsoluteMediaUrl = (url: string) => {
-  if (!url) {
-    return "";
+  if (!url) return "";
+
+  // đã là full url
+  if (/^https?:\/\//i.test(url)) {
+    return encodeURI(url);
   }
 
-  const normalizedPath = url.startsWith("/") ? url : `/${url}`;
-
-  if (/^https?:\/\//i.test(normalizedPath)) {
-    try {
-      const absoluteUrl = new URL(normalizedPath);
-      return `${FILE_PROXY_PREFIX}${encodeURI(absoluteUrl.pathname)}${absoluteUrl.search}`;
-    } catch {
-      return encodeURI(normalizedPath);
-    }
+  // backend trả /uploads/xxx
+  if (url.startsWith("/uploads")) {
+    return encodeURI(`${MEDIA_BASE_URL}${url}`);
   }
 
-  const proxiedPath = normalizedPath.startsWith("/uploads/")
-    ? normalizedPath.replace(/^\/uploads/, `${FILE_PROXY_PREFIX}/uploads`)
-    : `${FILE_PROXY_PREFIX}${normalizedPath}`;
-
-  return encodeURI(proxiedPath);
+  // fallback
+  return encodeURI(`${MEDIA_BASE_URL}/${url.replace(/^\/+/, "")}`);
 };
 
 
@@ -860,49 +856,25 @@ export const ChatWindow = () => {
     }
   };
 
+
   const handleDownloadFile = (message: MessageUI) => {
-    const rawUrl =
+    const downloadUrl =
       message.sourceFileUrl ||
-      (message.fileName
-        ? `/uploads/${message.fileName}`
-        : message.fileUrl || "");
+      message.fileUrl ||
+      "";
 
-    if (!rawUrl) return;
+    if (!downloadUrl) return;
 
-    // Decode trước rồi mới build proxy URL, tránh double encode
-    let proxyUrl: string;
-    try {
-      const decoded = decodeURIComponent(
-        rawUrl.replace(/^.*\/uploads\//, "/uploads/"),
-      );
-      proxyUrl = `/api-files${decoded}`;
-    } catch {
-      proxyUrl = rawUrl.startsWith("/api-files")
-        ? rawUrl
-        : `/api-files${rawUrl}`;
-    }
+    const link = document.createElement("a");
 
-    const download = async () => {
-      try {
-        const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error(`${response.status}`);
-        const blob = await response.blob();
-        const blobUrl = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = blobUrl;
-        link.download = message.fileName || "attachment";
-        link.rel = "noreferrer";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-      } catch (error) {
-        console.error("Download file error:", error);
-        window.open(proxyUrl, "_blank", "noopener,noreferrer");
-      }
-    };
+    link.href = downloadUrl;
+    link.download = message.fileName || "attachment";
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
 
-    void download();
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const getLastMessageText = (messageList: MessageUI[]): string => {
@@ -1518,7 +1490,7 @@ export const ChatWindow = () => {
                 className={styles.toolbarItem}
                 style={{ cursor: 'pointer' }}
                 onClick={() => setShowPollModal(true)}
-                // title="Tạo bình chọn"
+              // title="Tạo bình chọn"
               />
             )}
           </div>

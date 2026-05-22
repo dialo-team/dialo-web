@@ -124,15 +124,17 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
         data.map(async (item) => {
 
           let avatar = item.counterpartAvatarUrl || DEFAULT_AVATAR;
+          let displayName = item.counterpartName || "";
 
           let memberAvatars: string[] = [];
 
-          // CHECK GROUP 
+          // CHECK GROUP
           const isGroup =
             item.conversationId === item.counterpartId &&
             (!item.counterpartAvatarUrl ||
               item.counterpartAvatarUrl.trim() === "");
 
+          // ===================== GROUP =====================
           if (isGroup) {
             try {
               const res = await getListMemberApi(item.conversationId);
@@ -143,7 +145,12 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
                 members.slice(0, 4).map(async (m: any) => {
                   try {
                     const userRes = await getUserInfoApi(m.userId);
-                    return userRes.data?.data?.avatar || userRes.data?.avatar || DEFAULT_AVATAR;
+
+                    return (
+                      userRes.data?.data?.avatar ||
+                      userRes.data?.avatar ||
+                      DEFAULT_AVATAR
+                    );
                   } catch {
                     return DEFAULT_AVATAR;
                   }
@@ -154,14 +161,33 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
             }
           }
 
-          // nếu không phải group → fallback 1 avatar
-          if (!isGroup) {
+          // ===================== 1-1 CHAT =====================
+          else {
+            // nếu conversations không trả avatar
+            // thì gọi API user info để lấy avatar + name
+            if (
+              !item.counterpartAvatarUrl ||
+              item.counterpartAvatarUrl.trim() === ""
+            ) {
+              try {
+                const userRes = await getUserInfoApi(item.counterpartId);
+
+                const userData = userRes.data?.data;
+
+                avatar = userData?.avatar || DEFAULT_AVATAR;
+                displayName = userData?.userName || item.counterpartName;
+              } catch (e) {
+                console.warn("load user info failed", e);
+              }
+            }
+
             memberAvatars = [avatar];
           }
 
           return {
             id: item.conversationId,
-            name: formatGroupName(item.counterpartName),
+            // name: formatGroupName(item.counterpartName),
+            name: isGroup ? formatGroupName(displayName) : displayName,
             counterpartId: item.counterpartId,
             avatar,
             memberAvatars, // 👈 QUAN TRỌNG
@@ -311,17 +337,6 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
     return () => window.removeEventListener("friend-removed", handler);
   }, [loadConversations]);
 
-  // ===================== FALLBACK POLLING =====================
-  // useEffect(() => {
-  //   const interval = window.setInterval(() => {
-  //     if (!document.hidden) {
-  //       void loadConversations();
-  //     }
-  //   }, 3000);
-  //
-  //   return () => window.clearInterval(interval);
-  // }, [loadConversations]);
-
   // ===================== SEARCH PARAM =====================
   useEffect(() => {
     setKeyword(params.get("q") || "");
@@ -369,40 +384,41 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
             const isActive = f.id === selectedConversationId;
             const hasUnread = (f.unreadCount || 0) > 0 && !isActive;
             return (
-            <div
-              key={f.id}
-              className={`${styles.chatItem} ${hasUnread ? styles.chatItemUnread : ""
-                }`}
-              onClick={() => onSelectUser(f as any)}
-            >
-              {/* <img src={f.avatar} className={styles.avatar} alt={f.name} /> */}
-              <GroupAvatar avatars={f.memberAvatars?.length ? f.memberAvatars : [f.avatar]} />
+              <div
+                key={f.id}
+                className={`${styles.chatItem} ${hasUnread ? styles.chatItemUnread : ""
+                  }`}
+                onClick={() => onSelectUser(f as any)}
+              >
+                {/* <img src={f.avatar} className={styles.avatar} alt={f.name} /> */}
+                <GroupAvatar avatars={f.memberAvatars?.length ? f.memberAvatars : [f.avatar]} />
 
-              <div className={styles.info}>
-                <div
-                  className={`${styles.name} ${hasUnread ? styles.nameUnread : ""
-                    }`}
-                >
-                  {f.name}
+                <div className={styles.info}>
+                  <div
+                    className={`${styles.name} ${hasUnread ? styles.nameUnread : ""
+                      }`}
+                  >
+                    {f.name}
+                  </div>
+                  <div
+                    className={`${styles.lastMessage} ${hasUnread ? styles.lastMessageUnread : ""
+                      }`}
+                  >
+                    {f.lastMessage}
+                  </div>
                 </div>
-                <div
-                  className={`${styles.lastMessage} ${hasUnread ? styles.lastMessageUnread : ""
-                    }`}
-                >
-                  {f.lastMessage}
-                </div>
+
+                {hasUnread && (
+                  <div
+                    className={styles.unreadBadge}
+                    title={f.unreadDisplay || String(f.unreadCount)}
+                  >
+                    {f.unreadCount}
+                  </div>
+                )}
               </div>
-
-              {hasUnread && (
-                <div
-                  className={styles.unreadBadge}
-                  title={f.unreadDisplay || String(f.unreadCount)}
-                >
-                  {f.unreadCount}
-                </div>
-              )}
-            </div>
-          );})
+            );
+          })
         }
         {!loading && filteredFriends.length === 0 && (
           <div className={styles.empty}>Không tìm thấy</div>

@@ -510,6 +510,66 @@
   cursor: pointer;
 }
 
+.fileItem,
+.allMediaFile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 12px;
+  margin-bottom: 10px;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+
+  background: #fff;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.fileItem:hover,
+.allMediaFile:hover {
+  background: #f5f7fb;
+  border-color: #3b82f6;
+  transform: translateY(-1px);
+}
+
+.fileIcon {
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+  background: #eff6ff;
+
+  font-size: 20px;
+}
+
+.fileInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.fileName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fileAction {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
 /* ============ RESPONSIVE ============ */
 @media (max-width: 768px) {
   .overlay {
