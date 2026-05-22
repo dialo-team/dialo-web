@@ -1,49 +1,45 @@
+/* ============ OVERLAY / PANEL ============ */
 .overlay {
   width: clamp(280px, 30%, 380px);
   min-width: 0;
   flex-shrink: 0;
 }
 
-/* Panel tổng */
 .panel {
   width: 100%;
   background: #f7f7f7;
   border-left: 1px solid #ddd;
   height: 100%;
   overflow-y: auto;
-  /* padding: 0px 10px; */
   display: flex;
   flex-direction: column;
 }
 
-/* Tiêu đề */
+/* ============ HEADER ============ */
 .title {
   font-size: 16px;
   font-weight: 600;
   padding: 15px;
+  text-align: center;
 }
 
 .titleRow {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   background: #fff;
   border-bottom: 1px solid #ddd;
 }
 
 .closeBtn {
-  display: none;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  padding: 10px 12px;
+  margin-left: auto;
 }
 
-/* Thông tin user */
+/* ============ TOP PROFILE ============ */
 .top {
-  display: flex;            /* thêm */
-  flex-direction: column;   /* xếp dọc avatar + tên */
-  align-items: center;      /* căn giữa cả 2 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 20px 10px;
   background: #fff;
   border-bottom: 8px solid #f0f2f5;
@@ -54,20 +50,55 @@
   height: 70px;
   border-radius: 50%;
   margin-bottom: 8px;
+  cursor: pointer;
 }
 
 .username {
   font-weight: 600;
 }
 
-/* Section */
+.usernameRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ============ ACTION ROW ============ */
+.actionsRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: #fff;
+  padding: 8px 0;
+  border-bottom: 8px solid #f0f2f5;
+}
+
+.actionItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  color: #444;
+  transition: background 0.2s ease;
+  min-height: 68px;
+  padding: 8px 4px;
+  text-align: center;
+}
+
+.actionItem:hover {
+  background: #f5f5f5;
+  border-radius: 6px;
+}
+
+/* ============ SECTION ============ */
 .section {
   background: #fff;
   padding: 12px 15px;
   margin-bottom: 8px;
 }
 
-/* Title section */
 .sectionHeader {
   display: flex;
   justify-content: space-between;
@@ -77,17 +108,21 @@
   font-weight: 600;
 }
 
-/* Item */
 .item {
-  font-size: 14px;
-  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 8px;
   cursor: pointer;
+  transition: background 0.2s ease;
+  margin: 5px;
 }
 
 .item:hover {
-  text-decoration: none;
+  background: #f2f2f2;
 }
 
+/* ============ MEDIA / IMAGE GRID ============ */
 .imageGridContent {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -110,12 +145,6 @@
   border-radius: 4px;
 }
 
-.emptyState {
-  padding: 8px;
-  color: #888;
-  font-size: 12px;
-}
-
 .showMoreButton {
   width: 100%;
   padding: 8px;
@@ -134,98 +163,50 @@
   background-color: #d5d5d5;
 }
 
-/* Xem thêm button */
-.showMore {
-  color: #000;                /* chữ đen */
-  font-size: 13px;
-  cursor: pointer;
-  background-color: #eae9e9;  /* nền xám nhạt */
-  border: 1px solid #ccc;     /* viền nhẹ */
-  padding: 4px 8px;
-  border-radius: 4px;
-  margin-top: 4px;
-  width: 100%;
-}
-
-.showMore:hover {
-  background-color: #d5d5d5;  /* hover sáng hơn */
-}
-
-/* Xóa đoạn hội thoại */
+/* ============ DELETE BOX ============ */
 .deleteBox {
   margin-top: auto;
   padding: 12px;
   background: #fff;
-  text-align: left; /* canh trái */
+  text-align: left;
 }
 
 .deleteButton {
   display: flex;
   align-items: center;
-  gap: 6px;           /* khoảng cách giữa icon và chữ */
-  color: #f44336;     /* chữ đỏ */
+  gap: 6px;
+  color: #f44336;
   background: none;
   border: none;
   cursor: pointer;
   padding: 4px 8px;
 }
 
-/* Back button */
-.backBtn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #000;
-}
-
-.backBtn:hover {
-  opacity: 0.7;
-}
-
+/* ============ KHO LƯU TRỮ ============ */
 .storageTitleRow {
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: #fff;
+  height: 52px;
+  padding: 0 12px;
   border-bottom: 1px solid #ddd;
-  min-height: 52px;
+  background: #fff;
 }
 
 .storageTitle {
-  font-size: 18px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 16px;
   font-weight: 700;
   margin: 0;
-  text-align: center;
+  white-space: nowrap;
 }
 
-.storageTitleRow .backBtn {
-  position: absolute;
-  left: 8px;
-}
-
-.storageCloseBtn {
-  position: absolute;
-  right: 8px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  padding: 10px 12px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* All Media Tabs */
 .allMediaTabs {
   display: flex;
   border-bottom: 1px solid #eee;
   background-color: #fff;
-  padding: 0;
 }
 
 .allMediaTab {
@@ -238,11 +219,6 @@
   font-weight: 500;
   color: #65676b;
   border-bottom: 3px solid transparent;
-  transition: all 0.2s ease;
-}
-
-.allMediaTab:hover {
-  color: #000;
 }
 
 .allMediaTab.active {
@@ -250,7 +226,6 @@
   border-bottom-color: #0a66c2;
 }
 
-/* All Media Content */
 .allMediaContent {
   flex: 1;
   overflow-y: auto;
@@ -262,54 +237,280 @@
   font-weight: 600;
   color: #65676b;
   margin: 0 0 8px 0;
-  padding: 0 4px;
 }
 
 .allMediaGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: 6px;
   margin-bottom: 16px;
 }
 
 .allMediaImage {
   width: 100%;
-  aspect-ratio: 1/1;
+  aspect-ratio: 1 / 1;
   object-fit: cover;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-}
-
-.allMediaImage:hover {
-  opacity: 0.8;
+  border-radius: 6px;
 }
 
 .allMediaFile {
   width: 100%;
-  aspect-ratio: 1/1;
+  aspect-ratio: 1 / 1;
   background-color: #e8e8e8;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 8px;
+  box-sizing: border-box;
 }
 
 .fileNameInGrid {
-  font-size: 12px;
+  font-size: 11px;
   text-align: center;
-  word-break: break-word;
-  color: #444;
-  font-weight: 500;
+  word-break: break-all;
+  color: #333;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
 }
 
-.usernameRow {
+/* ============ MANAGE / ZALO LAYOUT ============ */
+.manageWrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #fff;
+}
+
+.manageHeader {
   display: flex;
   align-items: center;
-  gap: 6px; /* khoảng cách tên và icon */
+  gap: 10px;
+  padding: 12px;
+  border-bottom: 1px solid #eee;
 }
 
+.manageContainer {
+  background-color: #f4f5f7;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.manageBlock {
+  background-color: #fff;
+  margin-bottom: 8px;
+  padding: 0 16px;
+}
+
+.blockTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #000;
+  padding: 12px 0 4px 0;
+}
+
+.rowItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  font-size: 14px;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.rowItem:last-child {
+  border-bottom: none;
+}
+
+.rowText {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #000;
+}
+
+.helpIcon {
+  color: #888;
+  cursor: pointer;
+}
+
+.zaloCheckbox {
+  width: 20px;
+  height: 20px;
+  accent-color: #0068ff;
+  cursor: pointer;
+}
+
+.toggleSwitch {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  appearance: none;
+  background: #d1d1d6;
+  border-radius: 22px;
+  outline: none;
+  cursor: pointer;
+  transition: background 0.3s;
+  flex-shrink: 0;
+}
+
+.toggleSwitch:checked {
+  background: #0068ff;
+}
+
+.toggleSwitch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggleSwitch:checked::after {
+  transform: translateX(18px);
+}
+
+.listActionBtn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 0;
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  color: #002e4d;
+  cursor: pointer;
+}
+
+.listActionBtn:hover {
+  opacity: 0.8;
+}
+
+/* ============ LEADERS ============ */
+.leaderProfileRow {
+  display: flex;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 16px;
+}
+
+.userAvatarLg {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  margin-right: 12px;
+  object-fit: cover;
+}
+
+.userNameText {
+  font-weight: 600;
+  font-size: 15px;
+  color: #222;
+}
+
+.userRoleText {
+  font-size: 13px;
+  color: #888;
+}
+
+.leaderActionBtn {
+  width: 100%;
+  padding: 10px;
+  background: #f0f2f5;
+  color: #002e4d;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.leaderActionBtn:hover {
+  background: #e4e6eb;
+}
+
+/* ============ MEMBERS LIST ============ */
+.userAvatarMd {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  margin-right: 10px;
+  object-fit: cover;
+}
+
+.memberName {
+  font-size: 14px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.addFriendBtn {
+  margin-left: auto;
+  flex-shrink: 0;
+  background: #0a66c2;
+  color: #fff;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.addFriendBtn:hover {
+  background: #0855a3;
+}
+
+.searchBox {
+  padding: 10px 12px;
+  margin-bottom: 4px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  outline: none;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.searchInput:focus {
+  border-color: #1877f2;
+}
+
+/* ============ MISC ============ */
+.pointer {
+  cursor: pointer;
+}
+
+.dissolveBtn {
+  width: 100%;
+  padding: 12px;
+  margin: 16px 0;
+  background: #fde8e8;
+  color: #d32f2f;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+/* ============ RESPONSIVE ============ */
 @media (max-width: 768px) {
   .overlay {
     position: absolute;
@@ -327,13 +528,12 @@
     box-shadow: -4px 0 16px rgba(0, 0, 0, 0.18);
   }
 
-  .closeBtn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+  .storageTitle {
+    font-size: 15px;
   }
 
-  .storageTitle {
-    font-size: 17px;
+  .actionItem {
+    font-size: 10px;
+    min-height: 60px;
   }
 }

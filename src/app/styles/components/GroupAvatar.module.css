@@ -1,0 +1,149 @@
+.single {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* =========================
+   GROUP WRAPPER (KHÔNG TRÒN)
+   👉 FIX: bỏ -2% gây lệch + tăng độ ổn định
+========================= */
+.wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+
+  border-radius: 12px;
+  overflow: hidden;
+
+}
+
+/* =========================
+   AVATAR CHUNG
+========================= */
+.avatar {
+  position: absolute;
+  width: 72%;
+  height: 72%;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1.5px solid #fff;
+}
+
+/* =========================
+   2 NGƯỜI (to + rõ hơn)
+========================= */
+.two_1 {
+  top: 0;
+  left: 0;
+}
+
+.two_2 {
+  bottom: 0;
+  right: 0;
+}
+
+/* =========================
+   3 NGƯỜI (ZALO STYLE)
+========================= */
+.three_1 {
+  width: 75%;
+  height: 75%;
+  top: 0;
+  left: 0;
+}
+
+.three_2 {
+  width: 65%;
+  height: 65%;
+  bottom: 0;
+  right: 0;
+}
+
+.three_3 {
+  width: 65%;
+  height: 65%;
+  bottom: 0;
+  left: 0;
+}
+
+/* =========================
+   4 NGƯỜI
+========================= */
+.four {
+  width: 60%;
+  height: 60%;
+}
+
+.four_1 {
+  top: 0;
+  left: 0;
+}
+
+.four_2 {
+  top: 0;
+  right: 0;
+}
+
+.four_3 {
+  bottom: 0;
+  left: 0;
+}
+
+.four_4 {
+  bottom: 0;
+  right: 0;
+}
+
+/* =========================
+   +N OVERLAY (ô cuối)
+========================= */
+.moreOverlay {
+  position: absolute;
+
+  right: 0;
+  bottom: 0;
+
+  width: 50%;
+  height: 50%;
+
+  background: #d9d9d9; /* nền xám */
+  color: #333;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  border-radius: 50%; /* 🔥 tròn hoàn toàn */
+  border: 2px solid #fff; /* viền trắng như avatar */
+
+  box-sizing: border-box;
+
+  z-index: 2;
+}
+
+.countOverlay {
+  position: absolute;
+
+  width: 60%;
+  height: 60%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #e5e5e5;
+  color: #333;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  border-radius: 50%;
+  border: 2px solid #fff;
+
+  z-index: 3;
+}

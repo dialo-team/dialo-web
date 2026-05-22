@@ -9,7 +9,7 @@ const flushPendingRequests = (token: string | null) => {
 };
 
 const axiosClient = axios.create({
-  baseURL: "http://14.225.254.174:9000",
+  baseURL: "http://14.225.192.37:9000",
   headers: {
     "Content-Type": "application/json",
   },

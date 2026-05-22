@@ -149,7 +149,7 @@ export default function AddFriendModal({ onClose }: Props) {
         open={!!selectedUser}
         user={selectedUser}
         onClose={() => setSelectedUser(null)}
-        onSend={() => {}}
+        // onSend={() => {}}
         onSuccess={() => {
 
           setResults([]);
