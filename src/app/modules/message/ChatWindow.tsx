@@ -1518,7 +1518,7 @@ export const ChatWindow = () => {
                 className={styles.toolbarItem}
                 style={{ cursor: 'pointer' }}
                 onClick={() => setShowPollModal(true)}
-                title="Tạo bình chọn"
+                // title="Tạo bình chọn"
               />
             )}
           </div>
