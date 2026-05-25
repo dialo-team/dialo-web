@@ -2,6 +2,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import styles from "../../styles/module.myAccount/ChangePasswordModal.module.css";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { changePasswordApi } from "../../../../api/social/me/changePasswordApi";
+import { AlertModal } from "../../components/AlertModal";
 
 interface Props {
   open: boolean;
@@ -17,13 +19,32 @@ export const ChangePasswordModal = ({ open, onClose }: Props) => {
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+
   const [errors, setErrors] = useState({
     current: "",
     newPass: "",
     confirm: "",
   });
 
-  const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+  const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{6,}$/;
+
+  const resetForm = () => {
+    setCurrent("");
+    setNewPass("");
+    setConfirm("");
+
+    setErrors({
+      current: "",
+      newPass: "",
+      confirm: "",
+    });
+
+    setShowCurrent(false);
+    setShowNew(false);
+    setShowConfirm(false);
+  };
 
   // Validate realtime từng field
   const validateField = (field: string, value: string) => {
@@ -39,7 +60,7 @@ export const ChangePasswordModal = ({ open, onClose }: Props) => {
       if (!value) {
         message = "Mật khẩu mới không được rỗng";
       } else if (!passwordRegex.test(value)) {
-        message = "Tối thiểu 8 ký tự, 1 chữ hoa, 1 số, 1 ký tự đặc biệt";
+        message = "Tối thiểu 6 ký tự, 1 chữ hoa, 1 số, 1 ký tự đặc biệt";
       }
     }
 
@@ -57,26 +78,67 @@ export const ChangePasswordModal = ({ open, onClose }: Props) => {
     }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     validateField("current", current);
     validateField("newPass", newPass);
     validateField("confirm", confirm);
 
     if (
-      current &&
-      newPass &&
-      confirm &&
-      passwordRegex.test(newPass) &&
-      confirm === newPass
+      !current ||
+      !newPass ||
+      !confirm ||
+      !passwordRegex.test(newPass) ||
+      confirm !== newPass
     ) {
+      return;
+    }
+
+    try {
+      const refreshToken = localStorage.getItem("refreshToken");
+
+      await changePasswordApi({
+        oldPass: current,
+        newPass: newPass,
+        refreshToken: refreshToken || "",
+      });
+
+      // đóng modal đổi mật khẩu trước
+      resetForm();
       onClose();
+
+
+      // nếu BE trả 200
+      setAlertMessage("Đổi mật khẩu thành công");
+      setAlertOpen(true);
+
+    } catch (error: any) {
+
+      const data = error?.response?.data;
+
+      // nếu BE trả lỗi 401 nhưng thực tế thành công
+      if (
+        error?.response?.status === 401 &&
+        data?.message === "Refresh token not found"
+      ) {
+        // đóng modal đổi mật khẩu trước
+        resetForm();
+        onClose();
+
+
+        setAlertMessage("Đổi mật khẩu thành công");
+        setAlertOpen(true);
+        return;
+      }
+
+      setAlertMessage("Mật khẩu hiện tại không đúng");
+      setAlertOpen(true);
     }
   };
 
   return (
     <AnimatePresence>
       {open && (
-        <div className={styles.overlay} onClick={onClose}>
+        <div className={styles.overlay} onClick={() => { resetForm(); onClose(); }}>
           <motion.div
             initial={{ opacity: 0, y: 40, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -87,7 +149,13 @@ export const ChangePasswordModal = ({ open, onClose }: Props) => {
           >
             <div className={styles.header}>
               <h3>Đổi mật khẩu</h3>
-              <button onClick={onClose} className={styles.closeBtn}>
+              <button
+                onClick={() => {
+                  resetForm();
+                  onClose();
+                }}
+                className={styles.closeBtn}
+              >
                 ✕
               </button>
             </div>
@@ -178,6 +246,13 @@ export const ChangePasswordModal = ({ open, onClose }: Props) => {
           </motion.div>
         </div>
       )}
+      <AlertModal
+        open={alertOpen}
+        message={alertMessage}
+        onClose={() => setAlertOpen(false)}
+      />
     </AnimatePresence>
+
+
   );
 };

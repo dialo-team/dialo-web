@@ -51,6 +51,7 @@ axiosClient.interceptors.response.use(
     const requestUrl: string = originalRequest?.url || "";
     const isPasswordResetFlow = requestUrl.includes("/api/v1/auth/password/reset");
     const isRefreshTokenFlow = requestUrl.includes("/api/v1/auth/refresh-token");
+    const isChangePasswordFlow = requestUrl.includes("/api/v1/auth/password/change");
 
     if (error.response?.status === 500) {
       error.response.data = {
@@ -61,7 +62,7 @@ axiosClient.interceptors.response.use(
     }
 
     // Password reset flow sử dụng resetToken riêng, không dùng refresh access token.
-    if (isPasswordResetFlow || isRefreshTokenFlow) {
+    if (isPasswordResetFlow || isRefreshTokenFlow || isChangePasswordFlow) {
       return Promise.reject(error);
     }
 
