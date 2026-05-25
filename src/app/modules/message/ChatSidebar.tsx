@@ -78,7 +78,7 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
 
   const [openAddFriend, setOpenAddFriend] = useState(false);
   const [openCreateGroup, setOpenCreateGroup] = useState(false);
-  
+
   useEffect(() => {
     const handler = (e: any) => {
       const { conversationId } = e.detail;
@@ -171,14 +171,17 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
               const userData = userRes.data.data;
 
               avatar =
-                userData?.avatar ||
                 item.counterpartAvatarUrl ||
+                userData?.avatar ||
                 DEFAULT_AVATAR;
 
               displayName =
-                userData?.userName ||
-                item.counterpartName ||
-                "Unknown";
+                item.counterpartName &&
+                  !/^\d{10}$/.test(item.counterpartName)
+                  ? item.counterpartName
+                  : userData?.userName;
+
+              "Unknown";
             } catch (e) {
               console.warn("load user info failed", e);
 
@@ -200,7 +203,7 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
             name: isGroup ? formatGroupName(displayName) : displayName,
             counterpartId: item.counterpartId,
             avatar,
-            memberAvatars, // 👈 QUAN TRỌNG
+            memberAvatars,
             lastMessage: item.lastMessage,
             unreadCount: item.unreadCount,
             unreadDisplay: item.unreadDisplay,

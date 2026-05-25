@@ -1117,9 +1117,9 @@ export const ChatWindow = () => {
       > */}
       <div
         className={`${styles.chat} ${showInfo || showSearch ? styles.chatWithPanel : ""
-          } ${isBlocked ? styles.chatBlocked : ""}`}
+          }`}
       >
-        {isBlocked && (
+        {/* {isBlocked && (
           <div className={styles.blockOverlay}>
             <div className={styles.blockBox}>
               <div className={styles.blockTitle}>
@@ -1147,7 +1147,7 @@ export const ChatWindow = () => {
               </button>
             </div>
           </div>
-        )}
+        )} */}
 
         {/* HEADER */}
         <div className={styles.header}>
@@ -1392,7 +1392,27 @@ export const ChatWindow = () => {
         </div>
 
         {/* TOOLBAR + INPUT — ẩn khi nhóm đã giải tán */}
-        {isGroupDissolved ? null : (<>
+        {isGroupDissolved ? null : isBlocked ? (
+          <div className={styles.blockInlineBar}>
+            <div className={styles.blockInlineText}>
+              Bạn đang chặn người này
+            </div>
+
+            <button
+              className={styles.unblockInlineBtn}
+              onClick={async () => {
+                try {
+                  await unblockUserApi((selectedUser as any).counterpartId);
+                  setIsBlocked(false);
+                } catch (err) {
+                  console.error(err);
+                }
+              }}
+            >
+              Bỏ chặn
+            </button>
+          </div>
+        ) : (<>
           {/* TOOLBAR */}
           <div className={styles.toolbar}>
             {/* Emoji picker */}

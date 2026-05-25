@@ -60,7 +60,7 @@ export interface MessageDto {
   id: string;
   conversationId?: string;
   senderId: string | null;
-  receiverId?: string;
+  receiverId?: string  | null ;
   senderName: string;
   senderAvatarUrl: string | null;
   receiverName?: string;

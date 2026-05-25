@@ -704,6 +704,41 @@
   animation: pulse 1s infinite;
 }
 
+/* block  */
+
+.blockInlineBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 14px 16px;
+  background: #fff;
+  border-top: 1px solid #ddd;
+}
+
+.blockInlineText {
+  font-size: 14px;
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.unblockInlineBtn {
+  border: none;
+  background: #0ea5e9;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+.unblockInlineBtn:hover {
+  background: #0284c7;
+}
+
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
