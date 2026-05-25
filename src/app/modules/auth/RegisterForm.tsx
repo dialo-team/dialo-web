@@ -37,6 +37,7 @@ export const RegisterForm = ({
       password: "",
       confirmPassword: "",
     };
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{6,}$/;
 
     let valid = true;
 
@@ -50,6 +51,10 @@ export const RegisterForm = ({
 
     if (!password) {
       newErrors.password = "Không được để trống";
+      valid = false;
+    } else if (!passwordRegex.test(password)) {
+      newErrors.password =
+        "Tối thiểu 6 ký tự, 1 chữ hoa, 1 số, 1 ký tự đặc biệt";
       valid = false;
     }
 
