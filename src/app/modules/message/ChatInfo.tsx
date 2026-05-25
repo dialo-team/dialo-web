@@ -324,7 +324,7 @@ export const ChatInfo = ({
                   onClick={handleClear}
                 >
                   <Trash2 size={16} style={{ marginRight: 6 }} />
-                  {clearing ? "Đang xóa..." : "Xóa đoạn hội thoại"}
+                  {clearing ? "Đang xóa..." : "Xóa lịch sử trò chuyện"}
                 </button>
               </div>
             </>

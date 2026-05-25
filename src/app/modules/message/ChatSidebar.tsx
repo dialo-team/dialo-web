@@ -78,42 +78,42 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
 
   const [openAddFriend, setOpenAddFriend] = useState(false);
   const [openCreateGroup, setOpenCreateGroup] = useState(false);
-
+  
   useEffect(() => {
     const handler = (e: any) => {
-      const { conversationId, name, avatar } = e.detail;
+      const { conversationId } = e.detail;
 
       setFriends((prev) =>
         prev.map((f) =>
           f.id === conversationId
             ? {
               ...f,
-              name: name ?? f.name,
-              avatar: avatar ?? f.avatar,
+              lastMessage: "",
+              unreadCount: 0,
+              unreadDisplay: "0",
             }
             : f
         )
       );
     };
 
-    window.addEventListener("conversation-updated", handler);
-
-    return () => {
-      window.removeEventListener("conversation-updated", handler);
-    };
-  }, []);
-
-  useEffect(() => {
-    const handler = (e: any) => {
-      const { conversationId } = e.detail;
-      clearedIds.current.add(conversationId);
-      localStorage.setItem("clearedConversations", JSON.stringify([...clearedIds.current]));
-      setFriends((prev) => prev.filter((f) => f.id !== conversationId));
-    };
-
     window.addEventListener("conversation-cleared", handler);
-    return () => window.removeEventListener("conversation-cleared", handler);
+
+    return () =>
+      window.removeEventListener("conversation-cleared", handler);
   }, []);
+
+  // useEffect(() => {
+  //   const handler = (e: any) => {
+  //     const { conversationId } = e.detail;
+  //     clearedIds.current.add(conversationId);
+  //     localStorage.setItem("clearedConversations", JSON.stringify([...clearedIds.current]));
+  //     setFriends((prev) => prev.filter((f) => f.id !== conversationId));
+  //   };
+
+  //   window.addEventListener("conversation-cleared", handler);
+  //   return () => window.removeEventListener("conversation-cleared", handler);
+  // }, []);
 
   const loadConversations = useCallback(async () => {
     if (!hasLoadedRef.current) setLoading(true);
@@ -210,11 +210,25 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
 
       setFriends((prev) => {
         const activeId = selectedIdRef.current;
-        const filtered = mapped
-          .filter((f) => !clearedIds.current.has(f.id))
-          .map((f) =>
-            f.id === activeId ? { ...f, unreadCount: 0, unreadDisplay: "0" } : f
-          );
+
+        mapped.forEach((f) => {
+          // nếu conversation có tin nhắn mới
+          // thì bỏ khỏi danh sách đã clear
+          if (f.lastMessage && f.lastMessage.trim() !== "") {
+            clearedIds.current.delete(f.id);
+          }
+        });
+
+        localStorage.setItem(
+          "clearedConversations",
+          JSON.stringify([...clearedIds.current])
+        );
+
+        const filtered = mapped.map((f) =>
+          f.id === activeId
+            ? { ...f, unreadCount: 0, unreadDisplay: "0" }
+            : f
+        );
 
         const isSame =
           filtered.length === prev.length &&
