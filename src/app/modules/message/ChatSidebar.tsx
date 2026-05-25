@@ -163,22 +163,32 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
 
           // ===================== 1-1 CHAT =====================
           else {
-            // nếu conversations không trả avatar
-            // thì gọi API user info để lấy avatar + name
-            if (
-              !item.counterpartAvatarUrl ||
-              item.counterpartAvatarUrl.trim() === ""
-            ) {
-              try {
-                const userRes = await getUserInfoApi(item.counterpartId);
+            try {
+              const userRes = await getUserInfoApi(item.counterpartId);
 
-                const userData = userRes.data?.data;
+              console.log("USER INFO:", userRes.data);
 
-                avatar = userData?.avatar || DEFAULT_AVATAR;
-                displayName = userData?.userName || item.counterpartName;
-              } catch (e) {
-                console.warn("load user info failed", e);
-              }
+              const userData = userRes.data.data;
+
+              avatar =
+                userData?.avatar ||
+                item.counterpartAvatarUrl ||
+                DEFAULT_AVATAR;
+
+              displayName =
+                userData?.userName ||
+                item.counterpartName ||
+                "Unknown";
+            } catch (e) {
+              console.warn("load user info failed", e);
+
+              avatar =
+                item.counterpartAvatarUrl ||
+                DEFAULT_AVATAR;
+
+              displayName =
+                item.counterpartName ||
+                "Unknown";
             }
 
             memberAvatars = [avatar];
@@ -390,8 +400,13 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
                   }`}
                 onClick={() => onSelectUser(f as any)}
               >
-                {/* <img src={f.avatar} className={styles.avatar} alt={f.name} /> */}
-                <GroupAvatar avatars={f.memberAvatars?.length ? f.memberAvatars : [f.avatar]} />
+                <GroupAvatar
+                  avatars={
+                    f.memberAvatars?.length
+                      ? f.memberAvatars
+                      : [f.avatar || DEFAULT_AVATAR]
+                  }
+                />
 
                 <div className={styles.info}>
                   <div
