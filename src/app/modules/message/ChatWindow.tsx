@@ -32,6 +32,7 @@ import {
   SmilePlus,
   X,
   Check,
+  Pin,
 } from "lucide-react";
 import {
   getConversationDetailApi,
@@ -97,6 +98,7 @@ const COMMON_EMOJIS = [
   "😋", "🤗", "😐", "🙄", "😬", "😯", "👏", "🫡", "💯", "🫶",
 ];
 const QUICK_REACTIONS = ["👍", "❤️", "😂", "😮", "😢", "😡"];
+
 
 const getCurrentUserId = () => {
   try {
@@ -502,39 +504,6 @@ export const ChatWindow = () => {
       window.removeEventListener("conversation-updated", handler);
     };
   }, [chatUser]);
-
-
-  // const [chatUser, setChatUser] = useState<Friend | null>(selectedUser);
-
-  useEffect(() => {
-    setChatUser(selectedUser);
-  }, [selectedUser]);
-
-  // truyền từ chatsidebar
-  useEffect(() => {
-    const handler = (e: any) => {
-      const { conversationId, name, avatar } = e.detail;
-
-      if (!chatUser || chatUser.id !== conversationId) return;
-
-      setChatUser((prev) =>
-        prev
-          ? {
-            ...prev,
-            name: name ?? prev.name,
-            avatar: avatar ?? prev.avatar,
-          }
-          : prev
-      );
-    };
-
-    window.addEventListener("conversation-updated", handler);
-
-    return () => {
-      window.removeEventListener("conversation-updated", handler);
-    };
-  }, [chatUser]);
-
 
   useEffect(() => {
     const checkBlocked = async () => {
@@ -1321,6 +1290,9 @@ export const ChatWindow = () => {
                         )}
                         <div className={styles.menuItem} onClick={(e) => { e.stopPropagation(); void handleDeleteMessageForMe(m.id); }}>
                           <Trash2 size={14} /> Xóa chỉ mình tôi
+                        </div>
+                          <div className={styles.menuItem} onClick={(e) => { e.stopPropagation(); void handleDeleteMessageForMe(m.id); }}>
+                          <Pin size={14} /> Ghim tin nhăn
                         </div>
                         <div className={styles.menuItem} onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); setForwardMsgId(m.id); }}>
                           <Share2 size={14} /> Chuyển tiếp

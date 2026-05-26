@@ -195,21 +195,31 @@ export const typingApi = async (
   );
 };
 
-export const pinMessageApi = async (
-  conversationId: string,
-  messageId: string,
-): Promise<void> => {
-  await axiosClient.post(
-    `/api/v1/conversations/${encodeURIComponent(conversationId)}/pin/${encodeURIComponent(messageId)}`,
+
+// lấy danh sách tin nhắn ghim 
+export const getPinnedMessagesApi = (conversationId: string) => {
+  return axiosClient.get(
+    `/api/v1/conversations/${conversationId}/pins`
   );
 };
 
-export const unpinMessageApi = async (
+// ghim tin nhắn
+export const pinMessageApi = (
   conversationId: string,
-  messageId: string,
-): Promise<void> => {
-  await axiosClient.delete(
-    `/api/v1/conversations/${encodeURIComponent(conversationId)}/pin/${encodeURIComponent(messageId)}`,
+  messageId: string
+) => {
+  return axiosClient.post(
+    `/api/v1/conversations/${conversationId}/pin/${messageId}`
+  );
+};
+
+// bỏ ghim tin nhắn 
+export const unpinMessageApi = (
+  conversationId: string,
+  messageId: string
+) => {
+  return axiosClient.delete(
+    `/api/v1/conversations/${conversationId}/pin/${messageId}`
   );
 };
 
@@ -344,3 +354,5 @@ export const updateGroupDescriptionApi = async (
   );
   return res.data;
 };
+
+
