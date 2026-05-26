@@ -1818,30 +1818,36 @@ export const ChatWindow = () => {
       />
 
       {pinMenu && (
-        <div
-          className={styles.pinDropdown}
-          style={{ position: "fixed", top: pinMenu.y, left: pinMenu.x, zIndex: 9999 }}
-        >
-          <div
-            className={styles.pinDropdownItem}
-            onClick={() => {
-              setPinnedExpanded(true);
-              setPinMenu(null);
-            }}
-          >
-            Mở bảng ghim
-          </div>
-          <div
-            className={styles.pinDropdownItem}
-            onClick={() => {
-              void handleUnpinMessage(pinMenu.messageId);
-              setPinMenu(null);
-            }}
-          >
-            Bỏ ghim
-          </div>
-        </div>
-      )}
+  <div
+    className={styles.pinDropdown}
+    style={{
+      position: "fixed",
+      top: pinMenu.y,
+      left: pinMenu.x,
+      zIndex: 99999,
+      transform: "translateX(-100%)",   // ← Kéo sang trái
+    }}
+  >
+    <div
+      className={styles.pinDropdownItem}
+      onClick={() => {
+        setPinnedExpanded(true);
+        setPinMenu(null);
+      }}
+    >
+      Mở bảng ghim
+    </div>
+    <div
+      className={styles.pinDropdownItem}
+      onClick={() => {
+        void handleUnpinMessage(pinMenu.messageId);
+        setPinMenu(null);
+      }}
+    >
+      Bỏ ghim
+    </div>
+  </div>
+)}
     </div>
   );
 };
