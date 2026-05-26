@@ -25,26 +25,27 @@ import { RemarkFriendModal } from "../../modules/message/RemarkFriendModal";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://14.225.254.174:9000";
+const MEDIA_BASE_URL = "http://14.225.192.37:8085";
 
 /* ================= HELPERS ================= */
 
 const toAbsoluteUrl = (url: string) => {
   if (!url) return "";
-  if (url.startsWith("http")) return url;
-  return `${API_BASE_URL}${url.startsWith("/") ? url : "/" + url}`;
+
+  if (/^https?:\/\//i.test(url)) {
+    return encodeURI(url);
+  }
+
+  return encodeURI(
+    `${MEDIA_BASE_URL}${url.startsWith("/") ? url : `/${url}`}`
+  );
 };
 
 const resolveImageUrl = async (url?: string) => {
   if (!url) return "";
-  try {
-    const res = await axiosClient.get(toAbsoluteUrl(url), {
-      responseType: "blob",
-    });
-    return URL.createObjectURL(res.data);
-  } catch {
-    return toAbsoluteUrl(url);
-  }
+  return toAbsoluteUrl(url);
 };
+
 
 const getDateLabel = (date: string) => {
   const d = new Date(date);
@@ -61,7 +62,10 @@ const getDateLabel = (date: string) => {
 /* ================= TYPES ================= */
 
 type ImageItem = { url: string };
-type FileItem = { name: string };
+type FileItem = {
+  name: string;
+  url: string;
+};
 
 type Props = {
   user: Friend;
@@ -96,44 +100,54 @@ export const ChatInfo = ({
 
   /* ===== LOAD MEDIA ===== */
   useEffect(() => {
-  setChatUser(user);
-}, [user]);
+    setChatUser(user);
+  }, [user]);
 
 
-useEffect(() => {
-  const handler = (e: any) => {
-    const { conversationId, name, avatar } = e.detail;
+  useEffect(() => {
+    const handler = (e: any) => {
+      const { conversationId, name, avatar } = e.detail;
 
-    if (conversationId !== chatUser.id) return;
+      if (conversationId !== chatUser.id) return;
 
-    setChatUser((prev) =>
-      prev
-        ? {
+      setChatUser((prev) =>
+        prev
+          ? {
             ...prev,
             name: name ?? prev.name,
             avatar: avatar ?? prev.avatar,
           }
-        : prev
-    );
-  };
+          : prev
+      );
+    };
 
-  window.addEventListener("conversation-updated", handler);
-  return () => window.removeEventListener("conversation-updated", handler);
-}, [chatUser]);
+    window.addEventListener("conversation-updated", handler);
+    return () => window.removeEventListener("conversation-updated", handler);
+  }, [chatUser]);
 
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       try {
+        // const media = await getConversationMediaApi(conversationId);
+        // setAllMedia(media);
+
         const media = await getConversationMediaApi(conversationId);
-        setAllMedia(media);
+
+        const sortedMedia = [...media].sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() -
+            new Date(a.createdAt).getTime()
+        );
+
+        setAllMedia(sortedMedia);
 
         const imgs: ImageItem[] = [];
         const fls: FileItem[] = [];
         const resolved: Record<string, string> = {};
 
-        for (const m of media) {
+        for (const m of sortedMedia) {
           if (m.attachment?.thumbnailUrl) {
             const url = await resolveImageUrl(
               m.attachment.thumbnailUrl
@@ -143,6 +157,7 @@ useEffect(() => {
           } else if (m.attachment?.fileUrl) {
             fls.push({
               name: m.attachment.fileName || "File",
+              url: toAbsoluteUrl(m.attachment.fileUrl),
             });
           }
         }
@@ -183,6 +198,24 @@ useEffect(() => {
     } finally {
       setClearing(false);
     }
+  };
+
+  /* ===== Tải File ===== */
+  const handleDownloadFile = (
+    fileUrl?: string,
+    fileName?: string
+  ) => {
+    if (!fileUrl) return;
+
+    const link = document.createElement("a");
+
+    link.href = fileUrl;
+    link.download = fileName || "file";
+    link.target = "_blank";
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   /* ================= UI ================= */
@@ -228,7 +261,7 @@ useEffect(() => {
                     </div>
 
                     <div className={styles.imageGridContent}>
-                      {images.slice(0, 8).map((i, idx) => (
+                      {images.slice(0, 4).map((i, idx) => (
                         <img
                           key={idx}
                           src={i.url}
@@ -253,11 +286,24 @@ useEffect(() => {
                     <div className={styles.sectionHeader}>File</div>
 
                     {files.slice(0, 3).map((f, i) => (
-                      <div key={i} className={styles.item}>
-                        {f.name}
+                      <div
+                        key={i}
+                        className={styles.fileItem}
+                        onClick={() => handleDownloadFile(f.url, f.name)}
+                      >
+                        <div className={styles.fileIcon}>📄</div>
+
+                        <div className={styles.fileInfo}>
+                          <div className={styles.fileName}>
+                            {f.name}
+                          </div>
+
+                          <div className={styles.fileAction}>
+                            Nhấn để tải xuống
+                          </div>
+                        </div>
                       </div>
                     ))}
-
                     <button
                       className={styles.showMoreButton}
                       onClick={() => {
@@ -277,8 +323,8 @@ useEffect(() => {
                   className={styles.deleteButton}
                   onClick={handleClear}
                 >
-                   <Trash2 size={16} style={{ marginRight: 6 }} />
-                  {clearing ? "Đang xóa..." : "Xóa đoạn hội thoại"}
+                  <Trash2 size={16} style={{ marginRight: 6 }} />
+                  {clearing ? "Đang xóa..." : "Xóa lịch sử trò chuyện"}
                 </button>
               </div>
             </>
@@ -299,7 +345,7 @@ useEffect(() => {
                   className={styles.storageCloseBtn}
                   onClick={onClose}
                 >
-                  <X size={18} />
+                  {/* <X size={18} /> */}
                 </button>
               </div>
 
@@ -343,10 +389,19 @@ useEffect(() => {
 
                       <div className={styles.allMediaGrid}>
                         {list.map((m) => (
+                          // <img
+                          //   key={m.id}
+                          //   src={resolvedMap[m.id]}
+                          //   className={styles.allMediaImage}
+                          // />
                           <img
                             key={m.id}
                             src={resolvedMap[m.id]}
                             className={styles.allMediaImage}
+                            onError={(e) => {
+                              console.error("Load image failed:", resolvedMap[m.id]);
+                              e.currentTarget.style.display = "none";
+                            }}
                           />
                         ))}
                       </div>
@@ -373,8 +428,24 @@ useEffect(() => {
                           <div
                             key={m.id}
                             className={styles.allMediaFile}
+                            onClick={() =>
+                              handleDownloadFile(
+                                m.attachment.fileUrl,
+                                m.attachment.fileName
+                              )
+                            }
                           >
-                            {m.attachment.fileName}
+                            <div className={styles.fileIcon}>📄</div>
+
+                            <div className={styles.fileInfo}>
+                              <div className={styles.fileName}>
+                                {m.attachment.fileName}
+                              </div>
+
+                              <div className={styles.fileAction}>
+                                Nhấn để tải xuống
+                              </div>
+                            </div>
                           </div>
                         ))}
                       </div>

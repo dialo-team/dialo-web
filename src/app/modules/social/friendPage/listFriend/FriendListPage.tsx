@@ -95,7 +95,10 @@ export const FriendListPage = () => {
     try {
       await unfriendApi(selectedFriend.friendId);
 
-      // reload lại list
+      window.dispatchEvent(
+        new CustomEvent("friend-removed", { detail: { friendId: selectedFriend.friendId } })
+      );
+
       const res = await getFriendsApi();
       setFriends(res?.data?.friends || []);
 

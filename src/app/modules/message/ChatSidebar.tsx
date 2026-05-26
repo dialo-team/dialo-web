@@ -69,6 +69,8 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
     new Set(JSON.parse(localStorage.getItem("clearedConversations") || "[]"))
   );
   const selectedIdRef = useRef<string | undefined>(selectedConversationId);
+  const hasLoadedRef = useRef(false);
+  const socketDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     selectedIdRef.current = selectedConversationId;
@@ -79,42 +81,42 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
 
   useEffect(() => {
     const handler = (e: any) => {
-      const { conversationId, name, avatar } = e.detail;
+      const { conversationId } = e.detail;
 
       setFriends((prev) =>
         prev.map((f) =>
           f.id === conversationId
             ? {
               ...f,
-              name: name ?? f.name,
-              avatar: avatar ?? f.avatar,
+              lastMessage: "",
+              unreadCount: 0,
+              unreadDisplay: "0",
             }
             : f
         )
       );
     };
 
-    window.addEventListener("conversation-updated", handler);
-
-    return () => {
-      window.removeEventListener("conversation-updated", handler);
-    };
-  }, []);
-
-  useEffect(() => {
-    const handler = (e: any) => {
-      const { conversationId } = e.detail;
-      clearedIds.current.add(conversationId);
-      localStorage.setItem("clearedConversations", JSON.stringify([...clearedIds.current]));
-      setFriends((prev) => prev.filter((f) => f.id !== conversationId));
-    };
-
     window.addEventListener("conversation-cleared", handler);
-    return () => window.removeEventListener("conversation-cleared", handler);
+
+    return () =>
+      window.removeEventListener("conversation-cleared", handler);
   }, []);
+
+  // useEffect(() => {
+  //   const handler = (e: any) => {
+  //     const { conversationId } = e.detail;
+  //     clearedIds.current.add(conversationId);
+  //     localStorage.setItem("clearedConversations", JSON.stringify([...clearedIds.current]));
+  //     setFriends((prev) => prev.filter((f) => f.id !== conversationId));
+  //   };
+
+  //   window.addEventListener("conversation-cleared", handler);
+  //   return () => window.removeEventListener("conversation-cleared", handler);
+  // }, []);
 
   const loadConversations = useCallback(async () => {
-    setLoading(true);
+    if (!hasLoadedRef.current) setLoading(true);
     try {
       const data = await getConversationsApi();
 
@@ -122,15 +124,17 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
         data.map(async (item) => {
 
           let avatar = item.counterpartAvatarUrl || DEFAULT_AVATAR;
+          let displayName = item.counterpartName || "";
 
           let memberAvatars: string[] = [];
 
-          // CHECK GROUP 
+          // CHECK GROUP
           const isGroup =
             item.conversationId === item.counterpartId &&
             (!item.counterpartAvatarUrl ||
               item.counterpartAvatarUrl.trim() === "");
 
+          // ===================== GROUP =====================
           if (isGroup) {
             try {
               const res = await getListMemberApi(item.conversationId);
@@ -141,7 +145,12 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
                 members.slice(0, 4).map(async (m: any) => {
                   try {
                     const userRes = await getUserInfoApi(m.userId);
-                    return userRes.data?.data?.avatar || userRes.data?.avatar || DEFAULT_AVATAR;
+
+                    return (
+                      userRes.data?.data?.avatar ||
+                      userRes.data?.avatar ||
+                      DEFAULT_AVATAR
+                    );
                   } catch {
                     return DEFAULT_AVATAR;
                   }
@@ -152,17 +161,49 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
             }
           }
 
-          // nếu không phải group → fallback 1 avatar
-          if (!isGroup) {
+          // ===================== 1-1 CHAT =====================
+          else {
+            try {
+              const userRes = await getUserInfoApi(item.counterpartId);
+
+              console.log("USER INFO:", userRes.data);
+
+              const userData = userRes.data.data;
+
+              avatar =
+                item.counterpartAvatarUrl ||
+                userData?.avatar ||
+                DEFAULT_AVATAR;
+
+              displayName =
+                item.counterpartName &&
+                  !/^\d{10}$/.test(item.counterpartName)
+                  ? item.counterpartName
+                  : userData?.userName;
+
+              "Unknown";
+            } catch (e) {
+              console.warn("load user info failed", e);
+
+              avatar =
+                item.counterpartAvatarUrl ||
+                DEFAULT_AVATAR;
+
+              displayName =
+                item.counterpartName ||
+                "Unknown";
+            }
+
             memberAvatars = [avatar];
           }
 
           return {
             id: item.conversationId,
-            name: formatGroupName(item.counterpartName),
+            // name: formatGroupName(item.counterpartName),
+            name: isGroup ? formatGroupName(displayName) : displayName,
             counterpartId: item.counterpartId,
             avatar,
-            memberAvatars, // 👈 QUAN TRỌNG
+            memberAvatars,
             lastMessage: item.lastMessage,
             unreadCount: item.unreadCount,
             unreadDisplay: item.unreadDisplay,
@@ -172,11 +213,25 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
 
       setFriends((prev) => {
         const activeId = selectedIdRef.current;
-        const filtered = mapped
-          .filter((f) => !clearedIds.current.has(f.id))
-          .map((f) =>
-            f.id === activeId ? { ...f, unreadCount: 0, unreadDisplay: "0" } : f
-          );
+
+        mapped.forEach((f) => {
+          // nếu conversation có tin nhắn mới
+          // thì bỏ khỏi danh sách đã clear
+          if (f.lastMessage && f.lastMessage.trim() !== "") {
+            clearedIds.current.delete(f.id);
+          }
+        });
+
+        localStorage.setItem(
+          "clearedConversations",
+          JSON.stringify([...clearedIds.current])
+        );
+
+        const filtered = mapped.map((f) =>
+          f.id === activeId
+            ? { ...f, unreadCount: 0, unreadDisplay: "0" }
+            : f
+        );
 
         const isSame =
           filtered.length === prev.length &&
@@ -195,6 +250,7 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
     } catch (error) {
       console.error("Load conversations failed:", error);
     } finally {
+      hasLoadedRef.current = true;
       setLoading(false);
     }
   }, []);
@@ -277,23 +333,36 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
     const unsubscribe = subscribeChatTopic(
       `/topic/inbox/${currentUserId}`,
       () => {
-        void loadConversations();
+        if (socketDebounceRef.current) clearTimeout(socketDebounceRef.current);
+        socketDebounceRef.current = setTimeout(() => {
+          void loadConversations();
+        }, 300);
       },
     );
 
     return unsubscribe;
   }, [loadConversations]);
 
-  // ===================== FALLBACK POLLING =====================
-  // useEffect(() => {
-  //   const interval = window.setInterval(() => {
-  //     if (!document.hidden) {
-  //       void loadConversations();
-  //     }
-  //   }, 3000);
-  //
-  //   return () => window.clearInterval(interval);
-  // }, [loadConversations]);
+  // ===================== FRIEND REMOVED =====================
+  useEffect(() => {
+    const handler = (e: any) => {
+      const { friendId } = e.detail as { friendId: string };
+      setFriends((prev) => {
+        const conv = prev.find((f) => f.counterpartId === friendId);
+        if (conv) {
+          clearedIds.current.delete(conv.id);
+          localStorage.setItem(
+            "clearedConversations",
+            JSON.stringify([...clearedIds.current])
+          );
+        }
+        return prev;
+      });
+      void loadConversations();
+    };
+    window.addEventListener("friend-removed", handler);
+    return () => window.removeEventListener("friend-removed", handler);
+  }, [loadConversations]);
 
   // ===================== SEARCH PARAM =====================
   useEffect(() => {
@@ -342,40 +411,46 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
             const isActive = f.id === selectedConversationId;
             const hasUnread = (f.unreadCount || 0) > 0 && !isActive;
             return (
-            <div
-              key={f.id}
-              className={`${styles.chatItem} ${hasUnread ? styles.chatItemUnread : ""
-                }`}
-              onClick={() => onSelectUser(f as any)}
-            >
-              {/* <img src={f.avatar} className={styles.avatar} alt={f.name} /> */}
-              <GroupAvatar avatars={f.memberAvatars?.length ? f.memberAvatars : [f.avatar]} />
+              <div
+                key={f.id}
+                className={`${styles.chatItem} ${hasUnread ? styles.chatItemUnread : ""
+                  }`}
+                onClick={() => onSelectUser(f as any)}
+              >
+                <GroupAvatar
+                  avatars={
+                    f.memberAvatars?.length
+                      ? f.memberAvatars
+                      : [f.avatar || DEFAULT_AVATAR]
+                  }
+                />
 
-              <div className={styles.info}>
-                <div
-                  className={`${styles.name} ${hasUnread ? styles.nameUnread : ""
-                    }`}
-                >
-                  {f.name}
+                <div className={styles.info}>
+                  <div
+                    className={`${styles.name} ${hasUnread ? styles.nameUnread : ""
+                      }`}
+                  >
+                    {f.name}
+                  </div>
+                  <div
+                    className={`${styles.lastMessage} ${hasUnread ? styles.lastMessageUnread : ""
+                      }`}
+                  >
+                    {f.lastMessage}
+                  </div>
                 </div>
-                <div
-                  className={`${styles.lastMessage} ${hasUnread ? styles.lastMessageUnread : ""
-                    }`}
-                >
-                  {f.lastMessage}
-                </div>
+
+                {hasUnread && (
+                  <div
+                    className={styles.unreadBadge}
+                    title={f.unreadDisplay || String(f.unreadCount)}
+                  >
+                    {f.unreadCount}
+                  </div>
+                )}
               </div>
-
-              {hasUnread && (
-                <div
-                  className={styles.unreadBadge}
-                  title={f.unreadDisplay || String(f.unreadCount)}
-                >
-                  {f.unreadCount}
-                </div>
-              )}
-            </div>
-          );})
+            );
+          })
         }
         {!loading && filteredFriends.length === 0 && (
           <div className={styles.empty}>Không tìm thấy</div>

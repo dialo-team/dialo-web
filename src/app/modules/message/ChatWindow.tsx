@@ -24,8 +24,16 @@ import {
   Send,
   FileText,
   Download,
-  Pin,
   PinOff,
+  BarChart2,
+  Share2,
+  Mic,
+  MicOff,
+  Pencil,
+  SmilePlus,
+  X,
+  Check,
+  Pin,
 } from "lucide-react";
 import {
   getConversationDetailApi,
@@ -34,18 +42,25 @@ import {
   revokeMessageApi,
   sendMessageApi,
   sendFileMessageApi,
+  reactMessageApi,
+  editMessageApi,
 } from "../../../../api/message/conversationApi";
 // import axiosClient from "../../../../api/axiosClient";
 import { ChatInfo } from "./ChatInfo";
 import { ChatGroupInfo } from "./group/ChatGroupInfo";
 import { ChatWindowSkeleton } from "./ChatSkeletonLoading";
 import { ChatSearch } from "./ChatSearch";
-import type { MessageDto } from "../../types/message/Message";
+import { CreatePollModal } from "./CreatePollModal";
+import { PollBubble } from "./PollBubble";
+import { PollVoteModal } from "./PollVoteModal";
+import { ForwardModal } from "./ForwardModal";
+import type { MessageDto, PollResponse, PollSettings } from "../../types/message/Message";
 import { subscribeChatTopic } from "./chatSocket";
 import { getBlockedUsersApi, unblockUserApi } from "../../../../api/social/listFriend/ListFriendApi";
 import { getUserInfoApi } from "../../../../api/social/searchAndAddFriend/userApi";
 import { getPinnedMessagesApi, pinMessageApi, unpinMessageApi } from "../../../../api/social/groupFriend/groupApi";
 import { AlertModal } from "@/app/components/AlertModal";
+import { VoiceMessage } from "./VoiceMessage";
 
 type PropsContext = {
   selectedUser: Friend | null;
@@ -55,7 +70,7 @@ type PropsContext = {
 type MessageUI = {
   id: string;
   sender: "me" | "them";
-  kind: "text" | "image" | "file";
+  kind: "text" | "image" | "file" | "audio";
   content: string;
   time: string;
   fileUrl?: string;
@@ -81,12 +96,29 @@ type PinnedMessage = {
   pinnedAt: string;
   pinnedByUserId: string;
   pinnedByName?: string;
+  edited?: boolean;
+  type?: string;
+  senderId?: string;
+  senderName?: string;
+  createdAt?: string;
+  poll?: PollResponse;
+  reactions?: { emoji: string; count: number }[];
+  durationSeconds?: number;
 };
 
 const MESSAGE_TEXT_TYPE = "TEXT";
-const FILE_PROXY_PREFIX = "/api-files";
+// const FILE_PROXY_PREFIX = "/api-files";
+const FILE_BASE_URL = "http://14.225.192.37:8085";
 const POLLING_INTERVAL_MS = 5000;
 const REALTIME_GRACE_PERIOD_MS = 15000;
+const COMMON_EMOJIS = [
+  "😊", "😂", "❤️", "👍", "😍", "🎉", "🔥", "😢", "😡", "🥺",
+  "😎", "🤔", "👋", "🙏", "💪", "😅", "🤣", "😭", "😤", "🥳",
+  "😇", "🤩", "😏", "😒", "😔", "😨", "😱", "🤯", "🥴", "😴",
+  "😋", "🤗", "😐", "🙄", "😬", "😯", "👏", "🫡", "💯", "🫶",
+];
+const QUICK_REACTIONS = ["👍", "❤️", "😂", "😮", "😢", "😡"];
+
 
 const getCurrentUserId = () => {
   try {
@@ -110,28 +142,23 @@ const getCurrentUserId = () => {
 };
 
 const IMAGE_EXT_REGEX = /\.(png|jpe?g|gif|bmp|webp|svg)$/i;
+const MEDIA_BASE_URL = "http://14.225.192.37:8085";
 
 const toAbsoluteMediaUrl = (url: string) => {
-  if (!url) {
-    return "";
+  if (!url) return "";
+
+  // đã là full url
+  if (/^https?:\/\//i.test(url)) {
+    return encodeURI(url);
   }
 
-  const normalizedPath = url.startsWith("/") ? url : `/${url}`;
-
-  if (/^https?:\/\//i.test(normalizedPath)) {
-    try {
-      const absoluteUrl = new URL(normalizedPath);
-      return `${FILE_PROXY_PREFIX}${encodeURI(absoluteUrl.pathname)}${absoluteUrl.search}`;
-    } catch {
-      return encodeURI(normalizedPath);
-    }
+  // backend trả /uploads/xxx
+  if (url.startsWith("/uploads")) {
+    return encodeURI(`${MEDIA_BASE_URL}${url}`);
   }
 
-  const proxiedPath = normalizedPath.startsWith("/uploads/")
-    ? normalizedPath.replace(/^\/uploads/, `${FILE_PROXY_PREFIX}/uploads`)
-    : `${FILE_PROXY_PREFIX}${normalizedPath}`;
-
-  return encodeURI(proxiedPath);
+  // fallback
+  return encodeURI(`${MEDIA_BASE_URL}/${url.replace(/^\/+/, "")}`);
 };
 
 
@@ -186,67 +213,86 @@ const isImageMessage = (message: MessageDto) => {
 const mapMessageToUI = (
   message: MessageDto,
   currentUserId: string | null,
-): MessageUI => ({
-  id: message.id,
-  senderId: message.senderId || undefined,
+): MessageUI => {
+  const reactionGroups: { emoji: string; count: number }[] = [];
+  if (message.reactions?.length) {
+    const emojiMap = new Map<string, number>();
+    message.reactions.forEach((r) => {
+      emojiMap.set(r.emoji, (emojiMap.get(r.emoji) || 0) + 1);
+    });
+    emojiMap.forEach((count, emoji) => reactionGroups.push({ emoji, count }));
+  }
 
-  sender:
-    message.displayPosition === "RIGHT" ||
-      (currentUserId ? message.senderId === currentUserId : false)
-      ? "me"
-      : "them",
+  return {
+    id: message.id,
+    senderId: message.senderId || undefined,
 
-  kind: message.revoked
-    ? "text"
-    : isImageMessage(message)
-      ? "image"
-      : message.attachment?.fileName || message.attachment?.fileUrl
-        ? "file"
-        : "text",
+    sender:
+      message.displayPosition === "RIGHT" ||
+        (currentUserId ? message.senderId === currentUserId : false)
+        ? "me"
+        : "them",
 
-  content: message.revoked
-    ? "Tin nhắn đã được thu hồi"
-    : message.content || message.attachment?.fileName || "[File]",
+    kind: message.revoked
+      ? "text"
+      : message.type === "VOICE"
+        ? "audio"
+        : message.type === "GIF"
+          ? "image"
+          : isImageMessage(message)
+            ? "image"
+            : message.attachment?.fileName || message.attachment?.fileUrl
+              ? "file"
+              : "text",
 
-  time: new Date(message.createdAt).toLocaleTimeString("vi-VN", {
-    hour: "2-digit",
-    minute: "2-digit",
-  }),
+    content: message.revoked
+      ? "Tin nhắn đã được thu hồi"
+      : message.content || message.attachment?.fileName || "[File]",
 
-  fileUrl: (() => {
-    const thumbnailAttachmentUrl =
-      message.attachment?.thumbnailUrl || message.attachment?.fileUrl;
+    time: new Date(message.createdAt).toLocaleTimeString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
 
-    return thumbnailAttachmentUrl
-      ? toAbsoluteMediaUrl(thumbnailAttachmentUrl)
-      : undefined;
-  })(),
+    fileUrl: (() => {
+      if (message.type === "GIF") return message.content || undefined;
+      const thumbnailAttachmentUrl =
+        message.attachment?.thumbnailUrl || message.attachment?.fileUrl;
+      return thumbnailAttachmentUrl
+        ? toAbsoluteMediaUrl(thumbnailAttachmentUrl)
+        : undefined;
+    })(),
 
-  sourceFileUrl: (() => {
-    const originalAttachmentUrl =
-      message.attachment?.fileUrl || message.attachment?.thumbnailUrl;
+    durationSeconds: message.durationSeconds,
 
-    return originalAttachmentUrl
-      ? toAbsoluteMediaUrl(originalAttachmentUrl)
-      : undefined;
-  })(),
+    sourceFileUrl: (() => {
+      const originalAttachmentUrl =
+        message.attachment?.fileUrl || message.attachment?.thumbnailUrl;
+      return originalAttachmentUrl
+        ? toAbsoluteMediaUrl(originalAttachmentUrl)
+        : undefined;
+    })(),
 
-  fileUrlCandidates: (() => {
-    const thumbnailAttachmentUrl = message.attachment?.thumbnailUrl;
-    const originalAttachmentUrl = message.attachment?.fileUrl;
+    fileUrlCandidates: (() => {
+      const thumbnailAttachmentUrl = message.attachment?.thumbnailUrl;
+      const originalAttachmentUrl = message.attachment?.fileUrl;
+      return normalizeCandidateUrls(
+        [thumbnailAttachmentUrl, originalAttachmentUrl],
+        message.attachment?.fileName,
+      );
+    })(),
 
-    return normalizeCandidateUrls(
-      [thumbnailAttachmentUrl, originalAttachmentUrl],
-      message.attachment?.fileName,
-    );
-  })(),
-
-  fileName: message.attachment?.fileName || undefined,
-  mimeType: message.attachment?.mimeType || undefined,
-  revoked: message.revoked,
-
-  type: message.type,
-});
+    fileName: message.attachment?.fileName || undefined,
+    mimeType: message.attachment?.mimeType || undefined,
+    revoked: message.revoked,
+    edited: message.edited,
+    type: message.type,
+    senderName: message.senderName,
+    createdAt: message.createdAt,
+    poll: message.poll,
+    reactions: reactionGroups.length ? reactionGroups : undefined,
+  };
+};
 
 const resolveAttachmentUrl = async (message: MessageUI): Promise<MessageUI> => {
   if (message.kind !== "image" && message.kind !== "file") {
@@ -309,8 +355,19 @@ const renderMessageContent = (
 ): ReactNode => {
   const displayUrl = message.fileUrl;
 
+  if (message.kind === "audio") {
+    const audioSrc = message.fileUrl || message.sourceFileUrl || message.content;
+    return (
+      <VoiceMessage
+        src={audioSrc}
+        time={message.time}
+        isMine={message.sender === "me"}
+      />
+    );
+  }
+
+
   if (message.kind === "image" && displayUrl) {
-    // Dùng sourceFileUrl (proxy path) cho href, blob cho src
     const linkUrl = message.sourceFileUrl || displayUrl;
     return (
       <>
@@ -323,7 +380,8 @@ const renderMessageContent = (
           <img
             src={displayUrl}
             alt={message.fileName || "image-message"}
-            className={styles.imageMessage}
+            className={message.type === "GIF" ? styles.imageMessage : styles.imageMessage}
+            style={message.type === "GIF" ? { maxWidth: 220, borderRadius: 8 } : undefined}
           />
         </a>
         <div className={styles.time}>{message.time}</div>
@@ -385,8 +443,6 @@ export const ChatWindow = () => {
 
   const isGroupChat =
     selectedUser?.id === (selectedUser as any)?.counterpartId;
-
-
 
   const bodyRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -458,6 +514,35 @@ export const ChatWindow = () => {
 
 
   // const [chatUser, setChatUser] = useState<Friend | null>(selectedUser);
+  const [showPollModal, setShowPollModal] = useState(false);
+  const [voteTarget, setVoteTarget] = useState<{ messageId: string; poll: PollResponse; senderName: string; createdAt: string; settings?: PollSettings } | null>(null);
+  const [forwardMsgId, setForwardMsgId] = useState<string | null>(null);
+  const pollSettingsRef = useRef<Map<string, PollSettings>>(new Map());
+
+  // ── Voice recording ──
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recordingTimerRef = useRef<number | null>(null);
+
+  // ── Emoji picker ──
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+  // ── GIF picker ──
+  const [showGifPicker, setShowGifPicker] = useState(false);
+  const [gifSearch, setGifSearch] = useState("");
+  const [gifResults, setGifResults] = useState<string[]>([]);
+  const gifSearchTimerRef = useRef<number | null>(null);
+
+  // ── Reaction picker ──
+  const [openReactionId, setOpenReactionId] = useState<string | null>(null);
+
+  // ── Edit message ──
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState("");
+
+  const [chatUser, setChatUser] = useState<Friend | null>(selectedUser);
 
   useEffect(() => {
     setChatUser(selectedUser);
@@ -487,7 +572,6 @@ export const ChatWindow = () => {
       window.removeEventListener("conversation-updated", handler);
     };
   }, [chatUser]);
-
 
   useEffect(() => {
     const checkBlocked = async () => {
@@ -519,9 +603,14 @@ export const ChatWindow = () => {
     checkBlocked();
   }, [selectedUser?.id]);
 
-  // click outside
+  // click outside - đóng menu, emoji picker, gif picker, reaction picker
   useEffect(() => {
-    const close = () => setOpenMenuId(null);
+    const close = () => {
+      setOpenMenuId(null);
+      setShowEmojiPicker(false);
+      setShowGifPicker(false);
+      setOpenReactionId(null);
+    };
     window.addEventListener("click", close);
     return () => window.removeEventListener("click", close);
   }, []);
@@ -804,49 +893,25 @@ export const ChatWindow = () => {
     }
   };
 
+
   const handleDownloadFile = (message: MessageUI) => {
-    const rawUrl =
+    const downloadUrl =
       message.sourceFileUrl ||
-      (message.fileName
-        ? `/uploads/${message.fileName}`
-        : message.fileUrl || "");
+      message.fileUrl ||
+      "";
 
-    if (!rawUrl) return;
+    if (!downloadUrl) return;
 
-    // Decode trước rồi mới build proxy URL, tránh double encode
-    let proxyUrl: string;
-    try {
-      const decoded = decodeURIComponent(
-        rawUrl.replace(/^.*\/uploads\//, "/uploads/"),
-      );
-      proxyUrl = `/api-files${decoded}`;
-    } catch {
-      proxyUrl = rawUrl.startsWith("/api-files")
-        ? rawUrl
-        : `/api-files${rawUrl}`;
-    }
+    const link = document.createElement("a");
 
-    const download = async () => {
-      try {
-        const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error(`${response.status}`);
-        const blob = await response.blob();
-        const blobUrl = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = blobUrl;
-        link.download = message.fileName || "attachment";
-        link.rel = "noreferrer";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-      } catch (error) {
-        console.error("Download file error:", error);
-        window.open(proxyUrl, "_blank", "noopener,noreferrer");
-      }
-    };
+    link.href = downloadUrl;
+    link.download = message.fileName || "attachment";
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
 
-    void download();
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const getLastMessageText = (messageList: MessageUI[]): string => {
@@ -952,6 +1017,95 @@ export const ChatWindow = () => {
   };
 
 
+
+  // ── Voice recording ──
+  const handleToggleRecording = async () => {
+    if (isRecording) {
+      mediaRecorderRef.current?.stop();
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mr = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+      mr.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
+      mr.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+        const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        const file = new File([blob], `voice_${Date.now()}.webm`, { type: "audio/webm" });
+        const convId = selectedUser?.id;
+        if (!convId) return;
+        try {
+          const sent = await sendFileMessageApi(convId, file);
+          const mapped = mapMessageToUI(sent, currentUserId);
+          setMessages((prev) => prev.some((m) => m.id === mapped.id) ? prev : [...prev, mapped]);
+        } catch (e) { console.error("Send voice error:", e); }
+        setIsRecording(false);
+        setRecordingSeconds(0);
+      };
+      mr.start();
+      mediaRecorderRef.current = mr;
+      setIsRecording(true);
+      setRecordingSeconds(0);
+      recordingTimerRef.current = window.setInterval(() => setRecordingSeconds((s) => s + 1), 1000);
+    } catch (e) { console.error("Mic error:", e); }
+  };
+
+  // ── GIF ──
+  const TENOR_KEY = "AIzaSyAyimkuYQYF_FXVALexPzJnC0qUQnV3seh";
+  const handleGifSearch = (q: string) => {
+    setGifSearch(q);
+    if (gifSearchTimerRef.current) clearTimeout(gifSearchTimerRef.current);
+    if (!q.trim()) { setGifResults([]); return; }
+    gifSearchTimerRef.current = window.setTimeout(async () => {
+      try {
+        const res = await fetch(`https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(q)}&key=${TENOR_KEY}&limit=12&media_filter=gif`);
+        const data = await res.json();
+        const urls: string[] = (data.results || []).map((r: any) =>
+          r.media_formats?.gif?.url || r.media_formats?.tinygif?.url || ""
+        ).filter(Boolean);
+        setGifResults(urls);
+      } catch (e) { console.error(e); }
+    }, 500);
+  };
+
+  const handleSendGif = async (gifUrl: string) => {
+    const convId = selectedUser?.id;
+    const senderId = currentUserId;
+    if (!convId || !senderId) return;
+    setShowGifPicker(false);
+    setGifSearch("");
+    setGifResults([]);
+    try {
+      const sent = await sendMessageApi({ conversationId: convId, senderId, type: "GIF", content: gifUrl });
+      const mapped = mapMessageToUI(sent, currentUserId);
+      setMessages((prev) => prev.some((m) => m.id === mapped.id) ? prev : [...prev, mapped]);
+    } catch (e) { console.error("Send GIF error:", e); }
+  };
+
+  // ── React (thả cảm xúc) ──
+  const handleReact = async (messageId: string, emoji: string) => {
+    setOpenReactionId(null);
+    try {
+      const updated = await reactMessageApi(messageId, emoji);
+      const mapped = mapMessageToUI(updated, currentUserId);
+      setMessages((prev) => prev.map((m) => m.id === messageId ? { ...m, reactions: mapped.reactions } : m));
+    } catch (e) { console.error("React error:", e); }
+  };
+
+  // ── Edit message ──
+  const handleEditSave = async (messageId: string) => {
+    const content = editContent.trim();
+    if (!content) return;
+    try {
+      const updated = await editMessageApi(messageId, content);
+      const mapped = mapMessageToUI(updated, currentUserId);
+      setMessages((prev) => prev.map((m) => m.id === messageId ? { ...mapped, reactions: m.reactions } : m));
+      setEditingId(null);
+      setEditContent("");
+    } catch (e) { console.error("Edit error:", e); }
+  };
 
   // Hàm load user theo senderId
   const fetchUserInfo = useCallback(async (userId: string) => {
@@ -1129,9 +1283,9 @@ export const ChatWindow = () => {
       > */}
       <div
         className={`${styles.chat} ${showInfo || showSearch ? styles.chatWithPanel : ""
-          } ${isBlocked ? styles.chatBlocked : ""}`}
+          }`}
       >
-        {isBlocked && (
+        {/* {isBlocked && (
           <div className={styles.blockOverlay}>
             <div className={styles.blockBox}>
               <div className={styles.blockTitle}>
@@ -1159,7 +1313,7 @@ export const ChatWindow = () => {
               </button>
             </div>
           </div>
-        )}
+        )} */}
 
         {/* HEADER */}
         <div className={styles.header}>
@@ -1403,28 +1557,110 @@ export const ChatWindow = () => {
 
                         const rect = e.currentTarget.getBoundingClientRect();
 
-                        setMenuPos({
-                          x: rect.left - 190,
-                          y: rect.top,
-                        });
 
-                        setOpenMenuId(openMenuId === m.id ? null : m.id);
-                      }}
-                    >
-                      <MoreVertical size={16} />
+              if (m.type === "POLL" && m.poll) {
+                return (
+                  <div
+                    key={m.id}
+                    className={m.sender === "me" ? styles.messageRight : styles.messageLeft}
+                  >
+                    {m.sender === "them" && (
+                      <img
+                        src={isGroupChat ? userCache[m.senderId || ""]?.avatar || selectedUser.avatar : selectedUser.avatar}
+                        className={styles.avatar}
+                      />
+                    )}
+                    <div className={styles.messageBox}>
+                      <PollBubble
+                        messageId={m.id}
+                        poll={m.poll}
+                        time={m.time}
+                        settings={pollSettingsRef.current.get(m.id)}
+                        onVoteClick={(msgId) =>
+                          setVoteTarget({
+                            messageId: msgId,
+                            poll: m.poll!,
+                            senderName: m.senderName || "Người dùng",
+                            createdAt: m.createdAt || new Date().toISOString(),
+                            settings: pollSettingsRef.current.get(msgId),
+                          })
+                        }
+                      />
                     </div>
 
+                  </div>
+                );
+              }
+
+              return (
+                <div
+                  key={m.id}
+                  className={
+                    m.sender === "me" ? styles.messageRight : styles.messageLeft
+                  }
+                >
+                  {m.sender === "them" && (
+                    <img
+                      src={
+                        isGroupChat
+                          ? userCache[m.senderId || ""]?.avatar || selectedUser.avatar
+                          : selectedUser.avatar
+                      }
+                      className={styles.avatar}
+                    />
+                  )}
+
+                  <div className={styles.messageBox}>
+
+                    {/* ── Hover action bar (hiện khi rờ vào tin nhắn) ── */}
+                    {!m.revoked && (
+                      <div className={`${styles.hoverActions} ${m.sender === 'me' ? styles.hoverActionsRight : styles.hoverActionsLeft}`}>
+                        {QUICK_REACTIONS.map((emoji) => (
+                          <button
+                            key={emoji}
+                            className={styles.hoverReactBtn}
+                            onClick={(e) => { e.stopPropagation(); void handleReact(m.id, emoji); }}
+                            title={emoji}
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                        <span className={styles.hoverDivider} />
+                        <button
+                          className={styles.hoverMoreBtn}
+                          title="Thêm tùy chọn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            setMenuPos({ x: rect.left - 180, y: rect.bottom + 4 });
+                            setOpenMenuId(openMenuId === m.id ? null : m.id);
+                          }}
+                        >
+                          <MoreVertical size={14} />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* ── Dropdown menu (chỉnh sửa / thu hồi / xóa / chuyển tiếp) ── */}
                     {openMenuId === m.id && (
                       <div
                         className={styles.menu}
-                        style={{
-                          left: menuPos.x,
-                          top: menuPos.y,
-                        }}
+                        style={{ left: menuPos.x, top: menuPos.y }}
+                        onClick={(e) => e.stopPropagation()}
                       >
-
-                        {/* Ghim / Bỏ ghim (cả 2 bên) */}
-                        <div
+                        {m.sender === 'me' && !m.revoked && m.kind === 'text' && (
+                          <div className={styles.menuItem} onClick={(e) => { e.stopPropagation(); setEditingId(m.id); setEditContent(m.content); setOpenMenuId(null); }}>
+                            <Pencil size={14} /> Chỉnh sửa
+                          </div>
+                        )}
+                        {m.sender === 'me' && (
+                          <div className={styles.menuItem} onClick={(e) => { e.stopPropagation(); void handleRevokeMessage(m.id); }}>
+                            <Reply size={14} /> Thu hồi
+                          </div>
+                        )}
+                        <div className={styles.menuItem} onClick={(e) => { e.stopPropagation(); void handleDeleteMessageForMe(m.id); }}>
+                          <Trash2 size={14} /> Xóa chỉ mình tôi
+                       <div
                           className={styles.menuItem}
                           onClick={(e) => {
                             e.stopPropagation();
@@ -1441,52 +1677,68 @@ export const ChatWindow = () => {
                           {isMessagePinned(m.id) ? <PinOff size={14} /> : <Pin size={14} />}
                           {isMessagePinned(m.id) ? "Bỏ ghim" : "Ghim tin nhắn"}
                         </div>
-
-                        {/* CHỈ me mới có thu hồi */}
-                        {m.sender === "me" && (
-                          <div
-                            className={styles.menuItem}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              void handleRevokeMessage(m.id);
-                              setOpenMenuId(null);
-                            }}
-                          >
-                            <Reply size={14} />
-                            Thu hồi
-                          </div>
-                        )}
-
-                        {/* Xóa chỉ mình tôi (cả 2 bên nếu bạn muốn) */}
-                        <div
-                          className={styles.menuItem}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            void handleDeleteMessageForMe(m.id);
-                            setOpenMenuId(null);
-                          }}
-                        >
-                          <Trash2 size={14} />
-                          Xóa chỉ mình tôi
+                        <div className={styles.menuItem} onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); setForwardMsgId(m.id); }}>
+                          <Share2 size={14} /> Chuyển tiếp
                         </div>
                       </div>
                     )}
+
                     <div
-                      className={`${m.kind === "image"
+                      className={`${m.kind === 'image'
                         ? styles.imageBubble
-                        : m.kind === "file"
+                        : m.kind === 'file'
                           ? styles.fileBubble
-                          : styles.bubble
-                        } ${m.revoked ? styles.revoked : ""}`}
+                          : m.kind === 'audio'
+                            ? styles.audioBubble
+                            : styles.bubble
+                        } ${m.revoked ? styles.revoked : ''}`}
                       onClick={handleMessageClick}
                     >
-                      {isGroupChat && m.sender === "them" && (
+                      {isGroupChat && m.sender === 'them' && (
                         <div className={styles.senderNameInside}>
-                          {userCache[m.senderId || ""]?.userName || "Đang tải..."}
+                          {userCache[m.senderId || '']?.userName || 'Đang tải...'}
                         </div>
                       )}
-                      {renderMessageContent(m, handleDownloadFile)}
+                      {/* Inline edit form */}
+                      {editingId === m.id ? (
+                        <div className={styles.editInputWrap}>
+                          <textarea
+                            className={styles.editInput}
+                            value={editContent}
+                            onChange={(e) => setEditContent(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void handleEditSave(m.id); }
+                              if (e.key === 'Escape') { setEditingId(null); }
+                            }}
+                            autoFocus
+                          />
+                          <div className={styles.editActions}>
+                            <button className={styles.editCancelBtn} onClick={() => setEditingId(null)}><X size={12} />Hủy</button>
+                            <button className={styles.editSaveBtn} onClick={() => void handleEditSave(m.id)}><Check size={12} />Lưu</button>
+                          </div>
+                        </div>
+                      ) : (
+                        renderMessageContent(m, handleDownloadFile)
+                      )}
+                      {m.edited && !m.revoked && editingId !== m.id && (
+                        <span className={styles.editedLabel}>đã chỉnh sửa</span>
+                      )}
                     </div>
+
+                    {m.reactions && m.reactions.length > 0 && (
+                      <div className={styles.reactionsBar}>
+                        {m.reactions.map((r) => (
+                          <button
+                            key={r.emoji}
+                            className={styles.reactionPill}
+                            onClick={() => void handleReact(m.id, r.emoji)}
+                            title={`${r.count} người react — bấm để đổi/xóa`}
+                          >
+                            {r.emoji} {r.count > 1 && <span>{r.count}</span>}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               )
@@ -1495,21 +1747,127 @@ export const ChatWindow = () => {
         </div>
 
         {/* TOOLBAR + INPUT — ẩn khi nhóm đã giải tán */}
-        {isGroupDissolved ? null : (<>
+        {isGroupDissolved ? null : isBlocked ? (
+          <div className={styles.blockInlineBar}>
+            <div className={styles.blockInlineText}>
+              Bạn đang chặn người này
+            </div>
+
+            <button
+              className={styles.unblockInlineBtn}
+              onClick={async () => {
+                try {
+                  await unblockUserApi((selectedUser as any).counterpartId);
+                  setIsBlocked(false);
+                } catch (err) {
+                  console.error(err);
+                }
+              }}
+            >
+              Bỏ chặn
+            </button>
+          </div>
+        ) : (<>
           {/* TOOLBAR */}
           <div className={styles.toolbar}>
-            <Smile size={18} />
+            {/* Emoji picker */}
+            <div className={styles.toolbarWrap}>
+              <button
+                className={styles.toolbarItem}
+                title="Emoji"
+                onClick={(e) => { e.stopPropagation(); setShowEmojiPicker((p) => !p); setShowGifPicker(false); }}
+              >
+                <Smile size={18} />
+              </button>
+              {showEmojiPicker && (
+                <div className={styles.emojiPickerWrap} onClick={(e) => e.stopPropagation()}>
+                  <div className={styles.emojiGrid}>
+                    {COMMON_EMOJIS.map((emoji) => (
+                      <button
+                        key={emoji}
+                        className={styles.emojiBtn}
+                        onClick={() => { setMessageText((prev) => prev + emoji); setShowEmojiPicker(false); }}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* GIF picker */}
+            <div className={styles.toolbarWrap}>
+              <button
+                className={styles.toolbarItem}
+                title="GIF"
+                style={{ fontSize: 11, fontWeight: 700, padding: '1px 5px', border: '1.5px solid #0ea5e9', borderRadius: 5, color: '#0ea5e9', background: 'none', cursor: 'pointer', lineHeight: 1.4 }}
+                onClick={(e) => { e.stopPropagation(); setShowGifPicker((p) => !p); setShowEmojiPicker(false); }}
+              >
+                GIF
+              </button>
+              {showGifPicker && (
+                <div className={styles.emojiPickerWrap} style={{ width: 320 }} onClick={(e) => e.stopPropagation()}>
+                  <input
+                    style={{ width: '100%', padding: '6px 10px', borderRadius: 8, border: '1px solid #ddd', marginBottom: 8, fontSize: 13, boxSizing: 'border-box' }}
+                    placeholder="Tìm GIF..."
+                    value={gifSearch}
+                    onChange={(e) => handleGifSearch(e.target.value)}
+                  />
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4, maxHeight: 220, overflowY: 'auto' }}>
+                    {gifResults.map((url) => (
+                      <img
+                        key={url}
+                        src={url}
+                        alt="gif"
+                        style={{ width: '100%', borderRadius: 6, cursor: 'pointer', objectFit: 'cover', height: 80 }}
+                        onClick={() => void handleSendGif(url)}
+                      />
+                    ))}
+                    {gifResults.length === 0 && gifSearch && (
+                      <div style={{ gridColumn: '1/-1', textAlign: 'center', color: '#888', fontSize: 12, padding: 12 }}>Đang tìm...</div>
+                    )}
+                    {gifResults.length === 0 && !gifSearch && (
+                      <div style={{ gridColumn: '1/-1', textAlign: 'center', color: '#aaa', fontSize: 12, padding: 12 }}>Nhập để tìm GIF</div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Image / File */}
             <Image
               size={18}
+              className={styles.toolbarItem}
               onClick={handlePickFile}
-              style={{ cursor: "pointer", opacity: sendingFile ? 0.6 : 1 }}
+              style={{ cursor: 'pointer', opacity: sendingFile ? 0.6 : 1 }}
             />
             <Paperclip
               size={18}
+              className={styles.toolbarItem}
               onClick={handlePickFile}
-              style={{ cursor: "pointer", opacity: sendingFile ? 0.6 : 1 }}
+              style={{ cursor: 'pointer', opacity: sendingFile ? 0.6 : 1 }}
             />
-            <Zap size={18} />
+
+            {/* Voice recording */}
+            <button
+              className={`${styles.toolbarItem} ${isRecording ? styles.recordingBtn : ''}`}
+              title={isRecording ? 'Dừng ghi âm' : 'Ghi âm tin nhắn thoại'}
+              onClick={() => void handleToggleRecording()}
+              style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+            >
+              {isRecording ? <><MicOff size={18} /><span style={{ fontSize: 11, color: '#ef4444' }}>{recordingSeconds}s</span></> : <Mic size={18} />}
+            </button>
+
+            {isGroupChat && (
+              <BarChart2
+                size={18}
+                className={styles.toolbarItem}
+                style={{ cursor: 'pointer' }}
+                onClick={() => setShowPollModal(true)}
+              // title="Tạo bình chọn"
+              />
+            )}
           </div>
 
           {/* INPUT */}
@@ -1615,6 +1973,39 @@ export const ChatWindow = () => {
         open={alert.open}
         message={alert.message}
         onClose={() => setAlert({ open: false, message: "" })}
+        />
+      <CreatePollModal
+        open={showPollModal}
+        conversationId={selectedUser.id}
+        onClose={() => setShowPollModal(false)}
+        onCreated={(msg, settings) => {
+          if (msg?.id) pollSettingsRef.current.set(msg.id, settings);
+          setShowPollModal(false);
+          void loadConversationDetail(selectedUser.id, true);
+        }}
+      />
+
+      {voteTarget && (
+        <PollVoteModal
+          open={true}
+          messageId={voteTarget.messageId}
+          poll={voteTarget.poll}
+          senderName={voteTarget.senderName}
+          createdAt={voteTarget.createdAt}
+          settings={voteTarget.settings}
+          onClose={() => setVoteTarget(null)}
+          onVoted={() => {
+            setVoteTarget(null);
+            void loadConversationDetail(selectedUser.id, true);
+          }}
+        />
+      )}
+
+      <ForwardModal
+        open={forwardMsgId !== null}
+        sourceMessageId={forwardMsgId ?? ""}
+        onClose={() => setForwardMsgId(null)}
+        onForwarded={() => setForwardMsgId(null)}
       />
     </div>
 

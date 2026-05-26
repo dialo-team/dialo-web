@@ -9,7 +9,7 @@ const flushPendingRequests = (token: string | null) => {
 };
 
 const axiosClient = axios.create({
-  baseURL: "http://14.225.254.174:9000",
+  baseURL: "http://14.225.192.37:9000",
   headers: {
     "Content-Type": "application/json",
   },
@@ -51,6 +51,7 @@ axiosClient.interceptors.response.use(
     const requestUrl: string = originalRequest?.url || "";
     const isPasswordResetFlow = requestUrl.includes("/api/v1/auth/password/reset");
     const isRefreshTokenFlow = requestUrl.includes("/api/v1/auth/refresh-token");
+    const isChangePasswordFlow = requestUrl.includes("/api/v1/auth/password/change");
 
     if (error.response?.status === 500) {
       error.response.data = {
@@ -61,7 +62,7 @@ axiosClient.interceptors.response.use(
     }
 
     // Password reset flow sử dụng resetToken riêng, không dùng refresh access token.
-    if (isPasswordResetFlow || isRefreshTokenFlow) {
+    if (isPasswordResetFlow || isRefreshTokenFlow || isChangePasswordFlow) {
       return Promise.reject(error);
     }
 

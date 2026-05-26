@@ -113,6 +113,92 @@
   min-width: 0;
 }
 
+/* ── Hover action bar ── */
+.hoverActions {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  gap: 2px;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.14);
+  padding: 4px 8px;
+  white-space: nowrap;
+}
+
+/* Bridge ẩn lấp đầy khoảng cách 4px giữa bar và bubble */
+.hoverActions::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 8px;
+}
+
+.messageBox:hover .hoverActions {
+  display: flex;
+}
+
+.hoverActionsRight {
+  right: 0;
+}
+
+.hoverActionsLeft {
+  left: 0;
+}
+
+.hoverReactBtn {
+  font-size: 18px;
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s, background 0.1s;
+  line-height: 1;
+}
+
+.hoverReactBtn:hover {
+  transform: scale(1.3);
+  background: #f3f4f6;
+}
+
+.hoverDivider {
+  display: inline-block;
+  width: 1px;
+  height: 20px;
+  background: #e5e7eb;
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+.hoverMoreBtn {
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  transition: background 0.1s;
+}
+
+.hoverMoreBtn:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+
 .bubble {
   padding: 10px 12px;
   border-radius: 16px;
@@ -135,6 +221,14 @@
   border-radius: 12px;
   background: transparent;
 }
+
+.audioBubble {
+  padding: 0;
+  background: transparent;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
 
 .messageRight .bubble {
   background: #dbeafe;
@@ -265,6 +359,15 @@
 /* them → bên phải bubble */
 .moreBtnThem {
   right: -24px;
+}
+
+.moreBtnForThem {
+  position: absolute;
+  right: -22px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #6b7280;
 }
 
 .menu {
@@ -599,6 +702,243 @@
     background: transparent;
     transform: scale(1);
   }
+/* ── Emoji picker ── */
+.emojiPickerWrap {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  z-index: 9999;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  padding: 8px;
+  width: 280px;
+}
+
+.emojiGrid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 2px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.emojiBtn {
+  font-size: 20px;
+  padding: 4px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 6px;
+  text-align: center;
+  line-height: 1;
+}
+
+.emojiBtn:hover {
+  background: #f3f4f6;
+}
+
+/* ── Quick reaction picker ── */
+.reactionPickerWrap {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: -8px;
+  z-index: 99999;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 24px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  padding: 6px 10px;
+  display: flex;
+  gap: 4px;
+}
+
+.reactionPickerWrap button {
+  font-size: 22px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s, background 0.1s;
+}
+
+.reactionPickerWrap button:hover {
+  background: #f3f4f6;
+  transform: scale(1.2);
+}
+
+/* ── Reactions bar ── */
+.reactionsBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.reactionPill {
+  font-size: 13px;
+  background: #f0f2f5;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 2px 7px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  transition: background 0.15s;
+}
+
+.reactionPill:hover {
+  background: #e5e7eb;
+}
+
+/* ── Audio player ── */
+.audioPlayer {
+  display: block;
+  max-width: 240px;
+  width: 100%;
+  height: 36px;
+  border-radius: 18px;
+}
+
+/* ── Inline edit ── */
+.editInputWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.editInput {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1.5px solid #0ea5e9;
+  font-size: 14px;
+  resize: none;
+  outline: none;
+  font-family: inherit;
+  min-height: 60px;
+}
+
+.editActions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.editSaveBtn, .editCancelBtn {
+  border: none;
+  border-radius: 8px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.editSaveBtn {
+  background: #0ea5e9;
+  color: #fff;
+}
+
+.editSaveBtn:hover { background: #0284c7; }
+
+.editCancelBtn {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.editCancelBtn:hover { background: #e5e7eb; }
+
+/* ── Recording button ── */
+.recordingBtn {
+  color: #ef4444 !important;
+  animation: pulse 1s infinite;
+}
+
+/* block  */
+
+.blockInlineBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 14px 16px;
+  background: #fff;
+  border-top: 1px solid #ddd;
+}
+
+.blockInlineText {
+  font-size: 14px;
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.unblockInlineBtn {
+  border: none;
+  background: #0ea5e9;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+.unblockInlineBtn:hover {
+  background: #0284c7;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.toolbarItem {
+  cursor: pointer;
+  color: #374151;
+  display: flex;
+  align-items: center;
+}
+
+.toolbarItem:hover {
+  color: #0ea5e9;
+}
+
+/* ── Edited label ── */
+.editedLabel {
+  font-size: 10px;
+  color: #9ca3af;
+  margin-left: 4px;
+  font-style: italic;
+}
+
+/* ── Toolbar wrap for emoji ── */
+.toolbarWrap {
+  position: relative;
+}
+
+/* ── GIF picker ── */
+.gifPickerWrap {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  z-index: 9999;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  padding: 8px;
+  width: 320px;
 }
 
 @media (max-width: 768px) {
