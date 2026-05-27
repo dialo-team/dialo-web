@@ -463,6 +463,7 @@ export const ChatWindow = () => {
   const [menuPos, setMenuPos] = useState({ x: 0, y: 0 });
 
   const [isBlocked, setIsBlocked] = useState(false);
+  const [isBlockedByOther, setIsBlockedByOther] = useState(false);
   const [checkingBlock, setCheckingBlock] = useState(false);
   const [isGroupDissolved, setIsGroupDissolved] = useState(false);
 
@@ -653,6 +654,17 @@ export const ChatWindow = () => {
         );
 
         setIsBlocked(isBlockedUser);
+
+        if (!isBlockedUser) {
+          try {
+            await getUserInfoApi(userId);
+            setIsBlockedByOther(false);
+          } catch (infoErr: any) {
+            setIsBlockedByOther(infoErr?.response?.status === 500);
+          }
+        } else {
+          setIsBlockedByOther(false);
+        }
       } catch (err) {
         console.error("Check block error:", err);
       } finally {
@@ -707,6 +719,7 @@ export const ChatWindow = () => {
 
       try {
         // const currentUserId = getCurrentUserId();
+        const counterpartId = (selectedUser as any)?.counterpartId;
         const data = await getConversationDetailApi(conversationId);
 
         clearObjectUrls();
@@ -729,6 +742,14 @@ export const ChatWindow = () => {
           }),
         );
 
+        const filtered = resolved.filter((m) => {
+          if (isBlocked && counterpartId && m.senderId === counterpartId) {
+            console.log("[ChatWindow] Filtering out message from blocked user:", m.id);
+            return false;
+          }
+          return true;
+        });
+
         try {
           await markConversationReadApi(conversationId);
           window.dispatchEvent(
@@ -740,7 +761,7 @@ export const ChatWindow = () => {
           console.error("Mark conversation read failed:", error);
         }
 
-        setMessages(uniqueMessagesById(resolved));
+        setMessages(uniqueMessagesById(filtered));
       } catch (error) {
         console.error("Load messages failed:", error);
       } finally {
@@ -749,7 +770,7 @@ export const ChatWindow = () => {
         }
       }
     },
-    [],
+    [isBlocked, selectedUser],
   );
 
   // only append new messages without scrolling or resetting scroll position
@@ -760,12 +781,22 @@ export const ChatWindow = () => {
 
     try {
       const currentUserId = getCurrentUserId();
+      const counterpartId = (selectedUser as any)?.counterpartId;
       const data = await getConversationDetailApi(conversationId);
 
       const mapped = data.messages.map((m) => mapMessageToUI(m, currentUserId));
+      
+      const filtered = mapped.filter((m) => {
+        if (isBlocked && counterpartId && m.senderId === counterpartId) {
+          console.log("[ChatWindow] Filtering out new message from blocked user:", m.id);
+          return false;
+        }
+        return true;
+      });
+
       const existingIds = new Set(messagesRef.current.map((m) => m.id));
       const unresolvedNewMessages = uniqueMessagesById(
-        mapped.filter((m) => !existingIds.has(m.id)),
+        filtered.filter((m) => !existingIds.has(m.id)),
       );
 
       if (mapped.length > 0) {
@@ -802,7 +833,7 @@ export const ChatWindow = () => {
     } catch (error) {
       console.error("Load new messages failed:", error);
     }
-  }, []);
+  }, [isBlocked, selectedUser]);
 
   // reset dissolved khi đổi conversation
   useEffect(() => {
@@ -845,20 +876,28 @@ export const ChatWindow = () => {
   // socket realtime messages for the current conversation
   useEffect(() => {
     const conversationId = selectedUser?.id ?? "";
+    const counterpartId = (selectedUser as any)?.counterpartId;
     if (!conversationId) {
       return;
     }
 
     const unsubscribe = subscribeChatTopic(
       `/topic/conversations/${conversationId}`,
-      () => {
+      (payload: any) => {
         lastRealtimeEventAtRef.current = Date.now();
+        
+        // If I blocked the sender, drop the message from the socket
+        if (isBlocked && counterpartId && payload && payload.senderId === counterpartId) {
+          console.log("[ChatWindow] Drop realtime message from blocked user");
+          return;
+        }
+        
         void loadNewMessagesOnly(conversationId);
       },
     );
 
     return unsubscribe;
-  }, [selectedUser?.id, loadNewMessagesOnly]);
+  }, [selectedUser?.id, isBlocked, loadNewMessagesOnly]);
 
   // fallback polling when socket is unavailable or misses a push event
   useEffect(() => {
@@ -910,7 +949,11 @@ export const ChatWindow = () => {
         return [...prev, mappedMessage];
       });
       setMessageText("");
-    } catch (error) {
+    } catch (error: any) {
+      const status = error?.response?.status;
+      if (status === 403 || status === 400) {
+        setIsBlockedByOther(true);
+      }
       console.error("Send message error:", error);
     } finally {
       setSending(false);
@@ -943,7 +986,11 @@ export const ChatWindow = () => {
       }
 
       setMessages((prev) => [...prev, resolvedMessage]);
-    } catch (error) {
+    } catch (error: any) {
+      const status = error?.response?.status;
+      if (status === 403 || status === 400) {
+        setIsBlockedByOther(true);
+      }
       console.error("Send file error:", error);
     } finally {
       setSendingFile(false);
@@ -1400,7 +1447,7 @@ export const ChatWindow = () => {
           ) : loading ? (
             <ChatWindowSkeleton />
           ) : (
-            messages.map((m) => {
+            messages.map((m, index) => {
               if (m.type === "SYSTEM") {
                 return (
                   <div key={m.id} className={styles.systemMessage}>
@@ -1444,154 +1491,161 @@ export const ChatWindow = () => {
               }
 
               return (
-                <div
-                  key={m.id}
-                  ref={(el) => { messageRefs.current[m.id] = el; }}
-                  className={`${m.sender === "me" ? styles.messageRight : styles.messageLeft}
-                 ${highlightMessageId === m.id ? styles.highlight : ""}`}
-                >
-                  {m.sender === "them" && (
-                    <img
-                      src={
-                        isGroupChat
-                          ? userCache[m.senderId || ""]?.avatar || selectedUser.avatar
-                          : selectedUser.avatar
-                      }
-                      className={styles.avatar}
-                    />
-                  )}
+                <div key={m.id}>
+                  <div
+                    ref={(el) => { messageRefs.current[m.id] = el; }}
+                    className={`${m.sender === "me" ? styles.messageRight : styles.messageLeft}
+                   ${highlightMessageId === m.id ? styles.highlight : ""}`}
+                  >
+                    {m.sender === "them" && (
+                      <img
+                        src={
+                          isGroupChat
+                            ? userCache[m.senderId || ""]?.avatar || selectedUser.avatar
+                            : selectedUser.avatar
+                        }
+                        className={styles.avatar}
+                      />
+                    )}
 
-                  <div className={styles.messageBox}>
+                    <div className={styles.messageBox}>
 
-                    {/* ── Hover action bar (hiện khi rờ vào tin nhắn) ── */}
-                    {!m.revoked && (
-                      <div className={`${styles.hoverActions} ${m.sender === 'me' ? styles.hoverActionsRight : styles.hoverActionsLeft}`}>
-                        {QUICK_REACTIONS.map((emoji) => (
+                      {/* ── Hover action bar (hiện khi rờ vào tin nhắn) ── */}
+                      {!m.revoked && (
+                        <div className={`${styles.hoverActions} ${m.sender === 'me' ? styles.hoverActionsRight : styles.hoverActionsLeft}`}>
+                          {QUICK_REACTIONS.map((emoji) => (
+                            <button
+                              key={emoji}
+                              className={styles.hoverReactBtn}
+                              onClick={(e) => { e.stopPropagation(); void handleReact(m.id, emoji); }}
+                              title={emoji}
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                          <span className={styles.hoverDivider} />
                           <button
-                            key={emoji}
-                            className={styles.hoverReactBtn}
-                            onClick={(e) => { e.stopPropagation(); void handleReact(m.id, emoji); }}
-                            title={emoji}
-                          >
-                            {emoji}
-                          </button>
-                        ))}
-                        <span className={styles.hoverDivider} />
-                        <button
-                          className={styles.hoverMoreBtn}
-                          title="Thêm tùy chọn"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const rect = e.currentTarget.getBoundingClientRect();
-                            setMenuPos({ x: rect.left - 180, y: rect.bottom + 4 });
-                            setOpenMenuId(openMenuId === m.id ? null : m.id);
-                          }}
-                        >
-                          <MoreVertical size={14} />
-                        </button>
-                      </div>
-                    )}
-
-                    {/* ── Dropdown menu (chỉnh sửa / thu hồi / xóa / chuyển tiếp) ── */}
-                    {openMenuId === m.id && (
-                      <div
-                        className={styles.menu}
-                        style={{ left: menuPos.x, top: menuPos.y }}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {m.sender === 'me' && !m.revoked && m.kind === 'text' && (
-                          <div className={styles.menuItem} onClick={(e) => { e.stopPropagation(); setEditingId(m.id); setEditContent(m.content); setOpenMenuId(null); }}>
-                            <Pencil size={14} /> Chỉnh sửa
-                          </div>
-                        )}
-                        {m.sender === 'me' && (
-                          <div className={styles.menuItem} onClick={(e) => { e.stopPropagation(); void handleRevokeMessage(m.id); }}>
-                            <Reply size={14} /> Thu hồi
-                          </div>
-                        )}
-                        <div className={styles.menuItem} onClick={(e) => { e.stopPropagation(); void handleDeleteMessageForMe(m.id); }}>
-                          <Trash2 size={14} /> Xóa chỉ mình tôi
-                        </div>
-                        <div
-                          className={styles.menuItem}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (isMessagePinned(m.id)) {
-                              void handleUnpinMessage(m.id);
-                            } else {
-                              void handlePinMessage(m.id);
-                            }
-                            setOpenMenuId(null);
-                          }}
-                        >
-                          {isMessagePinned(m.id) ? <PinOff size={14} /> : <Pin size={14} />}
-                          {isMessagePinned(m.id) ? "Bỏ ghim" : "Ghim tin nhắn"}
-                        </div>
-                        <div className={styles.menuItem} onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); setForwardMsgId(m.id); }}>
-                          <Share2 size={14} /> Chuyển tiếp
-                        </div>
-                      </div>
-                    )}
-
-                    <div
-                      className={`${m.kind === 'image'
-                        ? styles.imageBubble
-                        : m.kind === 'file'
-                          ? styles.fileBubble
-                          : m.kind === 'audio'
-                            ? styles.audioBubble
-                            : styles.bubble
-                        } ${m.revoked ? styles.revoked : ''}`}
-                      onClick={handleMessageClick}
-                    >
-                      {isGroupChat && m.sender === 'them' && (
-                        <div className={styles.senderNameInside}>
-                          {userCache[m.senderId || '']?.userName || 'Đang tải...'}
-                        </div>
-                      )}
-                      {/* Inline edit form */}
-                      {editingId === m.id ? (
-                        <div className={styles.editInputWrap}>
-                          <textarea
-                            className={styles.editInput}
-                            value={editContent}
-                            onChange={(e) => setEditContent(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void handleEditSave(m.id); }
-                              if (e.key === 'Escape') { setEditingId(null); }
+                            className={styles.hoverMoreBtn}
+                            title="Thêm tùy chọn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const rect = e.currentTarget.getBoundingClientRect();
+                              setMenuPos({ x: rect.left - 180, y: rect.bottom + 4 });
+                              setOpenMenuId(openMenuId === m.id ? null : m.id);
                             }}
-                            autoFocus
-                          />
-                          <div className={styles.editActions}>
-                            <button className={styles.editCancelBtn} onClick={() => setEditingId(null)}><X size={12} />Hủy</button>
-                            <button className={styles.editSaveBtn} onClick={() => void handleEditSave(m.id)}><Check size={12} />Lưu</button>
+                          >
+                            <MoreVertical size={14} />
+                          </button>
+                        </div>
+                      )}
+
+                      {/* ── Dropdown menu (chỉnh sửa / thu hồi / xóa / chuyển tiếp) ── */}
+                      {openMenuId === m.id && (
+                        <div
+                          className={styles.menu}
+                          style={{ left: menuPos.x, top: menuPos.y }}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {m.sender === 'me' && !m.revoked && m.kind === 'text' && (
+                            <div className={styles.menuItem} onClick={(e) => { e.stopPropagation(); setEditingId(m.id); setEditContent(m.content); setOpenMenuId(null); }}>
+                              <Pencil size={14} /> Chỉnh sửa
+                            </div>
+                          )}
+                          {m.sender === 'me' && (
+                            <div className={styles.menuItem} onClick={(e) => { e.stopPropagation(); void handleRevokeMessage(m.id); }}>
+                              <Reply size={14} /> Thu hồi
+                            </div>
+                          )}
+                          <div className={styles.menuItem} onClick={(e) => { e.stopPropagation(); void handleDeleteMessageForMe(m.id); }}>
+                            <Trash2 size={14} /> Xóa chỉ mình tôi
+                          </div>
+                          <div
+                            className={styles.menuItem}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (isMessagePinned(m.id)) {
+                                void handleUnpinMessage(m.id);
+                              } else {
+                                void handlePinMessage(m.id);
+                              }
+                              setOpenMenuId(null);
+                            }}
+                          >
+                            {isMessagePinned(m.id) ? <PinOff size={14} /> : <Pin size={14} />}
+                            {isMessagePinned(m.id) ? "Bỏ ghim" : "Ghim tin nhắn"}
+                          </div>
+                          <div className={styles.menuItem} onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); setForwardMsgId(m.id); }}>
+                            <Share2 size={14} /> Chuyển tiếp
                           </div>
                         </div>
-                      ) : (
-                        renderMessageContent(m, handleDownloadFile)
                       )}
-                      {m.edited && !m.revoked && editingId !== m.id && (
-                        <span className={styles.editedLabel}>đã chỉnh sửa</span>
+
+                      <div
+                        className={`${m.kind === 'image'
+                          ? styles.imageBubble
+                          : m.kind === 'file'
+                            ? styles.fileBubble
+                            : m.kind === 'audio'
+                              ? styles.audioBubble
+                              : styles.bubble
+                          } ${m.revoked ? styles.revoked : ''}`}
+                        onClick={handleMessageClick}
+                      >
+                        {isGroupChat && m.sender === 'them' && (
+                          <div className={styles.senderNameInside}>
+                            {userCache[m.senderId || '']?.userName || 'Đang tải...'}
+                          </div>
+                        )}
+                        {/* Inline edit form */}
+                        {editingId === m.id ? (
+                          <div className={styles.editInputWrap}>
+                            <textarea
+                              className={styles.editInput}
+                              value={editContent}
+                              onChange={(e) => setEditContent(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void handleEditSave(m.id); }
+                                if (e.key === 'Escape') { setEditingId(null); }
+                              }}
+                              autoFocus
+                            />
+                            <div className={styles.editActions}>
+                              <button className={styles.editCancelBtn} onClick={() => setEditingId(null)}><X size={12} />Hủy</button>
+                              <button className={styles.editSaveBtn} onClick={() => void handleEditSave(m.id)}><Check size={12} />Lưu</button>
+                            </div>
+                          </div>
+                        ) : (
+                          renderMessageContent(m, handleDownloadFile)
+                        )}
+                        {m.edited && !m.revoked && editingId !== m.id && (
+                          <span className={styles.editedLabel}>đã chỉnh sửa</span>
+                        )}
+                      </div>
+
+                      {m.reactions && m.reactions.length > 0 && (
+                        <div className={styles.reactionsBar}>
+                          {m.reactions.map((r) => (
+                            <button
+                              key={r.emoji}
+                              className={styles.reactionPill}
+                              onClick={() => void handleReact(m.id, r.emoji)}
+                              title={`${r.count} người react — bấm để đổi/xóa`}
+                            >
+                              {r.emoji} {r.count > 1 && <span>{r.count}</span>}
+                            </button>
+                          ))}
+                        </div>
                       )}
                     </div>
-
-                    {m.reactions && m.reactions.length > 0 && (
-                      <div className={styles.reactionsBar}>
-                        {m.reactions.map((r) => (
-                          <button
-                            key={r.emoji}
-                            className={styles.reactionPill}
-                            onClick={() => void handleReact(m.id, r.emoji)}
-                            title={`${r.count} người react — bấm để đổi/xóa`}
-                          >
-                            {r.emoji} {r.count > 1 && <span>{r.count}</span>}
-                          </button>
-                        ))}
-                      </div>
-                    )}
                   </div>
+
+                  {m.sender === "me" && isBlockedByOther && !isGroupChat && index === messages.length - 1 && (
+                    <div className={styles.systemMessage}>
+                      {chatUser?.name || selectedUser.name} hiện không muốn nhận tin nhắn
+                    </div>
+                  )}
                 </div>
-              )
+              );
             })
           )}
         </div>
@@ -1617,7 +1671,8 @@ export const ChatWindow = () => {
               Bỏ chặn
             </button>
           </div>
-        ) : (<>
+        ) : (
+          <>
           {/* TOOLBAR */}
           <div className={styles.toolbar}>
             {/* Emoji picker */}
@@ -1818,36 +1873,36 @@ export const ChatWindow = () => {
       />
 
       {pinMenu && (
-  <div
-    className={styles.pinDropdown}
-    style={{
-      position: "fixed",
-      top: pinMenu.y,
-      left: pinMenu.x,
-      zIndex: 99999,
-      transform: "translateX(-100%)",   // ← Kéo sang trái
-    }}
-  >
-    <div
-      className={styles.pinDropdownItem}
-      onClick={() => {
-        setPinnedExpanded(true);
-        setPinMenu(null);
-      }}
-    >
-      Mở bảng ghim
-    </div>
-    <div
-      className={styles.pinDropdownItem}
-      onClick={() => {
-        void handleUnpinMessage(pinMenu.messageId);
-        setPinMenu(null);
-      }}
-    >
-      Bỏ ghim
-    </div>
-  </div>
-)}
+        <div
+          className={styles.pinDropdown}
+          style={{
+            position: "fixed",
+            top: pinMenu.y,
+            left: pinMenu.x,
+            zIndex: 99999,
+            transform: "translateX(-100%)",   // ← Kéo sang trái
+          }}
+        >
+          <div
+            className={styles.pinDropdownItem}
+            onClick={() => {
+              setPinnedExpanded(true);
+              setPinMenu(null);
+            }}
+          >
+            Mở bảng ghim
+          </div>
+          <div
+            className={styles.pinDropdownItem}
+            onClick={() => {
+              void handleUnpinMessage(pinMenu.messageId);
+              setPinMenu(null);
+            }}
+          >
+            Bỏ ghim
+          </div>
+        </div>
+      )}
     </div>
   );
 };

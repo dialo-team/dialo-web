@@ -1,0 +1,50 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-05-27T04:29:59.224Z",
+  "source": "auto-postool",
+  "partial": false,
+  "phase": null,
+  "phase_name": null,
+  "phase_dir": null,
+  "plan": null,
+  "task": null,
+  "total_tasks": null,
+  "status": "auto-checkpoint",
+  "completed_tasks": [],
+  "remaining_tasks": [],
+  "blockers": [],
+  "human_actions_pending": [],
+  "decisions": [],
+  "uncommitted_files": [
+    {
+      "status": "D",
+      "path": "api.json"
+    },
+    {
+      "status": "M",
+      "path": "src/app/modules/message/ChatWindow.tsx"
+    },
+    {
+      "status": "??",
+      "path": ".antigravityignore"
+    },
+    {
+      "status": "??",
+      "path": ".claudaignore"
+    },
+    {
+      "status": "??",
+      "path": ".planning/"
+    },
+    {
+      "status": "??",
+      "path": "api8084.json"
+    },
+    {
+      "status": "??",
+      "path": "api8085.json"
+    }
+  ],
+  "next_action": null,
+  "context_notes": "Recent commits:\n6b27863 fininsh pin message\nd44b92a update pin function\n6063b94 update pin message  UI\n07df3cb update block UI\nfd59999 update getConversations"
+}

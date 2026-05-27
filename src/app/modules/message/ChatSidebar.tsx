@@ -119,6 +119,7 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
     if (!hasLoadedRef.current) setLoading(true);
     try {
       const data = await getConversationsApi();
+      const localCache = JSON.parse(localStorage.getItem("friendCache") || "{}");
 
       const mapped: Friend[] = await Promise.all(
         data.map(async (item) => {
@@ -181,16 +182,21 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
                   ? item.counterpartName
                   : userData?.userName;
 
-              "Unknown";
+              localCache[item.counterpartId] = { name: displayName, avatar };
+              localStorage.setItem("friendCache", JSON.stringify(localCache));
             } catch (e) {
               console.warn("load user info failed", e);
 
+              const cached = localCache[item.counterpartId];
+
               avatar =
                 item.counterpartAvatarUrl ||
+                cached?.avatar ||
                 DEFAULT_AVATAR;
 
               displayName =
                 item.counterpartName ||
+                cached?.name ||
                 "Unknown";
             }
 
