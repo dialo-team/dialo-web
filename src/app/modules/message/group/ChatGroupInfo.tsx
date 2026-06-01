@@ -23,6 +23,7 @@ import axiosClient from "../../../../../api/axiosClient";
 
 import { RenameNameGroup } from "./RenameNameGroup";
 import { ChangeGroupAvatarModal } from "./ChangeGroupAvatarModal";
+import { GroupAvatar } from "../../../components/GroupAvatar";
 import CreateGroupModal from "../../social/friendPage/searchAndAddFriend/CreateGroupModal";
 import { leaveGroupApi, getListMemberApi, dissolveGroupApi } from "../../../../../api/social/groupFriend/groupApi";
 import { AssignRoleModal } from "./AssignRoleModal";
@@ -47,6 +48,7 @@ type Props = {
   groupName: string;
   members: Member[];
   counterpartAvatarUrl?: string;
+  initialMemberAvatars?: string[];
   onClose?: () => void;
   onConversationCleared?: () => void;
   onGroupDissolved?: () => void;
@@ -99,8 +101,8 @@ const getDateLabel = (date: string) => {
 export const ChatGroupInfo = ({
   conversationId,
   groupName,
-  members,
   counterpartAvatarUrl,
+  initialMemberAvatars,
   onConversationCleared,
   onClose,
   onGroupDissolved,
@@ -239,34 +241,6 @@ export const ChatGroupInfo = ({
 
   /* ================= LOAD FRIENDS ================= */
 
-  // load danh sách thành viên
-  useEffect(() => {
-    const loadMembers = async () => {
-      if (!conversationId) return;
-
-      setLoadingMembers(true);
-      try {
-        const res = await getListMemberApi(conversationId);
-
-        // tùy backend trả về structure
-        const data = res.data || res;
-
-        const mapped = data.map((m: any) => ({
-          id: m.id,
-          name: m.userName,
-          avatar: toAbsoluteUrl(m.avatar),
-        }));
-
-        setMemberList(mapped);
-      } catch (err) {
-        console.error("Load members error:", err);
-      } finally {
-        setLoadingMembers(false);
-      }
-    };
-
-    loadMembers();
-  }, [conversationId]);
 
 
   // load danh scahs bạn bè
@@ -523,18 +497,29 @@ export const ChatGroupInfo = ({
                   className={styles.avatar}
                   onClick={() => setOpenAvatarModal(true)}
                 /> */}
-                <img
-                  src={
-                    groupAvatar ||
-                    (counterpartAvatarUrl && counterpartAvatarUrl.startsWith("data:image")
-                      ? counterpartAvatarUrl
-                      : toAbsoluteUrl(counterpartAvatarUrl || "")) ||
-                    "https://tse2.mm.bing.net/th/id/OIP.vg41yG82qw84ziz5nS-CWQHaHa"
-                  }
-                  className={styles.avatar}
-                  onClick={() => isOwner && setOpenAvatarModal(true)}
-                  style={{ cursor: isOwner ? "pointer" : "default" }}
-                />
+                {groupAvatar || counterpartAvatarUrl ? (
+                  <img
+                    src={
+                      groupAvatar ||
+                      (counterpartAvatarUrl && counterpartAvatarUrl.startsWith("data:image")
+                        ? counterpartAvatarUrl
+                        : toAbsoluteUrl(counterpartAvatarUrl || ""))
+                    }
+                    className={styles.avatar}
+                    onClick={() => isOwner && setOpenAvatarModal(true)}
+                    style={{ cursor: isOwner ? "pointer" : "default" }}
+                  />
+                ) : (
+                  <div
+                    onClick={() => isOwner && setOpenAvatarModal(true)}
+                    style={{ cursor: isOwner ? "pointer" : "default", marginBottom: 8 }}
+                  >
+                    <GroupAvatar
+                      avatars={(initialMemberAvatars ?? []).slice(0, 4)}
+                      size={56}
+                    />
+                  </div>
+                )}
                 <div className={styles.usernameRow}>
                   <div className={styles.username}>{groupNameState}</div>
                   {isOwner && <Edit3 size={14} onClick={() => setOpenRename(true)} />}

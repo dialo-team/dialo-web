@@ -58,6 +58,7 @@ import { CreatePollModal } from "./CreatePollModal";
 import { PollBubble } from "./PollBubble";
 import { PollVoteModal } from "./PollVoteModal";
 import { ForwardModal } from "./ForwardModal";
+import { GroupAvatar } from "../../components/GroupAvatar";
 import type { MessageDto, PollResponse, PollSettings } from "../../types/message/Message";
 import { subscribeChatTopic } from "./chatSocket";
 import { getBlockedUsersApi, unblockUserApi } from "../../../../api/social/listFriend/ListFriendApi";
@@ -1347,8 +1348,11 @@ export const ChatWindow = () => {
               <ChevronLeft size={20} />
             </button>
 
-            {/* <img src={selectedUser.avatar} className={styles.avatar} /> */}
-            <img src={chatUser?.avatar} className={styles.avatar} />
+            {isGroupChat && !chatUser?.avatar && selectedUser.memberAvatars?.length > 1 ? (
+              <GroupAvatar avatars={selectedUser.memberAvatars} size={40} />
+            ) : (
+              <img src={chatUser?.avatar} className={styles.avatar} />
+            )}
 
             <div>
               <div className={styles.name}>{chatUser?.name}</div>
@@ -1869,6 +1873,7 @@ export const ChatWindow = () => {
             members={(selectedUser as any).members || []}
             onClose={() => setShowInfo(false)}
             counterpartAvatarUrl={(selectedUser as any)?.avatar}
+            initialMemberAvatars={selectedUser.memberAvatars}
             onConversationCleared={() => setMessages([])}
             onGroupDissolved={() => { setIsGroupDissolved(true); setMessages([]); setShowInfo(false); }}
             onLeaveGroup={() => { setShowInfo(false); onBackToSidebar?.(); }}

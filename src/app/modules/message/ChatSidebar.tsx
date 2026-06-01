@@ -137,6 +137,7 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
 
           // ===================== GROUP =====================
           if (isGroup) {
+            avatar = item.counterpartAvatarUrl || "";
             try {
               const res = await getListMemberApi(item.conversationId);
 

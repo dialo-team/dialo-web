@@ -45,7 +45,7 @@
   border-bottom: 8px solid #f0f2f5;
 }
 
-.top img {
+.top > img {
   width: 70px;
   height: 70px;
   border-radius: 50%;
