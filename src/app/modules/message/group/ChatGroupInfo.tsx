@@ -11,7 +11,8 @@ import {
   ChevronLeft,
   HelpCircle,
   UserMinus,
-  KeyRound
+  KeyRound,
+  Download,
 } from "lucide-react";
 
 import {
@@ -109,7 +110,7 @@ export const ChatGroupInfo = ({
   onLeaveGroup,
 }: Props) => {
   const [images, setImages] = useState<{ url: string }[]>([]);
-  const [files, setFiles] = useState<{ name: string }[]>([]);
+  const [files, setFiles] = useState<{ name: string; url: string }[]>([]);
   const [allMedia, setAllMedia] = useState<any[]>([]);
   const [resolvedMap, setResolvedMap] = useState<Record<string, string>>({});
 
@@ -165,7 +166,7 @@ export const ChatGroupInfo = ({
         setAllMedia(media);
 
         const imgs: { url: string }[] = [];
-        const fls: { name: string }[] = [];
+        const fls: { name: string; url: string }[] = [];
         const resolved: Record<string, string> = {};
 
         for (const m of media) {
@@ -176,6 +177,7 @@ export const ChatGroupInfo = ({
           } else if (m.attachment?.fileUrl) {
             fls.push({
               name: m.attachment.fileName || "File",
+              url: toAbsoluteUrl(m.attachment.fileUrl),
             });
           }
         }
@@ -468,11 +470,18 @@ export const ChatGroupInfo = ({
                   groupedFiles.map(([date, list]) => (
                     <div key={date}>
                       <h3 className={styles.dateSectionLabel}>{date}</h3>
-                      <div className={styles.allMediaGrid}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 16 }}>
                         {list.map((m) => (
-                          <div key={m.id} className={styles.allMediaFile}>
-                            <span className={styles.fileNameInGrid}>{m.attachment.fileName || "File"}</span>
-                          </div>
+                          <a key={m.id} href={toAbsoluteUrl(m.attachment.fileUrl)} download={m.attachment.fileName || "file"} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+                            <div className={styles.fileItem}>
+                              <div className={styles.fileIcon}>📄</div>
+                              <div className={styles.fileInfo}>
+                                <div className={styles.fileName}>{m.attachment.fileName || "File"}</div>
+                                <div className={styles.fileAction}>Nhấn để tải</div>
+                              </div>
+                              <Download size={16} style={{ color: "#555", flexShrink: 0 }} />
+                            </div>
+                          </a>
                         ))}
                       </div>
                     </div>
@@ -582,7 +591,12 @@ export const ChatGroupInfo = ({
                   <div className={styles.section}>
                     <div className={styles.sectionHeader}>File</div>
                     {files.slice(0, 3).map((f, i) => (
-                      <div key={i} className={styles.item}>{f.name}</div>
+                      <div key={i} className={styles.item} style={{ justifyContent: "space-between" }}>
+                        <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</span>
+                        <a href={f.url} download={f.name} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ flexShrink: 0, marginLeft: 8, color: "#555" }}>
+                          <Download size={15} />
+                        </a>
+                      </div>
                     ))}
                     {files.length > 0 && (
                       <button className={styles.showMoreButton} onClick={() => { setTab("files"); setViewAll(true); }}>

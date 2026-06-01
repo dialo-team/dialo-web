@@ -180,6 +180,7 @@ export default function CreateGroupModal({
         selected.map((u) => u.id)
       );
 
+      window.dispatchEvent(new CustomEvent("conversations-reload"));
       onClose();
     } catch (err) {
       console.error("HANDLE GROUP ERROR:", err);

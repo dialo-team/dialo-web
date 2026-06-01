@@ -76,6 +76,12 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
     selectedIdRef.current = selectedConversationId;
   }, [selectedConversationId]);
 
+  const friendsRef = useRef<Friend[]>([]);
+
+  useEffect(() => {
+    friendsRef.current = friends;
+  }, [friends]);
+
   const [openAddFriend, setOpenAddFriend] = useState(false);
   const [openCreateGroup, setOpenCreateGroup] = useState(false);
 
@@ -101,6 +107,24 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
 
     return () =>
       window.removeEventListener("conversation-cleared", handler);
+  }, []);
+
+  // Realtime name/avatar update (e.g., group rename)
+  useEffect(() => {
+    const handler = (e: any) => {
+      const { conversationId, name, avatar } = e.detail;
+      setFriends(prev => prev.map(f =>
+        f.id === conversationId
+          ? {
+            ...f,
+            ...(name !== undefined ? { name } : {}),
+            ...(avatar !== undefined ? { avatar } : {}),
+          }
+          : f
+      ));
+    };
+    window.addEventListener("conversation-updated", handler);
+    return () => window.removeEventListener("conversation-updated", handler);
   }, []);
 
   // useEffect(() => {
@@ -138,28 +162,35 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
           // ===================== GROUP =====================
           if (isGroup) {
             avatar = item.counterpartAvatarUrl || "";
-            try {
-              const res = await getListMemberApi(item.conversationId);
 
-              const members = res.data || [];
+            // Use cached avatars to avoid N+1 API calls on every socket refresh
+            const cachedFriend = friendsRef.current.find(f => f.id === item.conversationId);
+            if (cachedFriend?.memberAvatars?.length) {
+              memberAvatars = cachedFriend.memberAvatars;
+            } else {
+              try {
+                const res = await getListMemberApi(item.conversationId);
 
-              memberAvatars = await Promise.all(
-                members.slice(0, 4).map(async (m: any) => {
-                  try {
-                    const userRes = await getUserInfoApi(m.userId);
+                const members = res.data || [];
 
-                    return (
-                      userRes.data?.data?.avatar ||
-                      userRes.data?.avatar ||
-                      DEFAULT_AVATAR
-                    );
-                  } catch {
-                    return DEFAULT_AVATAR;
-                  }
-                })
-              );
-            } catch (e) {
-              console.warn("load group members failed", e);
+                memberAvatars = await Promise.all(
+                  members.slice(0, 4).map(async (m: any) => {
+                    try {
+                      const userRes = await getUserInfoApi(m.userId);
+
+                      return (
+                        userRes.data?.data?.avatar ||
+                        userRes.data?.avatar ||
+                        DEFAULT_AVATAR
+                      );
+                    } catch {
+                      return DEFAULT_AVATAR;
+                    }
+                  })
+                );
+              } catch (e) {
+                console.warn("load group members failed", e);
+              }
             }
           }
 
@@ -262,6 +293,13 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
     }
   }, []);
 
+  // Full reload trigger (e.g., after group creation)
+  useEffect(() => {
+    const handler = () => void loadConversations();
+    window.addEventListener("conversations-reload", handler);
+    return () => window.removeEventListener("conversations-reload", handler);
+  }, [loadConversations]);
+
   useEffect(() => {
     const onConversationRead = (event: Event) => {
       const customEvent = event as CustomEvent<{ conversationId?: string }>;
@@ -337,9 +375,52 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
       return;
     }
 
+    console.log("[SIDEBAR] subscribing inbox for userId:", currentUserId);
+
     const unsubscribe = subscribeChatTopic(
       `/topic/inbox/${currentUserId}`,
-      () => {
+      (payload) => {
+        console.log("[SIDEBAR] inbox received:", payload);
+        // Apply payload directly for instant update (lastMessage, unread, name)
+        if (Array.isArray(payload) && payload.length > 0) {
+          const summaries = payload as Array<{
+            conversationId: string;
+            lastMessage?: string | null;
+            unreadCount?: number;
+            unreadDisplay?: string;
+            counterpartName?: string | null;
+          }>;
+          const summaryMap = new Map(summaries.map((s) => [s.conversationId, s]));
+          const currentIds = new Set(friendsRef.current.map((f) => f.id));
+          const hasNew = summaries.some((s) => !currentIds.has(s.conversationId));
+
+          setFriends((prev) => {
+            const activeId = selectedIdRef.current;
+            return prev.map((f) => {
+              const s = summaryMap.get(f.id);
+              if (!s) return f;
+              const isActive = f.id === activeId;
+              const isGroup = !!f.counterpartId && f.id === f.counterpartId;
+              const newName = s.counterpartName
+                ? (isGroup ? formatGroupName(s.counterpartName) : s.counterpartName)
+                : f.name;
+              return {
+                ...f,
+                name: newName,
+                lastMessage: s.lastMessage ?? f.lastMessage,
+                unreadCount: isActive ? 0 : (s.unreadCount ?? f.unreadCount),
+                unreadDisplay: isActive ? "0" : (s.unreadDisplay ?? f.unreadDisplay),
+              };
+            });
+          });
+
+          if (hasNew) {
+            void loadConversations();
+            return;
+          }
+        }
+
+        // Debounced full refetch for order sync and fallback
         if (socketDebounceRef.current) clearTimeout(socketDebounceRef.current);
         socketDebounceRef.current = setTimeout(() => {
           void loadConversations();

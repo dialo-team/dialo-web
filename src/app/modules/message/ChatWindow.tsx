@@ -826,17 +826,30 @@ export const ChatWindow = () => {
         const trulyNew = resolvedNewMessages.filter(
           (m) => !existingInState.has(m.id),
         );
+        let changed = false;
         const updated = prev.map((m) => {
           const fresh = mappedById.get(m.id);
           if (!fresh) return m;
           const pollChanged = JSON.stringify(fresh.poll) !== JSON.stringify(m.poll);
           const reactionsChanged = JSON.stringify(fresh.reactions) !== JSON.stringify(m.reactions);
-          if (pollChanged || reactionsChanged) {
-            return { ...m, poll: fresh.poll, reactions: fresh.reactions };
+          const revokedChanged = fresh.revoked !== m.revoked;
+          const contentChanged = fresh.content !== m.content;
+          const editedChanged = fresh.edited !== m.edited;
+          if (pollChanged || reactionsChanged || revokedChanged || contentChanged || editedChanged) {
+            changed = true;
+            return {
+              ...m,
+              poll: fresh.poll,
+              reactions: fresh.reactions,
+              revoked: fresh.revoked,
+              edited: fresh.edited,
+              content: fresh.content,
+              kind: fresh.kind,
+            };
           }
           return m;
         });
-        if (trulyNew.length === 0 && updated === prev) return prev;
+        if (trulyNew.length === 0 && !changed) return prev;
         return trulyNew.length > 0 ? [...updated, ...trulyNew] : updated;
       });
     } catch (error) {
