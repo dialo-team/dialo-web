@@ -47,6 +47,7 @@ import {
   pinMessageApi,
   unpinMessageApi,
   getPinnedMessagesApi,
+  getGroupMembersApi,
 } from "../../../../api/message/conversationApi";
 // import axiosClient from "../../../../api/axiosClient";
 import { ChatInfo } from "./ChatInfo";
@@ -468,6 +469,8 @@ export const ChatWindow = () => {
   const [isGroupDissolved, setIsGroupDissolved] = useState(false);
 
   const [showPollModal, setShowPollModal] = useState(false);
+  const [myGroupRole, setMyGroupRole] = useState<string | null>(null);
+  const [groupSettings, setGroupSettings] = useState<{ allowMemberPoll?: boolean } | null>(null);
   const [voteTarget, setVoteTarget] = useState<{ messageId: string; poll: PollResponse; senderName: string; createdAt: string; settings?: PollSettings } | null>(null);
   const [forwardMsgId, setForwardMsgId] = useState<string | null>(null);
   const pollSettingsRef = useRef<Map<string, PollSettings>>(new Map());
@@ -822,13 +825,24 @@ export const ChatWindow = () => {
         }),
       );
 
+      const mappedById = new Map(mapped.map((m) => [m.id, m]));
       setMessages((prev) => {
         const existingInState = new Set(prev.map((m) => m.id));
         const trulyNew = resolvedNewMessages.filter(
           (m) => !existingInState.has(m.id),
         );
-        if (trulyNew.length === 0) return prev;
-        return [...prev, ...trulyNew];
+        const updated = prev.map((m) => {
+          const fresh = mappedById.get(m.id);
+          if (!fresh) return m;
+          const pollChanged = JSON.stringify(fresh.poll) !== JSON.stringify(m.poll);
+          const reactionsChanged = JSON.stringify(fresh.reactions) !== JSON.stringify(m.reactions);
+          if (pollChanged || reactionsChanged) {
+            return { ...m, poll: fresh.poll, reactions: fresh.reactions };
+          }
+          return m;
+        });
+        if (trulyNew.length === 0 && updated === prev) return prev;
+        return trulyNew.length > 0 ? [...updated, ...trulyNew] : updated;
       });
     } catch (error) {
       console.error("Load new messages failed:", error);
@@ -848,6 +862,31 @@ export const ChatWindow = () => {
       setIsGroupDissolved(true);
     }
   }, [messages, isGroupChat, isGroupDissolved]);
+
+  // fetch role của current user trong group
+  useEffect(() => {
+    if (!isGroupChat || !selectedUser?.id || !currentUserId) {
+      setMyGroupRole(null);
+      return;
+    }
+    getGroupMembersApi(selectedUser.id)
+      .then((members) => {
+        const me = members.find((m) => m.userId === currentUserId);
+        setMyGroupRole(me?.role ?? "MEMBER");
+      })
+      .catch(() => setMyGroupRole("MEMBER"));
+  }, [isGroupChat, selectedUser?.id, currentUserId]);
+
+  useEffect(() => {
+    if (!isGroupChat || !selectedUser?.id) { setGroupSettings(null); return; }
+    const load = () => {
+      const raw = localStorage.getItem(`groupSettings_${selectedUser.id}`);
+      setGroupSettings(raw ? JSON.parse(raw) : {});
+    };
+    load();
+    window.addEventListener("group-settings-updated", load);
+    return () => window.removeEventListener("group-settings-updated", load);
+  }, [isGroupChat, selectedUser?.id]);
 
   // lắng nghe group-dissolved từ members khác qua socket
   useEffect(() => {
@@ -885,19 +924,20 @@ export const ChatWindow = () => {
       `/topic/conversations/${conversationId}`,
       (payload: any) => {
         lastRealtimeEventAtRef.current = Date.now();
-        
+
         // If I blocked the sender, drop the message from the socket
         if (isBlocked && counterpartId && payload && payload.senderId === counterpartId) {
           console.log("[ChatWindow] Drop realtime message from blocked user");
           return;
         }
-        
+
         void loadNewMessagesOnly(conversationId);
+        void loadPinnedMessages();
       },
     );
 
     return unsubscribe;
-  }, [selectedUser?.id, isBlocked, loadNewMessagesOnly]);
+  }, [selectedUser?.id, isBlocked, loadNewMessagesOnly, loadPinnedMessages]);
 
   // fallback polling when socket is unavailable or misses a push event
   useEffect(() => {
@@ -924,6 +964,19 @@ export const ChatWindow = () => {
 
     return () => window.clearInterval(interval);
   }, [selectedUser?.id, loadNewMessagesOnly]);
+
+  // polling riêng cho pinned messages — BE không chắc push socket event khi pin/unpin
+  useEffect(() => {
+    const conversationId = selectedUser?.id ?? "";
+    if (!conversationId) return;
+
+    const interval = window.setInterval(() => {
+      if (document.hidden) return;
+      void loadPinnedMessages();
+    }, POLLING_INTERVAL_MS);
+
+    return () => window.clearInterval(interval);
+  }, [selectedUser?.id, loadPinnedMessages]);
 
   const handleSendMessage = async () => {
     const conversationId = selectedUser?.id;
@@ -1764,7 +1817,7 @@ export const ChatWindow = () => {
               {isRecording ? <><MicOff size={18} /><span style={{ fontSize: 11, color: '#ef4444' }}>{recordingSeconds}s</span></> : <Mic size={18} />}
             </button>
 
-            {isGroupChat && (
+            {isGroupChat && (myGroupRole === "OWNER" || myGroupRole === "ADMIN" || groupSettings?.allowMemberPoll) && (
               <BarChart2
                 size={18}
                 className={styles.toolbarItem}

@@ -1,9 +1,4 @@
 .popup {
-  position: absolute;
-  bottom: 80px;
-  left: 95px;
-  width: 300px;
-
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(12px);
 
@@ -12,7 +7,7 @@
   border: 1px solid #e5e7eb;
 
   overflow: hidden;
-  z-index: 50;
+  z-index: 9999;
 }
 
 /* Menu wrapper */
@@ -73,11 +68,3 @@
   background-color: #fef2f2;
 }
 
-@media (max-width: 768px) {
-  .popup {
-    left: auto;
-    right: 12px;
-    bottom: 72px;
-    width: min(88vw, 320px);
-  }
-}

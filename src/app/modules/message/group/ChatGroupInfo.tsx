@@ -55,13 +55,12 @@ type Props = {
 
 /* ================= HELPERS ================= */
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://14.225.254.174:9000";
+const MEDIA_BASE_URL = "http://14.225.192.37:8085";
 
 const toAbsoluteUrl = (url: string) => {
   if (!url) return "";
   if (url.startsWith("http")) return url;
-  return `${API_BASE_URL}${url.startsWith("/") ? url : "/" + url}`;
+  return `${MEDIA_BASE_URL}${url.startsWith("/") ? url : "/" + url}`;
 };
 
 const resolveImageUrl = async (url?: string) => {

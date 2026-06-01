@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-27T04:29:59.224Z",
+  "timestamp": "2026-06-01T13:50:39.344Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -17,34 +17,34 @@
   "decisions": [],
   "uncommitted_files": [
     {
-      "status": "D",
-      "path": "api.json"
+      "status": "M",
+      "path": ".planning/HANDOFF.json"
+    },
+    {
+      "status": "M",
+      "path": "src/app/components/Sidebar/SettingsPopup.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/app/components/Sidebar/Sidebar.tsx"
     },
     {
       "status": "M",
       "path": "src/app/modules/message/ChatWindow.tsx"
     },
     {
-      "status": "??",
-      "path": ".antigravityignore"
+      "status": "M",
+      "path": "src/app/modules/message/group/ChatGroupInfo.tsx"
     },
     {
-      "status": "??",
-      "path": ".claudaignore"
+      "status": "M",
+      "path": "src/app/styles/components/SettingsPopup.module.css"
     },
     {
-      "status": "??",
-      "path": ".planning/"
-    },
-    {
-      "status": "??",
-      "path": "api8084.json"
-    },
-    {
-      "status": "??",
-      "path": "api8085.json"
+      "status": "M",
+      "path": "src/assets/logo-diablo.svg"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\n6b27863 fininsh pin message\nd44b92a update pin function\n6063b94 update pin message  UI\n07df3cb update block UI\nfd59999 update getConversations"
+  "context_notes": "Recent commits:\nb30bda0 fix nguoi bi chan\n6b27863 fininsh pin message\nd44b92a update pin function\n6063b94 update pin message  UI\n07df3cb update block UI"
 }

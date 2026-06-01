@@ -1,8 +1,8 @@
+import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, KeyRound, LogOut } from "lucide-react";
 import styles from "../../styles/components/SettingsPopup.module.css";
 import { useNavigate } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
 import { AccountModal } from "@/app/modules/myAccount/AccountModal";
 import { ChangePasswordModal } from "@/app/modules/myAccount/ChangePasswordModal";
 import { signoutApi } from "../../../../api/auth/LoginPassApi";
@@ -11,6 +11,7 @@ import { useAuthStore } from "../../../../store/authStore";
 interface Props {
   open: boolean;
   onClose: () => void;
+  popupStyle?: React.CSSProperties;
 }
 
 interface MenuItemProps {
@@ -20,7 +21,7 @@ interface MenuItemProps {
   onClick?: () => void;
 }
 
-export const SettingsPopup = ({ open, onClose }: Props) => {
+export const SettingsPopup = ({ open, onClose, popupStyle }: Props) => {
   const navigate = useNavigate();
   const [openAccount, setOpenAccount] = useState(false);
   const [openChangePass, setOpenChangePass] = useState(false);
@@ -71,6 +72,7 @@ export const SettingsPopup = ({ open, onClose }: Props) => {
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
             className={styles.popup}
+            style={popupStyle}
           >
             <div className={styles.menu}>
               <MenuItem

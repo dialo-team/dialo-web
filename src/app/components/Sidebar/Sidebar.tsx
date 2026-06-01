@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { MessageCircle, Users, Settings } from "lucide-react";
 import { SettingsPopup } from "./SettingsPopup";
 import styles from "../../styles/components/Sidebar.module.css";
@@ -8,6 +8,21 @@ import { getReceivedRequestsApi } from "../../../../api/social/friendInvite/getF
 
 export const Sidebar = () => {
   const [open, setOpen] = useState(false);
+  const [popupStyle, setPopupStyle] = useState<React.CSSProperties>({});
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  const handleToggleSettings = () => {
+    if (!open && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setPopupStyle({
+        position: "fixed",
+        left: rect.right + 8,
+        bottom: window.innerHeight - rect.bottom - rect.height / 2,
+        width: Math.min(300, window.innerWidth - rect.right - 16),
+      });
+    }
+    setOpen((v) => !v);
+  };
   const [pendingRequests, setPendingRequests] = useState(0);
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
@@ -16,13 +31,13 @@ export const Sidebar = () => {
     const check = async () => {
       try {
         const res = await getReceivedRequestsApi();
-        const list = res?.data ?? res ?? [];
-        setPendingRequests(Array.isArray(list) ? list.length : 0);
+        const list = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+        setPendingRequests(list.length);
       } catch {}
     };
 
     check();
-    const interval = setInterval(check, 30000);
+    const interval = setInterval(check, 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -30,8 +45,8 @@ export const Sidebar = () => {
     const handler = () => {
       getReceivedRequestsApi()
         .then((res) => {
-          const list = res?.data ?? res ?? [];
-          setPendingRequests(Array.isArray(list) ? list.length : 0);
+          const list = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+          setPendingRequests(list.length);
         })
         .catch(() => {});
     };
@@ -72,12 +87,12 @@ export const Sidebar = () => {
       </div>
 
       <div className={styles.sidebarBottom}>
-        <button onClick={() => setOpen(!open)} className={styles.sidebarBtn}>
+        <button ref={triggerRef} onClick={handleToggleSettings} className={styles.sidebarBtn}>
           <Settings size={24} />
         </button>
       </div>
 
-      <SettingsPopup open={open} onClose={() => setOpen(false)} />
+      <SettingsPopup open={open} onClose={() => setOpen(false)} popupStyle={popupStyle} />
     </div>
   );
 };
