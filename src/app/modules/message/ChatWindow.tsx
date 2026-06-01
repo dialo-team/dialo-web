@@ -806,26 +806,20 @@ export const ChatWindow = () => {
         lastMessageIdRef.current = mapped[mapped.length - 1].id;
       }
 
-      if (unresolvedNewMessages.length === 0) {
-        return;
-      }
-
-      const resolvedNewMessages = await Promise.all(
-        unresolvedNewMessages.map(async (message) => {
-          const resolvedMessage = await resolveAttachmentUrl(message);
-
-          if (
-            resolvedMessage.fileUrl &&
-            resolvedMessage.fileUrl.startsWith("blob:")
-          ) {
-            objectUrlsRef.current.push(resolvedMessage.fileUrl);
-          }
-
-          return resolvedMessage;
-        }),
-      );
-
       const mappedById = new Map(mapped.map((m) => [m.id, m]));
+
+      const resolvedNewMessages = unresolvedNewMessages.length > 0
+        ? await Promise.all(
+            unresolvedNewMessages.map(async (message) => {
+              const resolvedMessage = await resolveAttachmentUrl(message);
+              if (resolvedMessage.fileUrl && resolvedMessage.fileUrl.startsWith("blob:")) {
+                objectUrlsRef.current.push(resolvedMessage.fileUrl);
+              }
+              return resolvedMessage;
+            }),
+          )
+        : [];
+
       setMessages((prev) => {
         const existingInState = new Set(prev.map((m) => m.id));
         const trulyNew = resolvedNewMessages.filter(
