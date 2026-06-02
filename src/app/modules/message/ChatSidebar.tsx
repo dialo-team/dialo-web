@@ -71,6 +71,7 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
   const selectedIdRef = useRef<string | undefined>(selectedConversationId);
   const hasLoadedRef = useRef(false);
   const socketDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const conversationSubscriptionsRef = useRef<Map<string, () => void>>(new Map());
 
   useEffect(() => {
     selectedIdRef.current = selectedConversationId;
@@ -375,12 +376,9 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
       return;
     }
 
-    console.log("[SIDEBAR] subscribing inbox for userId:", currentUserId);
-
     const unsubscribe = subscribeChatTopic(
       `/topic/inbox/${currentUserId}`,
       (payload) => {
-        console.log("[SIDEBAR] inbox received:", payload);
         // Apply payload directly for instant update (lastMessage, unread, name)
         if (Array.isArray(payload) && payload.length > 0) {
           const summaries = payload as Array<{
@@ -430,6 +428,53 @@ export const ChatSidebar = ({ onSelectUser, selectedConversationId }: Props) => 
 
     return unsubscribe;
   }, [loadConversations]);
+
+  // ===================== SOCKET: PER-CONVERSATION (sidebar realtime fallback) =====================
+  useEffect(() => {
+    const currentUserId = getCurrentUserId();
+    friends.forEach((f) => {
+      if (conversationSubscriptionsRef.current.has(f.id)) return;
+      const seenMsgIds = new Set<string>();
+      const unsub = subscribeChatTopic(
+        `/topic/conversations/${f.id}`,
+        (payload: any) => {
+          if (!payload?.id || seenMsgIds.has(payload.id)) return;
+          seenMsgIds.add(payload.id);
+          if (payload.senderId === currentUserId) return;
+          const isSystem = payload.system === true;
+          const isRevoked = payload.revoked === true;
+          setFriends((prev) =>
+            prev.map((friend) => {
+              if (friend.id !== f.id) return friend;
+              const isActive = friend.id === selectedIdRef.current;
+              const newLastMsg = isRevoked
+                ? "Tin nhắn đã được thu hồi"
+                : (payload.content || friend.lastMessage);
+              const newUnread = isSystem || isActive
+                ? (friend.unreadCount || 0)
+                : (friend.unreadCount || 0) + 1;
+              return {
+                ...friend,
+                lastMessage: newLastMsg,
+                unreadCount: newUnread,
+                unreadDisplay: newUnread > 9 ? "9+" : String(newUnread),
+              };
+            })
+          );
+        }
+      );
+      conversationSubscriptionsRef.current.set(f.id, unsub);
+    });
+  }, [friends]);
+
+  // Cleanup all conversation subscriptions on unmount
+  useEffect(() => {
+    const subsRef = conversationSubscriptionsRef.current;
+    return () => {
+      subsRef.forEach((unsub) => unsub());
+      subsRef.clear();
+    };
+  }, []);
 
   // ===================== FRIEND REMOVED =====================
   useEffect(() => {

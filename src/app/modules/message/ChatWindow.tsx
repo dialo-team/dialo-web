@@ -51,6 +51,8 @@ import {
 } from "../../../../api/message/conversationApi";
 // import axiosClient from "../../../../api/axiosClient";
 import { ChatInfo } from "./ChatInfo";
+import { VideoCallModal } from "./VideoCallModal";
+import { useCall } from "./CallContext";
 import { ChatGroupInfo } from "./group/ChatGroupInfo";
 import { ChatWindowSkeleton } from "./ChatSkeletonLoading";
 import { ChatSearch } from "./ChatSearch";
@@ -442,6 +444,8 @@ export const ChatWindow = () => {
   }
 
   const [userCache, setUserCache] = useState<Record<string, any>>({});
+  const { sendCallInvite, startCall, endCall, activeCallConvId } = useCall();
+  const isMyCall = activeCallConvId === selectedUser.id;
 
   const isGroupChat =
     selectedUser?.id === (selectedUser as any)?.counterpartId;
@@ -1376,7 +1380,30 @@ export const ChatWindow = () => {
 
           <div className={styles.actions}>
             <Phone size={18} />
-            <Video size={18} />
+            <Video
+              size={18}
+              style={{ cursor: "pointer" }}
+              onClick={async () => {
+                let recipientIds: string[] = [];
+                if (!isGroupChat && selectedUser.counterpartId) {
+                  recipientIds = [selectedUser.counterpartId];
+                } else if (isGroupChat) {
+                  try {
+                    const members = await getGroupMembersApi(selectedUser.id);
+                    recipientIds = members
+                      .map((m: any) => m.userId)
+                      .filter((id: string) => id !== currentUserId);
+                  } catch {}
+                }
+                sendCallInvite({
+                  conversationId: selectedUser.id,
+                  callerName: (chatUser as any)?.name ?? "Unknown",
+                  callerAvatar: (chatUser as any)?.avatar,
+                  recipientIds,
+                });
+                startCall(selectedUser.id);
+              }}
+            />
 
             <Search
               size={18}
@@ -1967,6 +1994,14 @@ export const ChatWindow = () => {
             Bỏ ghim
           </div>
         </div>
+      )}
+
+      {isMyCall && (
+        <VideoCallModal
+          conversationId={selectedUser.id}
+          participantName={currentUserId ?? "unknown"}
+          onClose={() => endCall([])}
+        />
       )}
     </div>
   );
