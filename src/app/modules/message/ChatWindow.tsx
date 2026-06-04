@@ -51,7 +51,6 @@ import {
 } from "../../../../api/message/conversationApi";
 // import axiosClient from "../../../../api/axiosClient";
 import { ChatInfo } from "./ChatInfo";
-import { VideoCallModal } from "./VideoCallModal";
 import { useCall } from "./CallContext";
 import { ChatGroupInfo } from "./group/ChatGroupInfo";
 import { ChatWindowSkeleton } from "./ChatSkeletonLoading";
@@ -444,8 +443,7 @@ export const ChatWindow = () => {
   }
 
   const [userCache, setUserCache] = useState<Record<string, any>>({});
-  const { sendCallInvite, startCall, endCall, activeCallConvId } = useCall();
-  const isMyCall = activeCallConvId === selectedUser.id;
+  const { sendCallInvite, startCall, endCall } = useCall();
 
   const isGroupChat =
     selectedUser?.id === (selectedUser as any)?.counterpartId;
@@ -1996,13 +1994,6 @@ export const ChatWindow = () => {
         </div>
       )}
 
-      {isMyCall && (
-        <VideoCallModal
-          conversationId={selectedUser.id}
-          participantName={currentUserId ?? "unknown"}
-          onClose={() => endCall([])}
-        />
-      )}
     </div>
   );
 };

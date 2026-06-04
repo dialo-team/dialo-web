@@ -3,8 +3,22 @@ import styles from "../../styles/message/ChatPage.module.css";
 import { ChatSidebar } from "./ChatSidebar";
 import { useState } from "react";
 import type { Friend } from "@/app/types/message/Friend";
-import { CallProvider } from "./CallContext";
+import { CallProvider, useCall } from "./CallContext";
 import { IncomingCallModal } from "./IncomingCallModal";
+import { VideoCallModal } from "./VideoCallModal";
+
+function GlobalVideoCallModal() {
+  const { activeCallConvId, endCall } = useCall();
+  const userId = getCurrentUserId();
+  if (!activeCallConvId) return null;
+  return (
+    <VideoCallModal
+      conversationId={activeCallConvId}
+      participantName={userId ?? "unknown"}
+      onClose={() => endCall([])}
+    />
+  );
+}
 
 const getCurrentUserId = () => {
   try {
@@ -26,6 +40,7 @@ export const ChatPage = () => {
   return (
     <CallProvider userId={userId}>
       <IncomingCallModal />
+      <GlobalVideoCallModal />
       <div className={styles.container}>
         <div
           className={`${styles.sideBarWrapper} ${
