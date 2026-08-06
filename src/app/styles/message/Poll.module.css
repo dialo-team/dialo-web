@@ -1,0 +1,582 @@
+/* ============ SHARED OVERLAY ============ */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* ============ CREATE POLL MODAL ============ */
+.createModal {
+  width: min(480px, 94vw);
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  transition: width 0.2s ease;
+}
+
+.createModalWide {
+  width: min(860px, 94vw);
+}
+
+.modalBodyWrap {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  min-height: 0;
+}
+
+.modalBodyLeft {
+  flex: 1;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 60vh;
+  overflow-y: auto;
+  border-right: 1px solid #eee;
+}
+
+.settingsPanel {
+  width: 280px;
+  flex-shrink: 0;
+  padding: 16px;
+  overflow-y: auto;
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.settingsSectionTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: #65676b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+
+.settingRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.settingLabel {
+  font-size: 13px;
+  color: #1c1e21;
+  flex: 1;
+}
+
+.settingLabelDisabled {
+  color: #bcc0c4;
+}
+
+.toggle {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.toggleTrack {
+  position: absolute;
+  inset: 0;
+  background: #ccc;
+  border-radius: 10px;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+
+.toggleTrack::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+}
+
+.toggleActive .toggleTrack {
+  background: #1877f2;
+}
+
+.toggleActive .toggleTrack::after {
+  transform: translateX(16px);
+}
+
+.deadlineBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f7f8fa;
+  font-size: 13px;
+  color: #555;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+.deadlineBtn:hover {
+  border-color: #1877f2;
+  background: #f0f5ff;
+}
+
+.settingsDivider {
+  height: 1px;
+  background: #eee;
+  margin: 2px 0;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid #eee;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #555;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 50%;
+}
+
+.closeBtn:hover {
+  background: #f0f0f0;
+}
+
+.modalBody {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.fieldLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 6px;
+}
+
+.titleTextarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  resize: none;
+  outline: none;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.titleTextarea:focus {
+  border-color: #1877f2;
+}
+
+.charCount {
+  text-align: right;
+  font-size: 12px;
+  color: #888;
+  margin-top: 4px;
+}
+
+.optionRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.optionInput {
+  flex: 1;
+  padding: 9px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.optionInput:focus {
+  border-color: #1877f2;
+}
+
+.optionInputError {
+  border-color: #f44336 !important;
+  background: #fff5f5;
+}
+
+.duplicateError {
+  font-size: 12px;
+  color: #f44336;
+  margin-top: -4px;
+  margin-bottom: 4px;
+}
+
+.removeOptionBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #aaa;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.removeOptionBtn:hover {
+  color: #f44336;
+}
+
+.addOptionBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #1877f2;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.addOptionBtn:hover {
+  opacity: 0.8;
+}
+
+.modalFooter {
+  display: flex;
+  align-items: center;
+  padding: 12px 18px;
+  border-top: 1px solid #eee;
+  gap: 8px;
+}
+
+.settingsBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #555;
+  display: flex;
+  align-items: center;
+  padding: 6px;
+  border-radius: 8px;
+}
+
+.settingsBtn:hover {
+  background: #f0f0f0;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.cancelBtn {
+  padding: 8px 18px;
+  border: none;
+  background: #e4e6eb;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.cancelBtn:hover {
+  background: #d8dadf;
+}
+
+.submitBtn {
+  padding: 8px 18px;
+  border: none;
+  background: #1877f2;
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.submitBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.submitBtn:not(:disabled):hover {
+  background: #166fe5;
+}
+
+/* ============ POLL BUBBLE (inline in chat) ============ */
+.pollBubble {
+  background: #fff;
+  border: 1px solid #e4e6eb;
+  border-radius: 12px;
+  padding: 14px;
+  min-width: 240px;
+  max-width: 320px;
+  cursor: default;
+}
+
+.pollTitle {
+  font-weight: 700;
+  font-size: 15px;
+  color: #111;
+  margin-bottom: 4px;
+}
+
+.pollSubtitle {
+  font-size: 12px;
+  color: #65676b;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pollOptionPreview {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: #f0f2f5;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.pollOptionCount {
+  font-size: 13px;
+  color: #65676b;
+  font-weight: 500;
+}
+
+.voteBtn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 9px;
+  background: none;
+  border: 1.5px solid #1877f2;
+  border-radius: 8px;
+  color: #1877f2;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.voteBtn:hover {
+  background: #e7f0fd;
+}
+
+.pollTime {
+  font-size: 11px;
+  color: #aaa;
+  text-align: right;
+  margin-top: 8px;
+}
+
+/* ============ VOTE MODAL ============ */
+.voteModal {
+  width: min(440px, 94vw);
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.voteMeta {
+  font-size: 12px;
+  color: #65676b;
+  margin-bottom: 6px;
+}
+
+.voteMultiHint {
+  font-size: 13px;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.voteDivider {
+  height: 1px;
+  background: #eee;
+  margin-bottom: 12px;
+}
+
+.voteOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 0 2px;
+}
+
+.voteOptionRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1.5px solid #e4e6eb;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  user-select: none;
+}
+
+.voteOptionRow:hover {
+  border-color: #1877f2;
+  background: #f0f5ff;
+}
+
+.voteOptionRowSelected {
+  border-color: #1877f2;
+  background: #e7f0fd;
+}
+
+.voteCheckbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.voteCheckboxSelected {
+  border-color: #1877f2;
+  background: #1877f2;
+}
+
+.voteOptionText {
+  flex: 1;
+  font-size: 14px;
+  color: #111;
+}
+
+.voteVoters {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.voterAvatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid #fff;
+  margin-left: -6px;
+}
+
+.voterAvatar:first-child {
+  margin-left: 0;
+}
+
+.voteCount {
+  font-size: 13px;
+  color: #65676b;
+  min-width: 16px;
+  text-align: right;
+}
+
+.addOptionLink {
+  background: none;
+  border: none;
+  color: #1877f2;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 0 0 0;
+}
+
+.addOptionLink:hover {
+  opacity: 0.8;
+}
+
+.addOptionInputRow {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.addOptionInput {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+}
+
+.addOptionInput:focus {
+  border-color: #1877f2;
+}
+
+.addOptionConfirmBtn {
+  padding: 8px 14px;
+  background: #1877f2;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.pollClosedBadge {
+  display: inline-block;
+  font-size: 11px;
+  background: #f0f0f0;
+  color: #888;
+  border-radius: 4px;
+  padding: 2px 6px;
+  margin-left: 6px;
+}

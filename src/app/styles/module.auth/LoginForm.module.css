@@ -1,0 +1,411 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: var(--main-font);
+}
+
+:global(html),
+:global(body),
+:global(#root) {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+}
+/* form */
+
+.btn {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+
+  background-color: var(--main-color);
+  width: auto;
+  min-width: 80px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 20px;
+  color: white;
+  white-space: nowrap;
+}
+.btn p {
+  font-weight: var(--font-superBold);
+  font-size: 14px;
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 15px;
+}
+
+.header h2 {
+  color: #333333;
+  font-weight: var(--font-regular);
+  text-align: center;
+}
+.logoContainer {
+  width: 114px;
+  height: 45px;
+}
+
+.logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* component */
+
+.headerBody {
+  font-weight: var(--font-bold);
+  font-size: 16px;
+  text-align: center;
+  padding: 15px 0px;
+  width: 100%;
+  border-bottom: solid 1px #f0f0f0;
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+.switchBtn {
+  cursor: pointer;
+  padding: 8px 15px;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+  position: absolute;
+  right: 15px;
+  bottom: 8px;
+}
+.extraSection {
+  position: absolute;
+  right: 15px;
+  top: 50px;
+}
+.btnLoginWithPass {
+  border-radius: 8px;
+  background-color: var(--white-color);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+  padding: 8px;
+  width: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+.body {
+  width: 100%;
+  display: flex;
+
+  flex: 1;
+}
+.bodyLeft {
+  position: relative;
+  padding: 40px 0;
+  width: 60%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-image: radial-gradient(
+    circle at center,
+    var(--page-color) 10%,
+    #ffffff 100%
+  );
+  overflow: hidden;
+}
+.bodyRight {
+  padding: 40px 0;
+  width: 40%;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--page-color);
+}
+.form {
+  width: 70%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  border-radius: 8px;
+  background-color: var(--white-color);
+  box-shadow: 0 1px 10px rgba(0, 0, 0, 0.1);
+}
+.form h3 {
+  width: 100%;
+}
+.inputGroupWrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.codeQR {
+  width: 236px;
+  height: auto;
+  border: 1px solid #cccaca;
+  border-radius: 8px;
+  margin: 40px 0px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.qrText {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 17.6px;
+  text-align: center;
+}
+.qrTextBlue {
+  color: var(--lightBlue-color);
+}
+.footerBody {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 12px;
+  margin: 12px;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  display: flex;
+  gap: 12px;
+}
+.midFooter {
+  padding: 5px;
+}
+.textBold {
+  font-size: 14px;
+}
+.footerBody p,
+.footerBody strong {
+  font-size: 14px;
+  margin: 5px;
+}
+.footerImg {
+  width: 72px;
+  height: 63px;
+}
+.footer {
+  display: flex;
+  justify-content: last baseline;
+  align-items: center;
+  gap: 10px;
+  margin-top: 75px;
+}
+.footer a {
+  font-size: 12px;
+  text-decoration: none;
+  color: var(--main-color);
+}
+.formInput {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  width: 100%;
+  padding: 24px;
+  justify-content: center;
+  align-items: center;
+}
+.inputGroup {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+
+  width: 100%;
+  height: 40px;
+
+  border-bottom: 1px solid #f0f0f0;
+  border-radius: 3px;
+  transition: border-bottom 0.2s;
+}
+
+.inputField {
+  flex: 1;
+  height: 100%;
+
+  border: none;
+  outline: none;
+  /* background:    ; */
+
+  font-size: 14px;
+}
+.btnLogin {
+  composes: btn;
+  width: 100%;
+}
+.btnBackQR {
+  margin-top: auto;
+  cursor: pointer;
+  color: var(--main-color);
+  font-size: 16px;
+  font-weight: var(--font-superBold);
+}
+.btnForgotPass {
+  cursor: pointer;
+}
+.btnBackPass {
+  color: black;
+  font-size: 14px;
+  align-self: flex-start;
+  display: flex;
+  gap: 3px;
+}
+.btnBackPass:hover {
+  text-decoration: underline;
+  color: var(--lightBlue-color);
+}
+.eyeButton {
+  cursor: pointer;
+  outline: none;
+}
+.inputField::-ms-reveal,
+.inputField::-ms-clear {
+  display: none;
+}
+.verifyForm {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  width: min(100%, 400px);
+  padding: 24px;
+  margin-top: 24px;
+  background-color: #e1eff9;
+  border-radius: 3px;
+  gap: 5px;
+
+  align-items: center;
+}
+.verifyForm h1 {
+  color: #0189e7;
+  font-size: 24px;
+  font-weight: var(--font-superBold);
+}
+.verifyForm p {
+  color: #666666;
+  font-size: 12px;
+}
+.verifyForm span {
+  color: #31708f;
+  font-size: 12px;
+}
+.verifyField {
+  background-color: white;
+  width: 100%;
+  padding: 6px 10px;
+  border: none;
+  outline: none;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+}
+.canvasLayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+.decorText {
+  position: absolute;
+  bottom: 80px;
+  left: 60px;
+  top: auto;
+  transform: none;
+  z-index: 10;
+  max-width: 600px;
+  pointer-events: none;
+
+  mix-blend-mode: difference;
+  color: #ffffff;
+}
+.decorText h1 {
+  font-size: 64px;
+  line-height: 1.1;
+  font-weight: 800;
+  margin-bottom: 24px;
+  font-family: "Space Grotesk", sans-serif;
+}
+.decorText p {
+  font-size: 24px;
+  line-height: 1.6;
+  font-weight: 500;
+  opacity: 0.9;
+  font-family: "Be Vietnam Pro", sans-serif;
+}
+@media (max-width: 600px) {
+  .body {
+    width: 90%;
+    margin: 0 5%;
+  }
+  .footerBody {
+    width: 90%;
+
+    text-align: center;
+    gap: 15px;
+  }
+  .footerImg {
+    width: 60px;
+    height: auto;
+  }
+
+  .header h2 {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .body {
+    flex-direction: column;
+  }
+
+  .bodyLeft {
+    display: none;
+  }
+
+  .bodyRight {
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 20px 14px;
+  }
+
+  .form {
+    width: min(100%, 520px);
+  }
+
+  .formInput {
+    gap: 18px;
+    padding: 16px;
+  }
+
+  .headerBody {
+    font-size: 15px;
+  }
+
+  .verifyForm {
+    margin-top: 16px;
+    padding: 16px;
+  }
+}

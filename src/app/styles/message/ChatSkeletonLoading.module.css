@@ -1,0 +1,246 @@
+.chatWindowSkeleton {
+  width: 100%;
+  padding: 4px 0;
+}
+
+.chatRows {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.leftRow,
+.rightRow {
+  display: flex;
+}
+
+.leftRow {
+  justify-content: flex-start;
+}
+
+.rightRow {
+  justify-content: flex-end;
+}
+
+.messageRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  max-width: 85%;
+}
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.reverseRow {
+  flex-direction: row-reverse;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+  background: #e5e7eb;
+}
+
+.bubble {
+  border-radius: 16px;
+  flex-shrink: 0;
+}
+
+.receivedBubble {
+  background: #e5e7eb;
+}
+
+.sentBubble {
+  background: #dbeafe;
+}
+
+.w32 {
+  width: 8rem;
+}
+
+.w40 {
+  width: 10rem;
+}
+
+.w48 {
+  width: 12rem;
+}
+
+.w56 {
+  width: 14rem;
+}
+
+.w64 {
+  width: 16rem;
+}
+
+.h10 {
+  height: 2.5rem;
+}
+
+.h11 {
+  height: 2.75rem;
+}
+
+.h12 {
+  height: 3rem;
+}
+
+.chatInfoSkeleton {
+  padding: 12px 15px 0;
+}
+
+.panelGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.panelCard {
+  background: #fff;
+  border-radius: 0;
+  padding: 12px 12px 14px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.sectionTitle,
+.sectionTitleSmall,
+.sectionIcon,
+.mediaSquare,
+.fileLineWide,
+.fileLineMedium,
+.fileLineShort {
+  position: relative;
+  overflow: hidden;
+  background: #e5e7eb;
+}
+
+.sectionTitle {
+  width: 92px;
+  height: 16px;
+  border-radius: 6px;
+}
+
+.sectionTitleSmall {
+  width: 58px;
+  height: 16px;
+  border-radius: 6px;
+}
+
+.sectionIcon {
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+}
+
+.imageGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mediaSquare {
+  aspect-ratio: 1 / 1;
+  border-radius: 4px;
+}
+
+.fileList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fileLineWide {
+  width: 100%;
+  height: 40px;
+  border-radius: 10px;
+}
+
+.fileLineMedium {
+  width: 80%;
+  height: 40px;
+  border-radius: 10px;
+}
+
+.fileLineShort {
+  width: 60%;
+  height: 40px;
+  border-radius: 10px;
+}
+
+.sentTint {
+  background: #dbeafe;
+}
+
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  background-position: 200% 0;
+  animation: shimmerMove 1.4s linear infinite;
+}
+
+.avatar::after,
+.bubble::after,
+.sectionTitle::after,
+.sectionTitleSmall::after,
+.sectionIcon::after,
+.mediaSquare::after,
+.fileLineWide::after,
+.fileLineMedium::after,
+.fileLineShort::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  background-position: -200% 0;
+  animation: shimmerMove 1.4s linear infinite;
+}
+
+@keyframes shimmerMove {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .messageRow {
+    max-width: 92%;
+  }
+
+  .imageGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bubble {
+    min-width: 0;
+  }
+}

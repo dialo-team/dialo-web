@@ -1,0 +1,976 @@
+.container {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+}
+
+.chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #f3f4f6;
+
+  position: relative;
+}
+
+.chatWithPanel {
+  max-width: 68%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 15px;
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+  min-width: 0;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 9999px;
+  background: transparent;
+  color: #374151;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.backButton:hover {
+  background: rgba(17, 24, 39, 0.06);
+}
+
+.backButton:focus-visible {
+  outline: 2px solid #0f62fe;
+  outline-offset: 2px;
+}
+
+.name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.status {
+  font-size: 12px;
+  color: #888;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: #374151;
+  flex-shrink: 0;
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+}
+
+.messageLeft,
+.messageRight {
+  display: flex;
+  margin-bottom: 10px;
+  align-items: flex-start;
+}
+
+.messageRight {
+  justify-content: flex-end;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin-right: 6px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  display: block;
+}
+
+.messageBox {
+  position: relative;
+  max-width: 55%;
+  display: block;
+  min-width: 0;
+}
+
+/* ── Hover action bar ── */
+.hoverActions {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  gap: 2px;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.14);
+  padding: 4px 8px;
+  white-space: nowrap;
+}
+
+/* Bridge ẩn lấp đầy khoảng cách 4px giữa bar và bubble */
+.hoverActions::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 8px;
+}
+
+.messageBox:hover .hoverActions {
+  display: flex;
+}
+
+.hoverActionsRight {
+  right: 0;
+}
+
+.hoverActionsLeft {
+  left: 0;
+}
+
+.hoverReactBtn {
+  font-size: 18px;
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s, background 0.1s;
+  line-height: 1;
+}
+
+.hoverReactBtn:hover {
+  transform: scale(1.3);
+  background: #f3f4f6;
+}
+
+.hoverDivider {
+  display: inline-block;
+  width: 1px;
+  height: 20px;
+  background: #e5e7eb;
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+.hoverMoreBtn {
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  transition: background 0.1s;
+}
+
+.hoverMoreBtn:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+
+.bubble {
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: #fff;
+  font-size: 14px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.fileBubble {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #dbe2ea;
+  min-width: 200px;
+}
+
+.imageBubble {
+  padding: 4px;
+  border-radius: 12px;
+  background: transparent;
+}
+
+.audioBubble {
+  padding: 0;
+  background: transparent;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+
+.messageRight .bubble {
+  background: #dbeafe;
+}
+
+.messageRight .fileBubble {
+  background: #e9f3ff;
+  border-color: #bfdbfe;
+}
+
+.imageLink {
+  display: block;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #d1d5db;
+  background: #fff;
+}
+
+.imageMessage {
+  display: block;
+  width: 100%;
+  max-width: 260px;
+  max-height: 280px;
+  object-fit: cover;
+}
+
+.fileRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1f2937;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.fileDownloadBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
+  border: none;
+  border-radius: 9999px;
+  background: rgba(15, 98, 254, 0.1);
+  color: #0f62fe;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.fileDownloadBtn:hover {
+  background: rgba(15, 98, 254, 0.18);
+}
+
+.fileDownloadBtn:focus-visible {
+  outline: 2px solid #0f62fe;
+  outline-offset: 2px;
+}
+
+.fileRow:hover {
+  background-color: rgba(15, 98, 254, 0.1);
+}
+
+.fileRow:focus {
+  outline: 2px solid #0f62fe;
+  outline-offset: 2px;
+}
+
+.fileMeta {
+  min-width: 0;
+}
+
+.fileName {
+  font-size: 13px;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.fileType {
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 2px;
+  word-break: break-word;
+}
+
+.revoked {
+  background: #dbeafe !important;
+  color: #1f2937 !important;
+  font-style: italic;
+}
+
+.time {
+  font-size: 11px;
+  margin-top: 4px;
+  color: #777;
+}
+
+.moreBtn {
+  position: absolute;
+  left: -22px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #6b7280;
+}
+
+.moreBtnForThem {
+  position: absolute;
+  right: -22px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #6b7280;
+}
+
+.menu {
+  position: fixed;
+  width: 180px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  z-index: 99999;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.menuItem:hover {
+  background: #f3f4f6;
+}
+
+.toolbar {
+  display: flex;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #fff;
+  border-top: 1px solid #ddd;
+  flex-shrink: 0;
+}
+
+.input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: #fff;
+  border-top: 1px solid #ddd;
+  flex-shrink: 0;
+}
+
+.input input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  background: #f0f2f5;
+}
+
+.empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.sendBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: #0ea5e9;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+  flex-shrink: 0;
+}
+
+.sendBtn:hover {
+  background: #0284c7;
+}
+
+.sendBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* block */
+.blockOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+
+  /* khóa click xuyên */
+  pointer-events: all;
+}
+
+.chatBlocked {
+  pointer-events: none;
+  user-select: none;
+}
+
+.blockBox {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  width: 280px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.blockTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.blockDesc {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 12px;
+}
+
+.unblockBtn {
+  background: #0ea5e9;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.unblockBtn:hover {
+  background: #0284c7;
+}
+
+.systemMessage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 8px 0;
+  font-size: 15px;
+  color: #666;
+  text-align: center;
+  width: 100%;
+  pointer-events: none;
+  font-weight: 600; 
+}
+
+.systemMessage::before,
+.systemMessage::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #ddd;
+}
+
+.systemMessage::before {
+  margin-right: 10px;
+}
+
+.systemMessage::after {
+  margin-left: 10px;
+}
+
+.groupHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  font-size: 12px;
+  color: #555;
+}
+
+.groupAvatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+}
+
+.groupName {
+  font-weight: 600;
+}
+
+.senderName {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 2px;
+}
+
+.senderNameInside {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0ea5e9;
+  margin-bottom: 5px;
+}
+
+/* ── Emoji picker ── */
+.emojiPickerWrap {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  z-index: 9999;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  padding: 8px;
+  width: 280px;
+}
+
+.emojiGrid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 2px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.emojiBtn {
+  font-size: 20px;
+  padding: 4px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 6px;
+  text-align: center;
+  line-height: 1;
+}
+
+.emojiBtn:hover {
+  background: #f3f4f6;
+}
+
+/* ── Quick reaction picker ── */
+.reactionPickerWrap {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: -8px;
+  z-index: 99999;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 24px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  padding: 6px 10px;
+  display: flex;
+  gap: 4px;
+}
+
+.reactionPickerWrap button {
+  font-size: 22px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s, background 0.1s;
+}
+
+.reactionPickerWrap button:hover {
+  background: #f3f4f6;
+  transform: scale(1.2);
+}
+
+/* ── Reactions bar ── */
+.reactionsBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.reactionPill {
+  font-size: 13px;
+  background: #f0f2f5;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 2px 7px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  transition: background 0.15s;
+}
+
+.reactionPill:hover {
+  background: #e5e7eb;
+}
+
+/* ── Audio player ── */
+.audioPlayer {
+  display: block;
+  max-width: 240px;
+  width: 100%;
+  height: 36px;
+  border-radius: 18px;
+}
+
+/* ── Inline edit ── */
+.editInputWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.editInput {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1.5px solid #0ea5e9;
+  font-size: 14px;
+  resize: none;
+  outline: none;
+  font-family: inherit;
+  min-height: 60px;
+}
+
+.editActions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.editSaveBtn, .editCancelBtn {
+  border: none;
+  border-radius: 8px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.editSaveBtn {
+  background: #0ea5e9;
+  color: #fff;
+}
+
+.editSaveBtn:hover { background: #0284c7; }
+
+.editCancelBtn {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.editCancelBtn:hover { background: #e5e7eb; }
+
+/* ── Recording button ── */
+.recordingBtn {
+  color: #ef4444 !important;
+  animation: pulse 1s infinite;
+}
+
+/* block  */
+
+.blockInlineBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 14px 16px;
+  background: #fff;
+  border-top: 1px solid #ddd;
+}
+
+.blockInlineText {
+  font-size: 14px;
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.unblockInlineBtn {
+  border: none;
+  background: #0ea5e9;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+.unblockInlineBtn:hover {
+  background: #0284c7;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.toolbarItem {
+  cursor: pointer;
+  color: #374151;
+  display: flex;
+  align-items: center;
+}
+
+.toolbarItem:hover {
+  color: #0ea5e9;
+}
+
+/* ── Edited label ── */
+.editedLabel {
+  font-size: 10px;
+  color: #9ca3af;
+  margin-left: 4px;
+  font-style: italic;
+}
+
+/* ── Toolbar wrap for emoji ── */
+.toolbarWrap {
+  position: relative;
+}
+
+/* ── GIF picker ── */
+.gifPickerWrap {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  z-index: 9999;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  padding: 8px;
+  width: 320px;
+}
+
+/* ── Pinned Messages ── */
+.pinnedBar {
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  padding: 8px 12px;
+  border-bottom: 1px solid #ddd;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.pinnedContent {
+  flex: 1;
+  overflow: hidden;
+}
+
+.pinnedText {
+  font-size: 13px;
+  color: #111;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.more {
+  font-size: 12px;
+  color: #888;
+  margin-right: 6px;
+  cursor: pointer;
+  border: 1px solid #e2dfdf;
+  padding: 2px 8px;
+  background-color: #e2dfdf;
+  border-radius: 12px;
+  user-select: none;
+  color: black;
+}
+
+.pinnedExpanded {
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  background: white;
+  border-bottom: 1px solid #ddd;
+}
+
+.pinnedHeader {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  font-weight: 600;
+  border-bottom: 1px solid #eee;
+}
+
+.pinnedItem {
+  padding: 8px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+}
+
+.pinnedMain {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sender {
+  font-size: 12px;
+  color: #0ea5e9;
+  font-weight: 600;
+}
+
+.text {
+  font-size: 13px;
+  color: #333;
+}
+
+/* Menu wrapper cho nút ⋯ */
+.menuWrapper {
+  cursor: pointer;
+  padding: 0 6px;
+  font-size: 18px;
+  color: #6b7280;
+}
+
+.menuWrapper:hover {
+  color: #374151;
+}
+
+.pinDropdown {
+  position: fixed;
+  z-index: 99999;
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  min-width: 160px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  overflow: hidden;
+}
+
+.pinDropdownItem {
+  padding: 10px 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.pinDropdownItem:hover {
+  background: #f5f5f5;
+}
+
+.highlight {
+  animation: highlightFlash 2.5s ease;
+  border-radius: 10px;
+}
+
+@keyframes highlightFlash {
+  0% {
+    background: rgba(59, 130, 246, 0.35);
+    transform: scale(1.01);
+  }
+  50% {
+    background: rgba(59, 130, 246, 0.18);
+  }
+  100% {
+    background: transparent;
+    transform: scale(1);
+  }
+}
+
+.pinDropdown {
+  position: fixed;
+  z-index: 99999;
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  min-width: 170px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  overflow: hidden;
+  transform: translateX(-100%);   /* Mặc định kéo sang trái */
+}
+
+/* Nếu muốn có hiệu ứng mượt */
+.pinDropdown {
+  transition: opacity 0.1s ease;
+}
+
+.pinDropdownItem {
+  padding: 10px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pinDropdownItem:hover {
+  background: #f5f5f5;
+}
+
+@media (max-width: 768px) {
+  .chatWithPanel {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .header {
+    padding: 10px;
+  }
+
+  .actions {
+    gap: 8px;
+  }
+
+  .messageBox {
+    max-width: 78%;
+  }
+
+  .bubble {
+    max-width: 100%;
+    word-break: break-word;
+  }
+
+  .imageMessage {
+    max-width: 220px;
+    max-height: 240px;
+  }
+
+  .backButton {
+    display: inline-flex;
+  }
+}

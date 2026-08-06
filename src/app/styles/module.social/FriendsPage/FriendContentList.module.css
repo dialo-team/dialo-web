@@ -1,0 +1,261 @@
+﻿.header {
+  background: #ffffff;
+  border-radius: 0 24px 0 0;
+  padding: 20px 28px;
+  border-bottom: 1px solid #e6e9f0;
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.headerTitle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  color: #0f2854;
+}
+
+.headerTitle h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.backButton {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #0f2854;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.backButton:hover {
+  background: #f2f5fb;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  background: #f3f5fa;
+  padding: 28px;
+  border-radius: 0 0 24px 24px;
+  height: calc(100% - 85px);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sectionTitle {
+  margin-bottom: 18px;
+  color: #1a2d57;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.contentBox {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 28px 32px;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.contentBox::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.searchBoxRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #dfe5ef;
+  padding: 14px 18px;
+  border-radius: 14px;
+  margin-bottom: 24px;
+  background: #ffffff;
+  color: #6b7a99;
+}
+
+.searchBoxRight input {
+  border: none;
+  outline: none;
+  width: 100%;
+  background: transparent;
+  color: #1a2d57;
+  font-size: 16px;
+}
+
+.searchBoxRight input::placeholder {
+  color: #7d8ba5;
+}
+
+.friendList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.friendItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: 14px;
+}
+
+.friendItem:hover {
+  background: #f7f9fc;
+}
+
+.friendInfo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.friendInfo span {
+  color: #16284d;
+  font-size: 14px;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.friendItem img {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.moreIcon {
+  cursor: pointer;
+  color: #6f7d97;
+}
+
+.menuWrapper {
+  position: relative;
+}
+
+.actionMenu {
+  position: absolute;
+  right: 0;
+  top: 28px;
+  background: #ffffff;
+  border: 1px solid #e4e6eb;
+  border-radius: 12px;
+  width: 170px;
+  box-shadow: 0 10px 30px rgba(15, 40, 84, 0.12);
+  overflow: hidden;
+  z-index: 10;
+}
+
+.menuAction {
+  padding: 12px 14px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.menuAction:hover {
+  background: #f0f2f5;
+}
+
+.danger {
+  color: #e41e3f;
+  font-weight: 500;
+}
+
+.menuOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+}
+
+.actionMenu {
+  position: absolute;
+  z-index: 2;
+}
+
+.unblockBtn {
+  background: #ffe5e8;
+  color: #e41e3f;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+.unblockBtn:hover {
+  background: #ffd6db;
+}
+
+@media (max-width: 768px) {
+  .backButton {
+    display: inline-flex;
+  }
+
+  .header {
+    padding: 16px 18px;
+    border-radius: 0 18px 0 0;
+  }
+
+  .section {
+    padding: 18px;
+    border-radius: 0 0 18px 18px;
+    height: calc(100% - 75px);
+  }
+
+  .contentBox {
+    padding: 18px;
+  }
+
+  .searchBoxRight {
+    padding: 12px 14px;
+    margin-bottom: 18px;
+  }
+
+  .friendItem {
+    padding: 12px 10px;
+  }
+
+  .friendInfo {
+    gap: 12px;
+  }
+
+  .friendInfo span {
+    font-size: 16px;
+  }
+
+  .friendItem img {
+    width: 48px;
+    height: 48px;
+  }
+
+  .actionMenu {
+    top: 30px;
+    width: 156px;
+  }
+}
+
+

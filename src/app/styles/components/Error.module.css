@@ -1,0 +1,35 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal {
+  background: #fff;
+  padding: 20px 30px;
+  border-radius: 10px;
+  text-align: center;
+  min-width: 250px;
+}
+
+.closeBtn {
+  margin-top: 15px;
+  padding: 5px 10px;
+  border: none;
+  background: var(--main-color, #008fe5);
+  color: #fff;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .modal {
+    min-width: 0;
+    width: min(88vw, 320px);
+    padding: 16px 20px;
+  }
+}

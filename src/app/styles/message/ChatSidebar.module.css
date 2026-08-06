@@ -1,0 +1,163 @@
+.left {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  border-right: 1px solid #e4e6eb;
+  padding: 18px;
+  background: white;
+  align-items: stretch;
+  box-sizing: border-box;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ô search */
+/* wrapper chứa search + icon */
+.searchWrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+/* ô search */
+.searchBoxLeft {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #e4e6eb;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #f0f2f5;
+}
+
+.searchBoxLeft input {
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+}
+
+/* icon bên phải */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+  
+.actionIcon {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  object-fit: contain;
+}
+
+.actionIcon:hover {
+  opacity: 0.7;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 6px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .left {
+    border-right: none;
+    border-bottom: 1px solid #e4e6eb;
+    padding: 14px;
+  }
+}
+
+/* từng item chat */
+.chatItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.chatItemUnread {
+  background: #f7f8fa;
+}
+
+.chatItem:hover {
+  background: #f0f2f5;
+}
+
+/* avatar */
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+/* info */
+.info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* tên */
+.name {
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+.nameUnread {
+  font-weight: 600;
+  color: #111827;
+}
+
+/* conversation id */
+.conversationId {
+  font-size: 12px;
+  color: #1877f2;
+  word-break: break-all;
+  margin-bottom: 4px;
+}
+
+/* tin nhắn */
+.lastMessage {
+  font-size: 13px;
+  color: #65676b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lastMessageUnread {
+  color: #111827;
+}
+
+.unreadBadge {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #1877f2;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* empty */
+.empty {
+  text-align: center;
+  color: #999;
+  padding: 10px;
+}
